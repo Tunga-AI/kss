@@ -36,16 +36,16 @@ const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="absolute top-0 left-0 right-0 z-50">
+    <nav className="absolute top-0 left-0 right-0 z-50 safe-area-top">
       <div className="px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="flex justify-between items-center h-16 sm:h-20">
+        <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center min-h-[44px] touch-manipulation">
             <Logo
               size="lg"
               showText={false}
               textSize="xl"
-              className="hover:opacity-80 transition-opacity duration-200 scale-100 sm:scale-125 lg:scale-150"
+              className="hover:opacity-80 transition-opacity duration-200 scale-90 xs:scale-100 sm:scale-110 lg:scale-125 xl:scale-150"
             />
           </Link>
 
@@ -133,7 +133,7 @@ const Navbar: React.FC = () => {
             {/* Enroll Button */}
             <button
               onClick={() => openLeadModal('core')}
-              className="bg-secondary-600 backdrop-blur-sm text-white px-4 xl:px-6 py-2 rounded-sm text-xs xl:text-sm font-bold uppercase tracking-wider hover:bg-secondary-700 transition-colors duration-200 border border-secondary-500"
+              className="bg-secondary-600 backdrop-blur-sm text-white px-4 xl:px-6 py-2.5 xl:py-3 rounded-sm text-xs xl:text-sm font-bold uppercase tracking-wider hover:bg-secondary-700 active:bg-secondary-800 transition-colors duration-200 border border-secondary-500 min-h-[44px] touch-manipulation"
             >
               Enroll
             </button>
@@ -143,22 +143,23 @@ const Navbar: React.FC = () => {
           <div className="lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-primary-600 hover:text-accent-400 transition-colors duration-200 p-2"
+              className="text-primary-600 hover:text-accent-400 active:text-accent-500 transition-colors duration-200 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
-              {isMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
+              {isMenuOpen ? <X className="h-6 w-6 sm:h-7 sm:w-7" /> : <Menu className="h-6 w-6 sm:h-7 sm:w-7" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden bg-neutral-900/95 backdrop-blur-md border-t border-white/20">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="lg:hidden bg-neutral-900/95 backdrop-blur-md border-t border-white/20 safe-area-bottom">
+            <div className="px-3 sm:px-4 pt-3 pb-4 space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`block px-3 py-2 text-sm sm:text-base font-bold uppercase tracking-wider transition-colors duration-200 hover:text-accent-400 hover:bg-white/10 rounded-sm ${
+                  className={`block px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold uppercase tracking-wider transition-all duration-200 hover:text-accent-400 active:text-accent-500 hover:bg-white/10 active:bg-white/20 rounded-lg touch-manipulation ${
                     location.pathname === item.path
                       ? 'text-accent-400 bg-white/20'
                       : 'text-white'
@@ -168,36 +169,39 @@ const Navbar: React.FC = () => {
                   {item.label}
                 </Link>
               ))}
-              <div className="mt-4 space-y-2">
-                <p className="px-3 py-2 text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">Our Programs:</p>
+              <div className="mt-6 space-y-2">
+                <p className="px-4 py-2 text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider">Our Programs:</p>
 
                 <Link
                   to="/events"
-                  className="block w-full text-left px-3 py-2 text-xs sm:text-sm font-semibold bg-accent-600 text-white rounded-sm hover:bg-accent-700 transition-colors duration-200 border border-accent-500"
+                  className="flex items-center space-x-3 w-full text-left px-4 py-3 min-h-[44px] text-sm sm:text-base font-semibold bg-accent-600 text-white rounded-lg hover:bg-accent-700 active:bg-accent-800 transition-all duration-200 border border-accent-500 touch-manipulation"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Short Programs
+                  <Users className="h-5 w-5 flex-shrink-0" />
+                  <span>Short Programs</span>
                 </Link>
 
                 <Link
                   to="/programs"
-                  className="block w-full text-left px-3 py-2 text-xs sm:text-sm font-semibold bg-primary-600 text-white rounded-sm hover:bg-primary-700 transition-colors duration-200 border border-primary-500"
+                  className="flex items-center space-x-3 w-full text-left px-4 py-3 min-h-[44px] text-sm sm:text-base font-semibold bg-primary-600 text-white rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-all duration-200 border border-primary-500 touch-manipulation"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Core Programs
+                  <BookOpen className="h-5 w-5 flex-shrink-0" />
+                  <span>Core Programs</span>
                 </Link>
 
                 <Link
                   to="/business"
-                  className="block w-full text-left px-3 py-2 text-xs sm:text-sm font-semibold bg-secondary-600 text-white rounded-sm hover:bg-secondary-700 transition-colors duration-200 border border-secondary-500"
+                  className="flex items-center space-x-3 w-full text-left px-4 py-3 min-h-[44px] text-sm sm:text-base font-semibold bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 active:bg-secondary-800 transition-all duration-200 border border-secondary-500 touch-manipulation"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Corporate Programs
+                  <Building2 className="h-5 w-5 flex-shrink-0" />
+                  <span>Corporate Programs</span>
                 </Link>
 
                 <Link
                   to="/media"
-                  className="block px-3 py-2 text-sm sm:text-base font-bold uppercase tracking-wider transition-colors duration-200 hover:text-accent-400 hover:bg-white/10 rounded-sm text-white"
+                  className="block px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold uppercase tracking-wider transition-all duration-200 hover:text-accent-400 active:text-accent-500 hover:bg-white/10 active:bg-white/20 rounded-lg text-white touch-manipulation"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Success Stories
@@ -205,19 +209,19 @@ const Navbar: React.FC = () => {
 
                 <Link
                   to="/contact"
-                  className="block px-3 py-2 text-sm sm:text-base font-bold uppercase tracking-wider transition-colors duration-200 hover:text-accent-400 hover:bg-white/10 rounded-sm text-white"
+                  className="block px-4 py-3 min-h-[44px] text-sm sm:text-base font-bold uppercase tracking-wider transition-all duration-200 hover:text-accent-400 active:text-accent-500 hover:bg-white/10 active:bg-white/20 rounded-lg text-white touch-manipulation"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact Us
                 </Link>
 
-                <div className="mt-4">
+                <div className="mt-6 pt-4 border-t border-white/20">
                   <button
                     onClick={() => {
                       openLeadModal('core');
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-center px-3 py-2 text-xs sm:text-sm font-semibold bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors duration-200 border border-green-500"
+                    className="block w-full text-center px-4 py-3.5 min-h-[48px] text-sm sm:text-base font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 active:bg-green-800 transition-all duration-200 border-2 border-green-500 shadow-lg touch-manipulation"
                   >
                     Enroll Now
                   </button>

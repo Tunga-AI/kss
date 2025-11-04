@@ -15,11 +15,11 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-primary-800 text-white">
-      <div className="px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+    <footer className="bg-primary-800 text-white safe-area-bottom">
+      <div className="px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           {/* Brand Section */}
-          <div className="space-y-3 sm:space-y-4 sm:col-span-2 lg:col-span-1">
+          <div className="space-y-4 sm:space-y-5 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center">
               <Logo
                 size="sm"
@@ -28,49 +28,55 @@ const Footer: React.FC = () => {
                 className="text-white sm:text-xl lg:text-2xl"
               />
             </div>
-            <p className="text-primary-100 text-xs sm:text-sm leading-relaxed">
+            <p className="text-primary-100 text-sm sm:text-base leading-relaxed">
               Empowering Africa's sales professionals with
               world-class education and industry-recognized qualifications.
             </p>
-            <div className="flex space-x-3 sm:space-x-4">
+            <div className="flex space-x-4 sm:space-x-5">
               <a
                 href="https://www.instagram.com/kenyaschoolofsales"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary-200 hover:text-accent-400 cursor-pointer transition-colors duration-200"
+                className="text-primary-200 hover:text-accent-400 active:text-accent-500 cursor-pointer transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                aria-label="Follow us on Instagram"
               >
-                <Instagram className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Instagram className="h-6 w-6 sm:h-7 sm:w-7" />
               </a>
               <a
                 href="https://www.tiktok.com/@kenyaschoolofsales"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary-200 hover:text-accent-400 cursor-pointer transition-colors duration-200"
+                className="text-primary-200 hover:text-accent-400 active:text-accent-500 cursor-pointer transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                aria-label="Follow us on TikTok"
               >
-                <TikTokIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <TikTokIcon className="h-6 w-6 sm:h-7 sm:w-7" />
               </a>
               <a
                 href="https://www.linkedin.com/company/kenya-school-of-sales/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary-200 hover:text-accent-400 cursor-pointer transition-colors duration-200"
+                className="text-primary-200 hover:text-accent-400 active:text-accent-500 cursor-pointer transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                aria-label="Connect with us on LinkedIn"
               >
-                <Linkedin className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Linkedin className="h-6 w-6 sm:h-7 sm:w-7" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold">Quick Links</h3>
-            <ul className="space-y-2">
+          <div className="space-y-4 sm:space-y-5">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold">Quick Links</h3>
+            <ul className="space-y-2 sm:space-y-3">
               {[
                 { label: 'Home', path: '/' },
                 { label: 'Contact', path: '/contact' },
                 { label: 'Portal', path: '/auth' }
               ].map((link) => (
                 <li key={link.label}>
-                  <a href={link.path} className="text-primary-100 hover:text-accent-400 transition-colors duration-200 text-xs sm:text-sm">
+                  <a
+                    href={link.path}
+                    className="inline-block text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors duration-200 text-sm sm:text-base py-1 min-h-[32px] touch-manipulation"
+                  >
                     {link.label}
                   </a>
                 </li>
@@ -79,16 +85,19 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Solutions */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold">Solutions</h3>
-            <ul className="space-y-2">
+          <div className="space-y-4 sm:space-y-5">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold">Solutions</h3>
+            <ul className="space-y-2 sm:space-y-3">
               {[
                 { label: 'Framework', path: '/framework' },
                 { label: 'Programs', path: '/programs' },
                 { label: 'Events', path: '/events' }
               ].map((link) => (
                 <li key={link.label}>
-                  <a href={link.path} className="text-primary-100 hover:text-accent-400 transition-colors duration-200 text-xs sm:text-sm">
+                  <a
+                    href={link.path}
+                    className="inline-block text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors duration-200 text-sm sm:text-base py-1 min-h-[32px] touch-manipulation"
+                  >
                     {link.label}
                   </a>
                 </li>
@@ -97,41 +106,53 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="text-base sm:text-lg font-semibold">Contact Info</h3>
-            <div className="space-y-2 sm:space-y-3">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-accent-400 flex-shrink-0" />
-                <span className="text-primary-100 text-xs sm:text-sm">kss@cca.co.ke</span>
-              </div>
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-accent-400 flex-shrink-0" />
-                <span className="text-primary-100 text-xs sm:text-sm">+254 722 257 323</span>
-              </div>
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-accent-400 flex-shrink-0" />
-                <span className="text-primary-100 text-xs sm:text-sm">Westlands, Nairobi, Kenya</span>
+          <div className="space-y-4 sm:space-y-5">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold">Contact Info</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <a
+                href="mailto:kss@cca.co.ke"
+                className="flex items-center space-x-3 text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors py-1 min-h-[32px] touch-manipulation"
+              >
+                <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 flex-shrink-0" />
+                <span className="text-sm sm:text-base">kss@cca.co.ke</span>
+              </a>
+              <a
+                href="tel:+254722257323"
+                className="flex items-center space-x-3 text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors py-1 min-h-[32px] touch-manipulation"
+              >
+                <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 flex-shrink-0" />
+                <span className="text-sm sm:text-base">+254 722 257 323</span>
+              </a>
+              <div className="flex items-center space-x-3 py-1 min-h-[32px]">
+                <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 flex-shrink-0" />
+                <span className="text-primary-100 text-sm sm:text-base">Westlands, Nairobi, Kenya</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-primary-700 mt-6 sm:mt-8 pt-6 sm:pt-8">
-          <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-4">
-              <p className="text-primary-100 text-xs sm:text-sm text-center sm:text-left">
+        <div className="border-t border-primary-700 mt-8 sm:mt-10 pt-6 sm:pt-8">
+          <div className="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0 gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-5">
+              <p className="text-primary-100 text-sm sm:text-base text-center sm:text-left">
                 © 2025 Kenya School of Sales. All rights reserved.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
-                <a href="/media-consent" className="text-primary-100 hover:text-accent-400 transition-colors duration-200 text-xs sm:text-sm">
+              <div className="flex flex-wrap justify-center gap-3 sm:gap-5">
+                <a
+                  href="/media-consent"
+                  className="text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors duration-200 text-sm sm:text-base py-1 min-h-[32px] touch-manipulation"
+                >
                   Media & Data Consent
                 </a>
-                <a href="/media-privacy" className="text-primary-100 hover:text-accent-400 transition-colors duration-200 text-xs sm:text-sm">
+                <a
+                  href="/media-privacy"
+                  className="text-primary-100 hover:text-accent-400 active:text-accent-500 transition-colors duration-200 text-sm sm:text-base py-1 min-h-[32px] touch-manipulation"
+                >
                   Media & Privacy Notice
                 </a>
               </div>
             </div>
-            <p className="text-primary-100 text-xs sm:text-sm text-center lg:text-right">
+            <p className="text-primary-100 text-sm sm:text-base text-center lg:text-right">
               Powered by Commercial Club of Africa and Yusudi
             </p>
           </div>

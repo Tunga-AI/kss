@@ -100,13 +100,23 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - Touch optimized */}
       <button
         onClick={() => onMobileMenuChange(!mobileMenuOpen)}
-        className="fixed top-4 right-4 z-50 lg:hidden bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200"
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 lg:hidden bg-primary-600 text-white min-w-[44px] min-h-[44px] p-3 sm:p-3.5 rounded-full shadow-lg hover:bg-primary-700 active:scale-95 transition-all duration-200 flex items-center justify-center touch-manipulation"
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
       >
-        {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
       </button>
+
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden transition-opacity duration-300"
+          onClick={() => onMobileMenuChange(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Sidebar */}
       <div
@@ -124,7 +134,7 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
         onMouseLeave={() => window.innerWidth >= 1024 && onExpandedChange(false)}
       >
         {/* Logo */}
-        <div className="p-4 border-b border-primary-500 flex-shrink-0">
+        <div className="p-3 sm:p-4 border-b border-primary-500 flex-shrink-0">
           <Logo
             size={mobileMenuOpen || expanded ? "sm" : "xs"}
             showText={mobileMenuOpen || expanded}
@@ -133,15 +143,15 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
           />
           {(mobileMenuOpen || expanded) && (
             <div className="mt-2">
-              <p className="text-primary-100 text-sm font-medium">Learning Portal</p>
-              <p className="text-primary-200 text-xs">{userProfile?.displayName}</p>
+              <p className="text-primary-100 text-sm sm:text-base font-medium">Learning Portal</p>
+              <p className="text-primary-200 text-xs sm:text-sm">{userProfile?.displayName}</p>
             </div>
           )}
         </div>
 
         {/* Navigation - Scrollable */}
-        <nav className="mt-6 flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="space-y-1 px-3 pb-4">
+        <nav className="mt-4 sm:mt-6 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
+          <div className="space-y-1 px-3 sm:px-4 pb-4">
             {/* Quick Stats Section */}
             {(mobileMenuOpen || expanded) && (
               <div className="mb-6 px-3">
@@ -175,20 +185,20 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
                   key={item.path}
                   to={item.path}
                   onClick={() => onMobileMenuChange(false)}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
+                  className={`flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 min-h-[44px] rounded-lg transition-all duration-200 group touch-manipulation ${
                     isActive
                       ? 'bg-white text-primary-600 shadow-lg'
-                      : 'text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white'
+                      : 'text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white active:bg-primary-400'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${
+                  <Icon className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 ${
                     isActive ? 'text-primary-600' : 'text-white group-hover:text-white'
                   }`} />
                   {(mobileMenuOpen || expanded) && (
                     <div className="flex-1 min-w-0">
-                      <span className="font-medium truncate block">{item.label}</span>
+                      <span className="text-sm sm:text-base font-medium truncate block">{item.label}</span>
                       {item.description && (
-                        <span className={`text-xs truncate block ${
+                        <span className={`text-xs sm:text-sm truncate block ${
                           isActive ? 'text-primary-500' : 'text-primary-200 group-hover:text-primary-100'
                         }`}>
                           {item.description}
@@ -238,16 +248,16 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
         </nav>
 
         {/* Support & Logout */}
-        <div className="p-3 border-t border-primary-500 flex-shrink-0 space-y-2">
+        <div className="p-3 sm:p-4 border-t border-primary-500 flex-shrink-0 space-y-2">
           {/* Support Contact */}
           {(mobileMenuOpen || expanded) && (
-            <div className="bg-white bg-opacity-10 backdrop-blur-sm p-3 rounded-lg border border-white border-opacity-20 mb-3">
+            <div className="bg-white bg-opacity-10 backdrop-blur-sm p-3 sm:p-4 rounded-lg border border-white border-opacity-20 mb-3">
               <div className="flex items-center space-x-2 mb-2">
-                <Phone className="h-4 w-4 text-white" />
-                <span className="text-white text-sm font-medium">Need Help?</span>
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <span className="text-white text-sm sm:text-base font-medium">Need Help?</span>
               </div>
-              <p className="text-primary-100 text-xs">Contact support for assistance</p>
-              <button className="mt-2 text-xs text-white hover:text-primary-100 underline">
+              <p className="text-primary-100 text-xs sm:text-sm">Contact support for assistance</p>
+              <button className="mt-2 text-xs sm:text-sm text-white hover:text-primary-100 underline min-h-[32px] touch-manipulation">
                 Get Support
               </button>
             </div>
@@ -256,18 +266,18 @@ const LearnerSidebar: React.FC<LearnerSidebarProps> = ({
           <Link
             to="/"
             onClick={() => onMobileMenuChange(false)}
-            className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white rounded-lg transition-all duration-200 group"
+            className="flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 w-full min-h-[44px] text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white active:bg-primary-400 rounded-lg transition-all duration-200 group touch-manipulation"
           >
-            <Globe className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
-            {(mobileMenuOpen || expanded) && <span className="font-medium">Main Website</span>}
+            <Globe className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-white group-hover:text-white" />
+            {(mobileMenuOpen || expanded) && <span className="text-sm sm:text-base font-medium">Main Website</span>}
           </Link>
 
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white rounded-lg transition-all duration-200 group"
+            className="flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 w-full min-h-[44px] text-white hover:bg-primary-500 hover:bg-opacity-50 hover:text-white active:bg-primary-400 rounded-lg transition-all duration-200 group touch-manipulation"
           >
-            <LogOut className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
-            {(mobileMenuOpen || expanded) && <span className="font-medium">Logout</span>}
+            <LogOut className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-white group-hover:text-white" />
+            {(mobileMenuOpen || expanded) && <span className="text-sm sm:text-base font-medium">Logout</span>}
           </button>
         </div>
       </div>

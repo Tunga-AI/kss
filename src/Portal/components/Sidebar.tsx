@@ -146,13 +146,23 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange, mobileMen
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - Touch optimized */}
       <button
         onClick={() => onMobileMenuChange(!mobileMenuOpen)}
-        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 lg:hidden bg-primary-600 text-white p-2 sm:p-3 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200"
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 lg:hidden bg-primary-600 text-white min-w-[44px] min-h-[44px] p-3 sm:p-3.5 rounded-full shadow-lg hover:bg-primary-700 active:scale-95 transition-all duration-200 flex items-center justify-center touch-manipulation"
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
       >
-        {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+        {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
       </button>
+
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden transition-opacity duration-300"
+          onClick={() => onMobileMenuChange(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Sidebar */}
       <div
@@ -179,8 +189,8 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange, mobileMen
       </div>
 
       {/* Navigation - Scrollable */}
-      <nav className="mt-4 sm:mt-6 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="space-y-1 px-2 sm:px-3 pb-4">
+      <nav className="mt-4 sm:mt-6 flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        <div className="space-y-1 px-3 sm:px-4 pb-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -190,13 +200,13 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange, mobileMen
                 key={item.path}
                 to={item.path}
                 onClick={() => onMobileMenuChange(false)}
-                className={`flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-3 rounded-lg transition-all duration-200 group ${
+                className={`flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 min-h-[44px] rounded-lg transition-all duration-200 group touch-manipulation ${
                   isActive
-                    ? 'bg-white text-primary-600'
-                    : 'text-white hover:bg-primary-500 hover:text-white'
+                    ? 'bg-white text-primary-600 shadow-sm'
+                    : 'text-white hover:bg-primary-500 hover:text-white active:bg-primary-400'
                 }`}
               >
-                <Icon className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                <Icon className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 ${
                   isActive ? 'text-primary-600' : 'text-white group-hover:text-white'
                 }`} />
                 {(mobileMenuOpen || expanded) && (
@@ -209,22 +219,22 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange, mobileMen
       </nav>
 
       {/* Website & Logout */}
-      <div className="p-3 border-t border-primary-500 flex-shrink-0 space-y-2">
+      <div className="p-3 sm:p-4 border-t border-primary-500 flex-shrink-0 space-y-2">
         <Link
           to="/"
           onClick={() => onMobileMenuChange(false)}
-          className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:text-white rounded-lg transition-all duration-200 group"
+          className="flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 w-full min-h-[44px] text-white hover:bg-primary-500 hover:text-white active:bg-primary-400 rounded-lg transition-all duration-200 group touch-manipulation"
         >
-          <Globe className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
-          {(mobileMenuOpen || expanded) && <span className="font-medium">Website</span>}
+          <Globe className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-white group-hover:text-white" />
+          {(mobileMenuOpen || expanded) && <span className="text-sm sm:text-base font-medium">Website</span>}
         </Link>
 
         <button
           onClick={handleLogout}
-          className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:text-white rounded-lg transition-all duration-200 group"
+          className="flex items-center space-x-3 px-3 sm:px-4 py-3 sm:py-3.5 w-full min-h-[44px] text-white hover:bg-primary-500 hover:text-white active:bg-primary-400 rounded-lg transition-all duration-200 group touch-manipulation"
         >
-          <LogOut className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
-          {(mobileMenuOpen || expanded) && <span className="font-medium">Logout</span>}
+          <LogOut className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-white group-hover:text-white" />
+          {(mobileMenuOpen || expanded) && <span className="text-sm sm:text-base font-medium">Logout</span>}
         </button>
       </div>
       </div>
