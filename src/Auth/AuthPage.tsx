@@ -354,10 +354,10 @@ const AuthPage: React.FC = () => {
       <Navbar />
       
       {/* Hero Section with Auth Form */}
-      <section className="relative h-screen bg-white pt-20 pb-8 lg:pb-12">
-        <div className="px-6 sm:px-8 lg:px-12 h-full flex items-center">
+      <section className="relative h-screen bg-white pt-20 pb-8 lg:pb-12 safe-area-top safe-area-bottom">
+        <div className="px-4 sm:px-6 lg:px-8 xl:px-12 h-full flex items-center">
           {/* Background Image Container */}
-          <div className="relative w-full h-[95%] overflow-hidden rounded-md shadow-2xl">
+          <div className="relative w-full h-[95%] overflow-hidden rounded-lg sm:rounded-xl shadow-2xl">
             <img
               src="/home.jpg"
               alt="Students learning together"
@@ -367,11 +367,12 @@ const AuthPage: React.FC = () => {
             
             
             {/* Content */}
-            <div className="absolute inset-0 px-6 sm:px-8 lg:px-12">
-              {/* Auth Form - Bottom Left */}
-              <div className="absolute bottom-12 left-6 sm:left-8 lg:left-12 max-w-md w-full">
-                <div className="mb-6">
-                  <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+            <div className="absolute inset-0 px-4 sm:px-6 lg:px-12 overflow-y-auto scrollbar-thin">
+              {/* Auth Form - Bottom Left on desktop, centered on mobile */}
+              <div className="flex items-center min-h-full py-8 lg:py-0 lg:absolute lg:bottom-12 lg:left-12 max-w-md w-full lg:w-auto">
+                <div className="w-full">
+                <div className="mb-6 sm:mb-8">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-3">
                     {authStep === 'email' 
                       ? 'Welcome Back' 
                       : authStep === 'setup-password'
@@ -432,17 +433,17 @@ const AuthPage: React.FC = () => {
                   {/* Email - Show during email step */}
                   {authStep === 'email' && (
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
+                      <label htmlFor="email" className="block text-sm sm:text-base font-medium text-white mb-2">
                         Email Address *
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="email"
                           id="email"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                          className="w-full pl-11 pr-4 py-3 sm:py-3.5 min-h-[48px] text-sm sm:text-base bg-white/95 backdrop-blur-sm border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm touch-manipulation"
                           placeholder="Enter your email"
                           required
                         />
@@ -453,16 +454,16 @@ const AuthPage: React.FC = () => {
                   {/* Email display for password and setup-password steps */}
                   {(authStep === 'password' || authStep === 'setup-password') && (
                     <div>
-                      <label className="block text-sm font-medium text-white mb-1">
+                      <label className="block text-sm sm:text-base font-medium text-white mb-2">
                         Email Address
                       </label>
-                      <div className="flex items-center space-x-3 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md p-2.5">
-                        <Mail className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-700">{formData.email}</span>
+                      <div className="flex items-center space-x-3 bg-white/95 backdrop-blur-sm border-2 border-white/30 rounded-lg p-3 sm:p-3.5 min-h-[48px]">
+                        <Mail className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                        <span className="text-gray-700 text-sm sm:text-base flex-1 truncate">{formData.email}</span>
                         <button
                           type="button"
                           onClick={handleBackToEmail}
-                          className="text-primary-600 text-sm hover:text-primary-700 underline ml-auto"
+                          className="text-primary-600 text-sm sm:text-base hover:text-primary-700 active:text-primary-800 underline flex-shrink-0 min-h-[32px] touch-manipulation"
                         >
                           Change
                         </button>
@@ -473,26 +474,27 @@ const AuthPage: React.FC = () => {
                   {/* Password - Show during password step */}
                   {authStep === 'password' && (
                     <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
+                      <label htmlFor="password" className="block text-sm sm:text-base font-medium text-white mb-2">
                         Password *
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           id="password"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          className="w-full pl-10 pr-12 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                          className="w-full pl-11 pr-14 py-3 sm:py-3.5 min-h-[48px] text-sm sm:text-base bg-white/95 backdrop-blur-sm border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm touch-manipulation"
                           placeholder="Enter your password"
                           required
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 active:text-gray-700 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                         </button>
                       </div>
                     </div>
@@ -552,7 +554,7 @@ const AuthPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting || isCheckingEmail || isCreatingAuth}
-                    className="w-full bg-primary-600 text-white py-2.5 px-4 rounded-md font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2"
+                    className="w-full bg-primary-600 text-white py-3 sm:py-3.5 px-4 rounded-lg font-semibold hover:bg-primary-700 active:bg-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 min-h-[48px] text-sm sm:text-base touch-manipulation shadow-lg"
                   >
                     {(isSubmitting || isCheckingEmail || isCreatingAuth) ? (
                       <>
@@ -606,10 +608,11 @@ const AuthPage: React.FC = () => {
                 )}
 
                 {/* Help Text */}
-                <div className="mt-4 text-center">
-                  <p className="text-white/60 text-xs">
+                <div className="mt-6 text-center">
+                  <p className="text-white/80 text-xs sm:text-sm">
                     Don't have access? Contact your administrator.
                   </p>
+                </div>
                 </div>
               </div>
             </div>
