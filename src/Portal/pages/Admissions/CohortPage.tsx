@@ -5,7 +5,7 @@ import {
   ArrowLeft, 
   Users, 
   Calendar, 
-  DollarSign, 
+  Tag, 
   User, 
   BookOpen,
   Clock,
@@ -15,8 +15,8 @@ import {
 import { FirestoreService, ProgramService } from '../../../services/firestore';
 import { useAuthContext } from '../../../contexts/AuthContext';
 
-interface CohortData {
-  cohortId: string;
+interface IntakeData {
+  intakeId: string;
   name: string;
   programId: string;
   startDate: string;
@@ -45,7 +45,7 @@ interface Staff {
   role: string;
 }
 
-const CohortPage: React.FC = () => {
+const IntakePage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { userProfile } = useAuthContext();
@@ -57,8 +57,8 @@ const CohortPage: React.FC = () => {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [formData, setFormData] = useState<CohortData>({
-    cohortId: '',
+  const [formData, setFormData] = useState<IntakeData>({
+    intakeId: '',
     name: '',
     programId: '',
     startDate: '',
@@ -75,9 +75,9 @@ const CohortPage: React.FC = () => {
   useEffect(() => {
     loadData();
     if (isEditing) {
-      loadCohort();
+      loadIntake();
     } else {
-      generateCohortId();
+      generateIntakeId();
     }
   }, [id]);
 
@@ -102,33 +102,33 @@ const CohortPage: React.FC = () => {
     }
   };
 
-  const loadCohort = async () => {
+  const loadIntake = async () => {
     if (!id) return;
     
     setLoading(true);
     try {
-      const result = await FirestoreService.getById('cohorts', id);
+      const result = await FirestoreService.getById('intakes', id);
       if (result.success && result.data) {
-        setFormData(result.data as unknown as CohortData);
+        setFormData(result.data as unknown as IntakeData);
       }
     } catch (error) {
-      console.error('Error loading cohort:', error);
+      console.error('Error loading intake:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateCohortId = async () => {
+  const generateIntakeId = async () => {
     try {
-      const result = await FirestoreService.getAll('cohorts');
+      const result = await FirestoreService.getAll('intakes');
       if (result.success && result.data) {
         const count = result.data.length + 1;
-        const cohortId = `CHT${count.toString().padStart(3, '0')}`;
-        setFormData(prev => ({ ...prev, cohortId }));
+        const intakeId = `INT${count.toString().padStart(3, '0')}`;
+        setFormData(prev => ({ ...prev, intakeId }));
       }
     } catch (error) {
-      console.error('Error generating cohort ID:', error);
-      setFormData(prev => ({ ...prev, cohortId: 'CHT001' }));
+      console.error('Error generating intake ID:', error);
+      setFormData(prev => ({ ...prev, intakeId: 'INT001' }));
     }
   };
 
@@ -136,11 +136,11 @@ const CohortPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Cohort name is required';
+      newErrors.name = 'Intake name is required';
     }
 
-    if (!formData.cohortId.trim()) {
-      newErrors.cohortId = 'Cohort ID is required';
+    if (!formData.intakeId.trim()) {
+      newErrors.intakeId = 'Intake ID is required';
     }
 
     if (!formData.programId) {
@@ -188,7 +188,7 @@ const CohortPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof CohortData, value: any) => {
+  const handleInputChange = (field: keyof IntakeData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear error when user starts typing
@@ -218,34 +218,34 @@ const CohortPage: React.FC = () => {
 
     setSaving(true);
     try {
-      const cohortData = {
+      const intakeData = {
         ...formData
         // Note: createdAt and updatedAt will be automatically added by FirestoreService
       };
 
-      console.log('Cohort data to save:', cohortData);
+      console.log('Intake data to save:', intakeData);
 
       let result;
       if (isEditing) {
-        console.log('Updating existing cohort...');
-        result = await FirestoreService.update('cohorts', id!, cohortData);
+        console.log('Updating existing intake...');
+        result = await FirestoreService.update('intakes', id!, intakeData);
       } else {
-        console.log('Creating new cohort...');
-        result = await FirestoreService.create('cohorts', cohortData);
+        console.log('Creating new intake...');
+        result = await FirestoreService.create('intakes', intakeData);
       }
 
       console.log('💾 Save result:', result);
 
       if (result.success) {
-        console.log('✅ Cohort saved successfully to Firestore!');
-        console.log('📝 Collection: cohorts');
+        console.log('✅ Intake saved successfully to Firestore!');
+        console.log('📝 Collection: intakes');
         console.log('🆔 Document ID:', isEditing ? id : (result as any).id);
-        alert(`✅ Cohort ${isEditing ? 'updated' : 'created'} successfully!`);
+        alert(`✅ Intake ${isEditing ? 'updated' : 'created'} successfully!`);
         
         // Check if we came from Learning module
-        const referrer = sessionStorage.getItem('cohort_referrer');
+        const referrer = sessionStorage.getItem('intake_referrer');
         if (referrer === 'learning') {
-          sessionStorage.removeItem('cohort_referrer');
+          sessionStorage.removeItem('intake_referrer');
           sessionStorage.setItem('refresh_learning', 'true');
           navigate('/portal/learning');
         } else {
@@ -253,11 +253,11 @@ const CohortPage: React.FC = () => {
         }
       } else {
         console.error('❌ Save failed with result:', result);
-        alert(`❌ Failed to ${isEditing ? 'update' : 'create'} cohort. Please try again.`);
+        alert(`❌ Failed to ${isEditing ? 'update' : 'create'} intake. Please try again.`);
       }
     } catch (error) {
-      console.error('Error saving cohort:', error);
-      alert(`❌ Error ${isEditing ? 'updating' : 'creating'} cohort. Please try again.`);
+      console.error('Error saving intake:', error);
+      alert(`❌ Error ${isEditing ? 'updating' : 'creating'} intake. Please try again.`);
     } finally {
       setSaving(false);
     }
@@ -288,10 +288,10 @@ const CohortPage: React.FC = () => {
             </button>
             <div>
               <h1 className="text-4xl font-bold mb-2">
-                {isEditing ? 'Edit Cohort' : 'Create New Cohort'}
+                {isEditing ? 'Edit Intake' : 'Create New Intake'}
               </h1>
               <p className="text-lg text-primary-100">
-                {isEditing ? 'Update cohort information and settings' : 'Set up a new cohort for student enrollment'}
+                {isEditing ? 'Update intake information and settings' : 'Set up a new intake for student enrollment'}
               </p>
             </div>
           </div>
@@ -314,7 +314,7 @@ const CohortPage: React.FC = () => {
             className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-5 w-5" />
-            <span>{saving ? 'Saving...' : 'Save Cohort'}</span>
+            <span>{saving ? 'Saving...' : 'Save Intake'}</span>
           </button>
         </div>
       </div>
@@ -335,7 +335,7 @@ const CohortPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Cohort Name <span className="text-red-500">*</span>
+                  Intake Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -344,7 +344,7 @@ const CohortPage: React.FC = () => {
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="e.g., Sales Excellence 2024 Q1"
+                  placeholder="e.g., Sales Excellence 2024 Q1 Intake"
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
@@ -356,21 +356,21 @@ const CohortPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Cohort ID <span className="text-red-500">*</span>
+                  Intake ID <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.cohortId}
-                  onChange={(e) => handleInputChange('cohortId', e.target.value)}
+                  value={formData.intakeId}
+                  onChange={(e) => handleInputChange('intakeId', e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors.cohortId ? 'border-red-300' : 'border-gray-300'
+                    errors.intakeId ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="CHT001"
+                  placeholder="INT001"
                 />
-                {errors.cohortId && (
+                {errors.intakeId && (
                   <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
                     <AlertCircle className="h-4 w-4" />
-                    <span>{errors.cohortId}</span>
+                    <span>{errors.intakeId}</span>
                   </p>
                 )}
               </div>
@@ -427,7 +427,7 @@ const CohortPage: React.FC = () => {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Brief description of the cohort..."
+                                  placeholder="Brief description of the intake..."
               />
             </div>
           </div>
@@ -508,7 +508,7 @@ const CohortPage: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-6">
               <div className="bg-green-100 p-2 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-600" />
+                <Tag className="h-5 w-5 text-green-600" />
               </div>
               <h2 className="text-xl font-bold text-secondary-800">Financial & Management</h2>
             </div>
@@ -520,13 +520,13 @@ const CohortPage: React.FC = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-secondary-500 sm:text-sm">$</span>
+                    <span className="text-secondary-500 sm:text-sm">KES</span>
                   </div>
                   <input
                     type="number"
                     value={formData.programCost}
                     onChange={(e) => handleInputChange('programCost', parseFloat(e.target.value) || 0)}
-                    className={`w-full pl-7 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                       errors.programCost ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="0.00"
@@ -597,7 +597,7 @@ const CohortPage: React.FC = () => {
         <div className="space-y-6">
           {/* Summary Card */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-secondary-800 mb-4">Cohort Summary</h3>
+            <h3 className="text-lg font-bold text-secondary-800 mb-4">Intake Summary</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-secondary-600">Status</span>
@@ -621,7 +621,7 @@ const CohortPage: React.FC = () => {
               {formData.programCost > 0 && (
                 <div className="flex items-center justify-between">
                   <span className="text-secondary-600">Cost</span>
-                  <span className="text-secondary-800 font-medium">${formData.programCost.toLocaleString()}</span>
+                  <span className="text-secondary-800 font-medium">KES {formData.programCost.toLocaleString()}</span>
                 </div>
               )}
               
@@ -684,4 +684,4 @@ const CohortPage: React.FC = () => {
   );
 };
 
-export default CohortPage; 
+export default IntakePage; 

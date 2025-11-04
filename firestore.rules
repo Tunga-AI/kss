@@ -1,0 +1,285 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for user verification and role checking
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isRole(role) {
+      return isEmailVerified() && getUserRole() == role;
+    }
+    
+    function isAdmin() {
+      return isRole('admin');
+    }
+    
+    function isStaff() {
+      return isRole('staff') || isAdmin();
+    }
+    
+    function isLearner() {
+      return isRole('learner') || isStaff();
+    }
+    
+    function isApplicant() {
+      return isRole('applicant');
+    }
+    
+    // Users collection - Critical for authentication
+    match /users/{userId} {
+      // Read: Users can read their own profile, staff can read learner profiles
+      allow read: if isOwner(userId) || 
+                     (isStaff() && get(/databases/$(database)/documents/users/$(userId)).data.role in ['learner', 'applicant']) ||
+                     (isAdmin());
+      
+      // Create: Only during initial registration (no auth required for creation)
+      allow create: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       request.resource.data.uid == userId &&
+                       request.resource.data.role == 'applicant' &&
+                       request.resource.data.isEmailVerified == false;
+      
+      // Update: Users can update their own profile, admins can update any
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // Delete: Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // Applicants collection - For admission applications
+    match /applicants/{applicationId} {
+      // Read: Applicants can read their own application, staff can read all
+      allow read: if isStaff() || 
+                     (isApplicant() && resource.data.email == request.auth.token.email);
+      
+      // Create: Only verified applicants can create applications
+      allow create: if isEmailVerified() && isApplicant() &&
+                       request.resource.data.email == request.auth.token.email;
+      
+      // Update: Applicants can update their own, staff can update any
+      allow update: if (isApplicant() && resource.data.email == request.auth.token.email) ||
+                       isStaff();
+      
+      // Delete: Only admins can delete applications
+      allow delete: if isAdmin();
+    }
+    
+    // Staff collection - For staff management
+    match /staff/{staffId} {
+      // Read: Staff can read their own profile, admins can read all
+      allow read: if isStaff() || 
+                     (isEmailVerified() && resource.data.email == request.auth.token.email);
+      
+      // Create/Update/Delete: Only admins can manage staff
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Learners collection - For enrolled students
+    match /learners/{learnerId} {
+      // Read: Learners can read their own profile, staff can read all
+      allow read: if isStaff() || 
+                     (isLearner() && resource.data.email == request.auth.token.email);
+      
+      // Create/Update: Staff can manage learners
+      allow create, update: if isStaff();
+      
+      // Delete: Only admins can delete learners
+      allow delete: if isAdmin();
+    }
+    
+    // Programs collection - For course programs
+    match /programs/{programId} {
+      // Read: All authenticated users can read programs
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage programs
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Cohorts collection - For program cohorts
+    match /cohorts/{cohortId} {
+      // Read: All authenticated users can read cohorts
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage cohorts
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Events collection - For events and activities
+    match /events/{eventId} {
+      // Read: All authenticated users can read events
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage events
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Event attendees - For event registrations
+    match /event_attendees/{attendeeId} {
+      // Read: Staff can read all, users can read their own
+      allow read: if isStaff() || 
+                     (isEmailVerified() && resource.data.email == request.auth.token.email);
+      
+      // Create: Any verified user can register for events
+      allow create: if isEmailVerified();
+      
+      // Update: Staff can update, users can update their own
+      allow update: if isStaff() || 
+                       (isEmailVerified() && resource.data.email == request.auth.token.email);
+      
+      // Delete: Only admins can delete registrations
+      allow delete: if isAdmin();
+    }
+    
+    // Sessions collection - For class sessions
+    match /sessions/{sessionId} {
+      // Read: Staff and learners can read sessions
+      allow read: if isLearner();
+      
+      // Create/Update/Delete: Only staff can manage sessions
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Session content - For class materials
+    match /session_content/{contentId} {
+      // Read: Staff and learners can read content
+      allow read: if isLearner();
+      
+      // Create/Update: Staff can manage content
+      allow create, update: if isStaff();
+      
+      // Delete: Only admins can delete content
+      allow delete: if isAdmin();
+    }
+    
+    // Attendance collection - For tracking attendance
+    match /attendance/{attendanceId} {
+      // Read: Staff can read all, learners can read their own
+      allow read: if isStaff() || 
+                     (isLearner() && resource.data.studentId == request.auth.uid);
+      
+      // Create/Update: Staff can manage attendance
+      allow create, update: if isStaff();
+      
+      // Delete: Only admins can delete attendance records
+      allow delete: if isAdmin();
+    }
+    
+    // Competency tests - For assessments
+    match /competencyTests/{testId} {
+      // Read: All authenticated users can read tests
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage tests
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Test attempts - For test submissions
+    match /testAttempts/{attemptId} {
+      // Read: Staff can read all, users can read their own
+      allow read: if isStaff() || 
+                     (isEmailVerified() && resource.data.applicantId == request.auth.uid);
+      
+      // Create: Any verified user can submit tests
+      allow create: if isEmailVerified() && 
+                       request.resource.data.applicantId == request.auth.uid;
+      
+      // Update: Only staff can update attempts (for grading)
+      allow update: if isStaff();
+      
+      // Delete: Only admins can delete attempts
+      allow delete: if isAdmin();
+    }
+    
+    // Application feedback - For admission feedback
+    match /applicationFeedback/{feedbackId} {
+      // Read: Staff can read all, applicants can read their own
+      allow read: if isStaff() || 
+                     (isApplicant() && resource.data.applicantEmail == request.auth.token.email);
+      
+      // Create/Update: Only staff can provide feedback
+      allow create, update: if isStaff();
+      
+      // Delete: Only admins can delete feedback
+      allow delete: if isAdmin();
+    }
+    
+    // Jobs collection - For recruitment
+    match /jobs/{jobId} {
+      // Read: All authenticated users can read jobs
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage jobs
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Candidates collection - For job applications
+    match /candidates/{candidateId} {
+      // Read: Staff can read all, candidates can read their own
+      allow read: if isStaff() || 
+                     (isEmailVerified() && resource.data.email == request.auth.token.email);
+      
+      // Create: Any verified user can apply
+      allow create: if isEmailVerified();
+      
+      // Update: Staff can update, candidates can update their own
+      allow update: if isStaff() || 
+                       (isEmailVerified() && resource.data.email == request.auth.token.email);
+      
+      // Delete: Only admins can delete candidates
+      allow delete: if isAdmin();
+    }
+    
+    // Organizations collection - For recruitment partners
+    match /organizations/{organizationId} {
+      // Read: All authenticated users can read organizations
+      allow read: if isEmailVerified();
+      
+      // Create/Update/Delete: Only staff can manage organizations
+      allow create, update, delete: if isStaff();
+    }
+    
+    // Customers collection - For CRM and lead management (TEMPORARY DEBUG)
+    match /customers/{customerId} {
+      // TEMPORARY: Allow all authenticated users (for debugging)
+      allow read, write: if request.auth != null;
+    }
+    
+    // Letter templates - For automated communications
+    match /letterTemplates/{templateId} {
+      // Read: Only staff can read templates
+      allow read: if isStaff();
+      
+      // Create/Update/Delete: Only admins can manage templates
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // System settings - For application configuration
+    match /systemSettings/{settingId} {
+      // Read: Only staff can read settings
+      allow read: if isStaff();
+      
+      // Create/Update/Delete: Only admins can manage settings
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Default deny all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

@@ -1,10 +1,77 @@
-@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Default color values that can be overridden dynamically */
+  --color-primary-50: #F0F8FB;
+  --color-primary-100: #E1F1F7;
+  --color-primary-200: #C3E3EF;
+  --color-primary-300: #9CCEE3;
+  --color-primary-400: #6FB3D3;
+  --color-primary-500: #4590AD;
+  --color-primary-600: #3A7B94;
+  --color-primary-700: #2F647A;
+  --color-primary-800: #254D60;
+  --color-primary-900: #1A3646;
+
+  --color-secondary-50: #FDF2F2;
+  --color-secondary-100: #FCE5E4;
+  --color-secondary-200: #F9CBCA;
+  --color-secondary-300: #F4A5A3;
+  --color-secondary-400: #EC7471;
+  --color-secondary-500: #BD2D2B;
+  --color-secondary-600: #A02624;
+  --color-secondary-700: #831F1D;
+  --color-secondary-800: #661816;
+  --color-secondary-900: #4A110F;
+
+  --color-accent-50: #FDF8F0;
+  --color-accent-100: #FBF1E1;
+  --color-accent-200: #F7E3C3;
+  --color-accent-300: #F1CF9C;
+  --color-accent-400: #E9B56F;
+  --color-accent-500: #E39E41;
+  --color-accent-600: #C18637;
+  --color-accent-700: #9E6E2D;
+  --color-accent-800: #7B5623;
+  --color-accent-900: #583E19;
+
+  --color-neutral-50: #F8F8FB;
+  --color-neutral-100: #F1F0F7;
+  --color-neutral-200: #E3E1EF;
+  --color-neutral-300: #CFC9DF;
+  --color-neutral-400: #B0A6C7;
+  --color-neutral-500: #7D6FA0;
+  --color-neutral-600: #5A4B7A;
+  --color-neutral-700: #423860;
+  --color-neutral-800: #2C2547;
+  --color-neutral-900: #1E184E;
+
+  /* Font variables */
+  --font-primary: 'Plus Jakarta Sans', sans-serif;
+  --font-secondary: 'Plus Jakarta Sans', sans-serif;
+  --font-accent: 'Plus Jakarta Sans', sans-serif;
+}
+
 body {
-  font-family: 'Urbanist', sans-serif;
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Brand typography classes */
+.heading-primary {
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.heading-secondary {
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.body-text {
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
 }
 
 @layer utilities {
@@ -14,5 +81,62 @@ body {
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Responsive text utilities */
+  .text-responsive {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl xl:text-4xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl xl:text-5xl;
+  }
+
+  /* Responsive padding utilities */
+  .px-responsive {
+    @apply px-4 sm:px-6 lg:px-8 xl:px-12;
+  }
+
+  .py-responsive {
+    @apply py-4 sm:py-6 lg:py-8 xl:py-12;
+  }
+
+  /* Responsive margin utilities */
+  .mx-responsive {
+    @apply mx-4 sm:mx-6 lg:mx-8 xl:mx-12;
+  }
+
+  .my-responsive {
+    @apply my-4 sm:my-6 lg:my-8 xl:my-12;
+  }
+
+  /* Container utilities */
+  .container-responsive {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Grid utilities */
+  .grid-responsive-1 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2;
+  }
+
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
 }

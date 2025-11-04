@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Users, BookOpen, Award, CheckCircle, Calendar, Target, Star, Plus, Edit, Trash2, Eye, Play } from 'lucide-react';
+import { ArrowLeft, Clock, Users, BookOpen, Award, CheckCircle, Calendar, Target, Star, Plus, Edit, Trash2, Eye, Play, Brain, TrendingUp, X } from 'lucide-react';
 import { FirestoreService } from '../../../services/firestore';
+import { 
+  COMPETENCY_DEFINITIONS, 
+  SALES_QUESTION_BANK, 
+  generateRandomQuestionSet, 
+  QUESTION_SET_SIZE, 
+  TOTAL_QUESTION_SETS,
+  TEST_TIME_LIMIT 
+} from '../../../data/competencyDefinitions';
+import { useAuthContext } from '../../../contexts/AuthContext';
 
 interface TestQuestion {
   id: string;
@@ -45,18 +54,224 @@ interface TestAttempt {
     selectedAnswer: number;
     isCorrect: boolean;
     points: number;
+    competencyId: string;
   }[];
   totalScore: number;
   percentage: number;
   passed: boolean;
   status: 'in_progress' | 'completed' | 'abandoned';
   submittedAt?: string;
+  competencyScores?: {
+    [competencyId: string]: {
+      score: number;
+      maxScore: number;
+      percentage: number;
+      level: 'Needs Development' | 'Developing' | 'Proficient' | 'Advanced';
+    };
+  };
+  questionSetNumber: number;
 }
+
+interface CompetencyTestState extends CompetencyTest {
+  isPreGenerated: boolean;
+  questionSetNumber?: number;
+}
+
+interface TestResultsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  testScore: {
+    score: number;
+    percentage: number;
+    passed: boolean;
+    competencyScores?: {
+      [competencyId: string]: {
+        score: number;
+        maxScore: number;
+        percentage: number;
+        level: 'Needs Development' | 'Developing' | 'Proficient' | 'Advanced';
+      };
+    };
+  } | null;
+  test: CompetencyTestState;
+}
+
+const TestResultsModal: React.FC<TestResultsModalProps> = ({ isOpen, onClose, testScore, test }) => {
+  if (!isOpen || !testScore) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h3 className="text-xl font-bold text-secondary-800">Assessment Results</h3>
+            <p className="text-secondary-600">{test.title}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-secondary-400 hover:text-secondary-600">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          <div className="space-y-6">
+            {/* Score Summary - Education Tab Style */}
+            <div>
+              <h2 className="text-2xl font-bold text-secondary-800 mb-6">Performance Overview</h2>
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="flex items-center space-x-4">
+                  <div className={`flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center ${testScore.passed ? 'bg-green-600' : 'bg-red-600'}`}>
+                    {testScore.passed ? (
+                      <CheckCircle className="h-8 w-8 text-white" />
+                    ) : (
+                      <span className="text-white text-2xl">✗</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-secondary-800 mb-1">
+                      {testScore.passed ? 'Assessment Passed!' : 'Assessment Completed'}
+                    </h3>
+                    <p className={`text-lg ${testScore.passed ? 'text-green-700' : 'text-red-700'} mb-1`}>
+                      Final Score: {testScore.percentage}% ({testScore.score}/{test.totalPoints} points)
+                    </p>
+                    <p className="text-secondary-600">
+                      {testScore.passed 
+                        ? 'Congratulations on passing the assessment!' 
+                        : `Passing score required: ${test.passingScore}%`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Competency Analysis - Education Tab Style */}
+            {test.isPreGenerated && testScore.competencyScores && (
+              <div>
+                <h2 className="text-2xl font-bold text-secondary-800 mb-6">Skills & Competencies</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.entries(testScore.competencyScores)
+                    .filter(([_, scores]) => scores.maxScore > 0)
+                    .map(([competencyId, scores]) => {
+                      const competency = COMPETENCY_DEFINITIONS.find(c => c.id === competencyId);
+                      if (!competency) return null;
+                      
+                      const getLevelColor = (level: string) => {
+                        switch (level) {
+                          case 'Advanced': return 'bg-green-100 text-green-800';
+                          case 'Proficient': return 'bg-blue-100 text-blue-800';
+                          case 'Developing': return 'bg-yellow-100 text-yellow-800';
+                          case 'Needs Development': return 'bg-red-100 text-red-800';
+                          default: return 'bg-gray-100 text-gray-800';
+                        }
+                      };
+
+                      const getProgressColor = (percentage: number) => {
+                        if (percentage >= 90) return 'bg-green-600';
+                        if (percentage >= 75) return 'bg-blue-600';
+                        if (percentage >= 60) return 'bg-yellow-600';
+                        return 'bg-red-600';
+                      };
+
+                      return (
+                        <div key={competencyId} className="bg-gray-50 p-4 rounded-lg shadow-sm">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-semibold text-secondary-800">{competency.name}</h4>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(scores.level)}`}>
+                              {scores.level}
+                            </span>
+                          </div>
+                          
+                          <div className="mb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-secondary-600">Performance</span>
+                              <span className="text-sm font-medium text-secondary-800">
+                                {scores.score}/{scores.maxScore} ({scores.percentage}%)
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full transition-all duration-500 ${getProgressColor(scores.percentage)}`}
+                                style={{ width: `${Math.max(scores.percentage, 5)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <p className="text-sm text-secondary-600">{competency.description}</p>
+                        </div>
+                      );
+                    })
+                  }
+                </div>
+
+                {/* Development Recommendations - Education Tab Style */}
+                <div className="mt-6">
+                  {Object.entries(testScore.competencyScores).filter(([_, scores]) => scores.maxScore > 0 && scores.percentage < 75).length > 0 ? (
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <TrendingUp className="h-6 w-6 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-secondary-800">Development Recommendations</h3>
+                      </div>
+                      <div className="space-y-3">
+                        {Object.entries(testScore.competencyScores)
+                          .filter(([_, scores]) => scores.maxScore > 0 && scores.percentage < 75)
+                          .map(([competencyId, scores]) => {
+                            const competency = COMPETENCY_DEFINITIONS.find(c => c.id === competencyId);
+                            if (!competency) return null;
+                            
+                            return (
+                              <div key={competencyId} className="bg-blue-50 p-3 rounded-lg">
+                                <div className="flex items-start space-x-3">
+                                  <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                  <div>
+                                    <h4 className="font-medium text-blue-900">{competency.name}</h4>
+                                    <p className="text-sm text-blue-800 mt-1">
+                                      Focus on improving {competency.description.toLowerCase()}. 
+                                      Consider additional practice and training in this area.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <Star className="h-6 w-6 text-yellow-500" />
+                        <h3 className="text-lg font-semibold text-green-800">Outstanding Performance!</h3>
+                      </div>
+                      <p className="text-secondary-600">
+                        You've demonstrated excellent competency across all assessed areas. 
+                        Your skills are well-developed and you're ready to take on new challenges.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CompetencyTestPage: React.FC = () => {
   const { id, action } = useParams();
   const navigate = useNavigate();
-  const [test, setTest] = useState<CompetencyTest | null>(null);
+  const { user } = useAuthContext();
+  const [test, setTest] = useState<CompetencyTestState | null>(null);
   const [attempts, setAttempts] = useState<TestAttempt[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -70,10 +285,16 @@ const CompetencyTestPage: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [testStartTime, setTestStartTime] = useState<Date | null>(null);
   const [showResults, setShowResults] = useState(false);
-  const [testScore, setTestScore] = useState<{score: number, percentage: number, passed: boolean} | null>(null);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [testScore, setTestScore] = useState<{
+    score: number, 
+    percentage: number, 
+    passed: boolean,
+    competencyScores?: {[competencyId: string]: {score: number, maxScore: number, percentage: number, level: string}}
+  } | null>(null);
 
   useEffect(() => {
-    if (id && id !== 'new') {
+    if (id && id !== 'new' && id !== 'competency-assessment') {
       loadTest();
       loadAttempts();
       
@@ -81,6 +302,9 @@ const CompetencyTestPage: React.FC = () => {
       if (action === 'take') {
         setIsTakingTest(false); // Start with instructions
       }
+    } else if (id === 'competency-assessment') {
+      // Generate a dynamic competency assessment
+      generateCompetencyAssessment();
     } else if (id === 'new') {
       setTest({
         id: '',
@@ -96,7 +320,8 @@ const CompetencyTestPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
         totalPoints: 0,
         difficulty: 'intermediate',
-        tags: []
+        tags: [],
+        isPreGenerated: false
       });
       setIsEditing(true);
       setLoading(false);
@@ -167,6 +392,97 @@ const CompetencyTestPage: React.FC = () => {
       averageScore: Math.round(averageScore * 10) / 10,
       passRate: Math.round(passRate * 10) / 10
     };
+  };
+
+  const generateCompetencyAssessment = () => {
+    // Generate a random question set (1-10)
+    const setNumber = Math.floor(Math.random() * TOTAL_QUESTION_SETS) + 1;
+    const questions = generateRandomQuestionSet(setNumber);
+    
+    // Convert to TestQuestion format
+    const testQuestions: TestQuestion[] = questions.map((q, index) => ({
+      id: q.id,
+      questionText: q.questionText,
+      questionType: 'multiple_choice',
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      points: q.points,
+      explanation: q.explanation,
+      order: index + 1
+    }));
+
+    const totalPoints = testQuestions.reduce((sum, q) => sum + q.points, 0);
+
+    const competencyTest: CompetencyTestState = {
+      id: 'competency-assessment',
+      title: 'Sales Competency Assessment',
+      description: `Comprehensive assessment covering key sales competencies including prospecting, presentation skills, objection handling, closing techniques, relationship building, and customer service. This assessment contains ${QUESTION_SET_SIZE} questions and must be completed within ${TEST_TIME_LIMIT} minutes.`,
+      category: 'Sales Competencies',
+      timeLimit: TEST_TIME_LIMIT,
+      passingScore: 70,
+      questions: testQuestions,
+      status: 'active',
+      createdBy: 'system',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      totalPoints,
+      difficulty: 'intermediate',
+      tags: ['sales', 'competency', 'assessment'],
+      isPreGenerated: true,
+      questionSetNumber: setNumber
+    };
+
+    setTest(competencyTest);
+    setLoading(false);
+  };
+
+  const calculateCompetencyScores = (answers: any[], questions: any[]) => {
+    const competencyScores: {[competencyId: string]: {score: number, maxScore: number, percentage: number, level: string}} = {};
+    
+    // Initialize competency scores
+    COMPETENCY_DEFINITIONS.forEach(comp => {
+      competencyScores[comp.id] = {
+        score: 0,
+        maxScore: 0,
+        percentage: 0,
+        level: 'Needs Development'
+      };
+    });
+
+    // Calculate scores for each competency
+    answers.forEach(answer => {
+      const question = SALES_QUESTION_BANK.find(q => q.id === answer.questionId);
+      if (question) {
+        const competencyId = question.competencyId;
+        if (competencyScores[competencyId]) {
+          competencyScores[competencyId].maxScore += question.points;
+          if (answer.isCorrect) {
+            competencyScores[competencyId].score += question.points;
+          }
+        }
+      }
+    });
+
+    // Calculate percentages and levels
+    Object.keys(competencyScores).forEach(competencyId => {
+      const competency = competencyScores[competencyId];
+      if (competency.maxScore > 0) {
+        competency.percentage = Math.round((competency.score / competency.maxScore) * 100);
+        
+        // Assign proficiency level
+        if (competency.percentage >= 90) {
+          competency.level = 'Advanced';
+        } else if (competency.percentage >= 75) {
+          competency.level = 'Proficient';
+        } else if (competency.percentage >= 60) {
+          competency.level = 'Developing';
+        } else {
+          competency.level = 'Needs Development';
+        }
+      }
+    });
+
+    return competencyScores;
   };
 
   const getDifficultyColor = (difficulty: CompetencyTest['difficulty']) => {
@@ -302,11 +618,16 @@ const CompetencyTestPage: React.FC = () => {
       const points = isCorrect ? question.points : 0;
       totalScore += points;
 
+      // Find competency for this question
+      const salesQuestion = SALES_QUESTION_BANK.find(q => q.id === question.id);
+      const competencyId = salesQuestion?.competencyId || 'unknown';
+
       return {
         questionId: question.id,
         selectedAnswer,
         isCorrect,
-        points
+        points,
+        competencyId
       };
     });
 
@@ -314,11 +635,14 @@ const CompetencyTestPage: React.FC = () => {
     const passed = percentage >= test.passingScore;
     const timeSpent = Math.round((new Date().getTime() - testStartTime.getTime()) / 1000 / 60); // minutes
 
+    // Calculate competency scores if this is a pre-generated test
+    const competencyScores = test.isPreGenerated ? calculateCompetencyScores(answers, test.questions) : undefined;
+
     const testAttempt: Partial<TestAttempt> = {
       testId: test.id,
-      applicantId: 'current-user', // This would come from auth context
-      applicantName: 'Test User', // This would come from auth context
-      applicantEmail: 'test@example.com', // This would come from auth context
+      applicantId: user?.uid || 'current-user',
+      applicantName: user?.displayName || 'Test User',
+      applicantEmail: user?.email || 'test@example.com',
       startTime: testStartTime.toISOString(),
       endTime: new Date().toISOString(),
       timeSpent,
@@ -327,7 +651,9 @@ const CompetencyTestPage: React.FC = () => {
       percentage,
       passed,
       status: 'completed',
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      competencyScores,
+      questionSetNumber: test.questionSetNumber || 1
     };
 
     try {
@@ -338,10 +664,15 @@ const CompetencyTestPage: React.FC = () => {
       console.error('Error saving test attempt:', error);
     }
 
-    // Show results
-    setTestScore({ score: totalScore, percentage, passed });
-    setShowResults(true);
+    // Show results in modal
+    setTestScore({ 
+      score: totalScore, 
+      percentage, 
+      passed, 
+      competencyScores 
+    });
     setIsTakingTest(false);
+    setShowResultsModal(true);
   };
 
   const formatTime = (seconds: number) => {
@@ -393,12 +724,18 @@ const CompetencyTestPage: React.FC = () => {
             <div>
               <h1 className="text-4xl font-bold mb-2">
                 {id === 'new' ? 'New Competency Test' : 
+                 id === 'competency-assessment' && action === 'take' ? 'Sales Competency Assessment' :
+                 id === 'competency-assessment' && action === 'results' ? 'Competency Assessment Results' :
+                 id === 'competency-assessment' ? 'Sales Competency Assessment' :
                  action === 'take' ? `Taking: ${test.title}` : 
                  action === 'results' ? `Results: ${test.title}` : 
                  test.title}
               </h1>
               <p className="text-lg text-primary-100">
                 {id === 'new' ? 'Create a new competency test to assess applicant skills' : 
+                 id === 'competency-assessment' && action === 'take' ? '15 randomized questions covering key sales competencies • 30 minutes • Detailed skills analysis' :
+                 id === 'competency-assessment' && action === 'results' ? 'View detailed competency breakdown and development recommendations' :
+                 id === 'competency-assessment' ? 'Comprehensive assessment of sales skills and competencies with personalized feedback' :
                  action === 'take' ? `${test.questions.length} questions • ${test.timeLimit} minutes • Pass at ${test.passingScore}%` :
                  action === 'results' ? `View test results and performance analytics` :
                  'Manage test details, questions, and view results'}
@@ -437,7 +774,11 @@ const CompetencyTestPage: React.FC = () => {
               </>
             )}
             <div className="bg-white bg-opacity-20 p-4 rounded-xl">
-              <BookOpen className="h-8 w-8 text-white" />
+              {id === 'competency-assessment' ? (
+                <Brain className="h-8 w-8 text-white" />
+              ) : (
+                <BookOpen className="h-8 w-8 text-white" />
+              )}
             </div>
           </div>
         </div>
@@ -453,21 +794,36 @@ const CompetencyTestPage: React.FC = () => {
                 /* Pre-test Instructions */
                 <div className="text-center space-y-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-secondary-800 mb-4">Ready to Take the Test?</h2>
+                    <h2 className="text-3xl font-bold text-secondary-800 mb-4">
+                      {id === 'competency-assessment' ? 'Ready to Take the Sales Competency Assessment?' : 'Ready to Take the Test?'}
+                    </h2>
                     <p className="text-lg text-secondary-600 mb-6">
-                      Please read the instructions carefully before starting.
+                      {id === 'competency-assessment' 
+                        ? 'This assessment will evaluate your sales skills across key competencies and provide personalized feedback.'
+                        : 'Please read the instructions carefully before starting.'}
                     </p>
                   </div>
                   
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-left max-w-2xl mx-auto">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-4">Test Instructions:</h3>
+                    <h3 className="text-lg font-semibold text-blue-800 mb-4">
+                      {id === 'competency-assessment' ? 'Assessment Instructions:' : 'Test Instructions:'}
+                    </h3>
                     <ul className="space-y-2 text-blue-700">
-                      <li>• You have <strong>{test.timeLimit} minutes</strong> to complete this test</li>
-                      <li>• The test contains <strong>{test.questions.length} questions</strong></li>
-                      <li>• You need <strong>{test.passingScore}%</strong> to pass</li>
+                      <li>• You have <strong>{test.timeLimit} minutes</strong> to complete this {id === 'competency-assessment' ? 'assessment' : 'test'}</li>
+                      <li>• {id === 'competency-assessment' 
+                        ? `The assessment contains ${test.questions.length} questions covering sales competencies`
+                        : `The test contains ${test.questions.length} questions`}</li>
+                      {id === 'competency-assessment' ? (
+                        <li>• You'll receive detailed feedback on your performance in each competency area</li>
+                      ) : (
+                        <li>• You need <strong>{test.passingScore}%</strong> to pass</li>
+                      )}
                       <li>• Once started, the timer cannot be paused</li>
                       <li>• Make sure you have a stable internet connection</li>
                       <li>• You can navigate between questions but submit only once</li>
+                      {id === 'competency-assessment' && (
+                        <li>• Questions are randomly selected to ensure a comprehensive evaluation</li>
+                      )}
                     </ul>
                   </div>
                   
@@ -475,35 +831,34 @@ const CompetencyTestPage: React.FC = () => {
                     onClick={startTest}
                     className="bg-primary-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary-700 transition-colors duration-200"
                   >
-                    Start Test
+                    {id === 'competency-assessment' ? 'Start Assessment' : 'Start Test'}
                   </button>
                 </div>
-              ) : showResults ? (
-                /* Test Results */
+              ) : !isTakingTest && testScore ? (
+                /* Test Completed - Simple message */
                 <div className="text-center space-y-6">
-                  <div className={`p-8 rounded-xl ${testScore?.passed ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'}`}>
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${testScore?.passed ? 'bg-green-600' : 'bg-red-600'}`}>
-                      {testScore?.passed ? (
-                        <CheckCircle className="h-8 w-8 text-white" />
-                      ) : (
-                        <span className="text-white text-2xl">✗</span>
-                      )}
+                  <div className="bg-blue-50 border-2 border-blue-200 p-8 rounded-xl">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 mb-4">
+                      <CheckCircle className="h-8 w-8 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-secondary-800 mb-2">
-                      {testScore?.passed ? 'Congratulations!' : 'Test Complete'}
+                      Test Completed!
                     </h2>
-                    <p className={`text-lg ${testScore?.passed ? 'text-green-700' : 'text-red-700'}`}>
-                      You scored {testScore?.percentage}% ({testScore?.score}/{test.totalPoints} points)
+                    <p className="text-lg text-blue-700 mb-4">
+                      Your assessment has been submitted successfully.
                     </p>
-                    <p className="text-secondary-600 mt-2">
-                      {testScore?.passed ? 'You have passed this test!' : `You need ${test.passingScore}% to pass.`}
-                    </p>
+                    <button
+                      onClick={() => setShowResultsModal(true)}
+                      className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+                    >
+                      View Detailed Results
+                    </button>
                   </div>
                   
                   <div className="flex justify-center space-x-4">
                     <button
                       onClick={() => navigate(`/portal/admissions/test/${test.id}`)}
-                      className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+                      className="border border-gray-300 text-secondary-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200"
                     >
                       View Test Details
                     </button>
@@ -597,7 +952,7 @@ const CompetencyTestPage: React.FC = () => {
                         onClick={submitTest}
                         className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
                       >
-                        <span>Submit Test</span>
+                        <span>{id === 'competency-assessment' ? 'Submit Assessment' : 'Submit Test'}</span>
                         <CheckCircle className="h-4 w-4" />
                       </button>
                     ) : (
@@ -706,7 +1061,7 @@ const CompetencyTestPage: React.FC = () => {
                 ) : (
                   <div className="prose prose-lg text-secondary-600">
                     <p className="text-lg leading-relaxed">{test.description}</p>
-                    <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-sm font-medium text-secondary-600 mb-1">Difficulty</p>
                         <p className={`text-lg font-semibold ${getDifficultyColor(test.difficulty)}`}>
@@ -845,7 +1200,7 @@ const CompetencyTestPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Question Type</label>
                   <select
@@ -962,6 +1317,14 @@ const CompetencyTestPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Test Results Modal */}
+      <TestResultsModal
+        isOpen={showResultsModal}
+        onClose={() => setShowResultsModal(false)}
+        testScore={testScore}
+        test={test!}
+      />
     </div>
   );
 };

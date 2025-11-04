@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSystemTheme } from '../hooks/useSystemTheme';
 
 interface LogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -15,6 +16,8 @@ const Logo: React.FC<LogoProps> = ({
   textSize = 'xl',
   onClick 
 }) => {
+  const { logoUrl, organizationName, organizationShortName } = useSystemTheme();
+  
   const sizeClasses = {
     xs: 'h-6 w-6',
     sm: 'h-8 w-8',
@@ -41,17 +44,21 @@ const Logo: React.FC<LogoProps> = ({
       onClick={handleClick}
     >
       <img 
-        src="/logo.png" 
-        alt="KSS Logo" 
+        src={logoUrl} 
+        alt={`${organizationShortName} Logo`} 
         className={`${sizeClasses[size]} object-contain`}
+        onError={(e) => {
+          // Fallback to default logo if custom logo fails to load
+          e.currentTarget.src = '/logo.png';
+        }}
       />
       {showText && (
         <div className="flex flex-col">
           <span className={`font-bold text-secondary-800 ${textSizeClasses[textSize]} leading-tight`}>
-            KSS
+            {organizationShortName}
           </span>
           <span className="text-xs text-secondary-600 font-medium -mt-1">
-            Kenya School of Sales
+            {organizationName}
           </span>
         </div>
       )}

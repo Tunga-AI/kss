@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read access to all files (for public website)
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+
+    // Allow authenticated users to upload media files
+    match /media/{allPaths=**} {
+      allow write: if request.auth != null;
+      allow read: if true;
+    }
+
+    // Allow authenticated users to manage their own uploads
+    match /uploads/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Restrict file uploads to images and videos only, with size limits
+    match /{allPaths=**} {
+      allow write: if request.auth != null &&
+        request.resource.size < 50 * 1024 * 1024 && // 50MB max
+        (request.resource.contentType.matches('image/.*') ||
+         request.resource.contentType.matches('video/.*'));
+    }
+  }
+}

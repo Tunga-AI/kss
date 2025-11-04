@@ -5,16 +5,27 @@ import {
   User,
   UserPlus,
   BookOpen,
-  Calendar,
   Users,
   UserCheck,
   GraduationCap,
   Briefcase,
-  Wallet,
   MessageSquare,
   Settings,
   LogOut,
   Shield,
+  Brain,
+  Phone,
+  MessageCircle,
+  Menu,
+  X,
+  Camera,
+  Calendar,
+  Library,
+  ClipboardList,
+  Trophy,
+  BarChart3,
+  Award,
+  Globe,
 } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
 import Logo from '../../components/Logo';
@@ -22,27 +33,64 @@ import Logo from '../../components/Logo';
 interface SidebarProps {
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
+  mobileMenuOpen: boolean;
+  onMobileMenuChange: (open: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange, mobileMenuOpen, onMobileMenuChange }) => {
   const location = useLocation();
   const { logout, userProfile, user } = useAuthContext();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Helper function to get profile path based on user role
+  const getProfilePath = (role: string) => {
+    switch (role) {
+      case 'applicant':
+        return '/portal/admissions/my-application';
+      case 'learner':
+      case 'facilitator':
+        return '/portal/learners/my-profile';
+      case 'instructor':
+        return '/portal/instructors/my-profile';
+      case 'staff':
+      case 'admin':
+        return '/portal/staff/my-profile';
+      default:
+        return '/portal/profile'; // Use a unique path to avoid conflicts
+    }
+  };
+
+  // Check user roles
+  const isInstructor = userProfile?.role === 'instructor';
+  const isLearner = userProfile?.role === 'learner';
+  const isFacilitator = userProfile?.role === 'facilitator';
+  const isAdmin = userProfile?.role === 'admin';
+  const isStaff = userProfile?.role === 'staff';
 
   // Define menu items for each role
   const allMenuItems = [
-    { path: '/portal/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'staff', 'learner'] },
-    { path: '/portal/profile', icon: User, label: 'My Profile', roles: ['admin', 'staff', 'learner', 'applicant'] },
-    { path: '/portal/admissions', icon: UserPlus, label: 'Admissions', roles: ['admin', 'staff', 'applicant'] },
-    { path: '/portal/programs', icon: BookOpen, label: 'Programs', roles: ['admin', 'staff', 'learner', 'applicant'] },
-    { path: '/portal/events', icon: Calendar, label: 'Events', roles: ['admin', 'staff', 'learner', 'applicant'] },
-    { path: '/portal/learners', icon: Users, label: 'Learners', roles: ['admin', 'staff', 'learner'] },
-    { path: '/portal/staff', icon: UserCheck, label: 'Staff', roles: ['admin', 'staff', 'learner'] },
-    { path: '/portal/users', icon: Shield, label: 'Users', roles: ['admin', 'staff'] },
-    { path: '/portal/learning', icon: GraduationCap, label: 'Learning', roles: ['admin', 'staff', 'learner'] },
-    { path: '/portal/recruitment', icon: Briefcase, label: 'Recruitment', roles: ['admin', 'staff'] },
-    { path: '/portal/finance', icon: Wallet, label: 'Finance', roles: ['admin', 'staff', 'learner'] },
-    { path: '/portal/communication', icon: MessageSquare, label: 'Communication', roles: ['admin', 'staff', 'learner', 'applicant'] },
-    { path: '/portal/settings', icon: Settings, label: 'Settings', roles: ['admin', 'staff', 'learner'] },
+    { path: '/portal/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'staff', 'instructor', 'learner', 'applicant', 'facilitator'] },
+    { path: getProfilePath(userProfile?.role || ''), icon: User, label: 'My Profile', roles: ['admin', 'staff', 'instructor', 'learner', 'applicant', 'facilitator'] },
+    { path: '/portal/admissions', icon: UserPlus, label: 'Admissions', roles: ['admin', 'staff'] },
+    { path: '/portal/programs', icon: BookOpen, label: 'Programs', roles: ['admin', 'staff', 'instructor', 'learner', 'applicant', 'facilitator'] },
+    { path: '/portal/learners', icon: Users, label: 'Learners', roles: ['admin', 'staff', 'instructor', 'learner', 'facilitator'] },
+    { path: '/portal/customers', icon: Phone, label: 'Sales CRM', roles: ['admin', 'staff'] },
+    { path: '/portal/staff', icon: UserCheck, label: 'Our Team', roles: ['admin', 'staff'] },
+    { path: '/portal/instructors', icon: Award, label: 'Instructors', roles: ['admin', 'staff'] },
+    { path: '/portal/users', icon: Shield, label: 'All Users', roles: ['admin'] },
+    { path: '/portal/learning', icon: GraduationCap, label: 'Learning', roles: ['admin', 'staff', 'instructor'] },
+    { path: '/portal/learning/schedule', icon: Calendar, label: 'My Schedule', roles: ['instructor'] },
+    { path: '/portal/learning/resources', icon: Library, label: 'Content Library', roles: ['instructor'] },
+    { path: '/portal/opportunities', icon: Briefcase, label: 'Jobs', roles: ['admin', 'staff', 'instructor', 'learner', 'facilitator'] },
+    { path: '/portal/communication', icon: MessageSquare, label: 'Notifications', roles: ['admin', 'staff', 'instructor', 'learner', 'applicant', 'facilitator'] },
+    { path: '/portal/whatsapp', icon: MessageCircle, label: 'WhatsApp', roles: ['admin', 'staff'] },
+    { path: '/portal/media', icon: Camera, label: 'Media', roles: ['admin', 'staff'] },
+    { path: '/portal/ai', icon: Brain, label: 'AI Assistant', roles: ['admin', 'staff'] },
+    { path: '/portal/settings', icon: Settings, label: 'Settings', roles: ['admin', 'staff'] },
   ];
 
   // Filter menu items based on user role  
@@ -53,8 +101,8 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange }) => {
     menuItems = [];
   } else if (!userProfile) {
     // User is logged in but userProfile hasn't loaded yet - show basic items
-    menuItems = allMenuItems.filter(item => 
-      ['Dashboard', 'My Profile', 'Programs', 'Events'].includes(item.label)
+    menuItems = allMenuItems.filter(item =>
+      ['Dashboard', 'My Profile', 'Programs'].includes(item.label)
     );
   } else {
     // User has a profile - filter based on role
@@ -62,11 +110,32 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange }) => {
     
     if (userRole === 'applicant') {
       // Applicant - limited access
-      menuItems = allMenuItems.filter(item => 
-        ['My Profile', 'Admissions', 'Programs', 'Events', 'Communication'].includes(item.label)
+      menuItems = allMenuItems.filter(item =>
+        ['Dashboard', 'My Profile', 'Programs', 'Notifications'].includes(item.label)
       );
+    } else if (isLearner) {
+      // Learners should use LearnerSidebar instead, but fallback to basic items
+      menuItems = allMenuItems.filter(item =>
+        ['Dashboard', 'My Profile', 'Programs', 'Learners', 'Jobs', 'Notifications'].includes(item.label)
+      );
+    } else if (isFacilitator) {
+      // Facilitators should use FacilitatorSidebar instead, but fallback to basic items
+      menuItems = allMenuItems.filter(item =>
+        ['Dashboard', 'My Profile', 'Programs', 'Learners', 'Jobs', 'Notifications'].includes(item.label)
+      );
+    } else if (isInstructor) {
+      // Instructors - focused on teaching and learner management
+      menuItems = allMenuItems.filter(item =>
+        ['Dashboard', 'My Profile', 'Learning', 'My Schedule', 'Content Library', 'Programs', 'Learners', 'Jobs', 'Notifications'].includes(item.label)
+      );
+    } else if (isAdmin) {
+      // Admin - full access to everything
+      menuItems = allMenuItems.filter(item => item.roles.includes('admin'));
+    } else if (isStaff) {
+      // Regular staff - access based on role permissions but excluding some admin-only items
+      menuItems = allMenuItems.filter(item => item.roles.includes('staff') && !['All Users'].includes(item.label));
     } else {
-      // All other roles (admin, staff, learner) - full access based on role
+      // Fallback - use role-based filtering
       menuItems = allMenuItems.filter(item => item.roles.includes(userRole));
     }
   }
@@ -76,45 +145,62 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange }) => {
   };
 
   return (
-    <div
-      className={`fixed left-0 top-0 h-full bg-primary-600 shadow-xl transition-all duration-300 z-40 ${
-        expanded ? 'w-64' : 'w-16'
-      }`}
-      onMouseEnter={() => onExpandedChange(true)}
-      onMouseLeave={() => onExpandedChange(false)}
-    >
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => onMobileMenuChange(!mobileMenuOpen)}
+        className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50 lg:hidden bg-primary-600 text-white p-2 sm:p-3 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200"
+      >
+        {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
+      </button>
+
+      {/* Sidebar */}
+      <div
+        className={`fixed left-0 top-0 h-full bg-primary-600 shadow-xl ${mounted ? 'transition-all duration-300' : ''} z-40 flex flex-col ${
+          // On mobile: responsive width, on desktop: responsive width based on expanded state
+          mobileMenuOpen ? 'w-64 sm:w-72' : 'w-64 lg:w-16'
+        } ${
+          // On mobile: slide in/out based on mobileMenuOpen, on desktop: always visible
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${
+          // Desktop responsive width
+          expanded ? 'lg:w-64 xl:w-72' : ''
+        }`}
+        onMouseEnter={() => window.innerWidth >= 1024 && onExpandedChange(true)}
+        onMouseLeave={() => window.innerWidth >= 1024 && onExpandedChange(false)}
+      >
       {/* Logo */}
-      <div className="p-4 border-b border-primary-500">
-        <Logo 
-          size={expanded ? "sm" : "xs"}
+      <div className="p-3 sm:p-4 border-b border-primary-500 flex-shrink-0">
+        <Logo
+          size={mobileMenuOpen || expanded ? "sm" : "xs"}
           showText={false}
-          textSize="lg"
-          className="text-white"
+          className="text-white sm:text-lg"
         />
       </div>
 
-      {/* Navigation */}
-      <nav className="mt-6 flex-1">
-        <div className="space-y-1 px-3">
+      {/* Navigation - Scrollable */}
+      <nav className="mt-4 sm:mt-6 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="space-y-1 px-2 sm:px-3 pb-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
+                onClick={() => onMobileMenuChange(false)}
+                className={`flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-2 sm:py-3 rounded-lg transition-all duration-200 group ${
                   isActive
                     ? 'bg-white text-primary-600'
                     : 'text-white hover:bg-primary-500 hover:text-white'
                 }`}
               >
-                <Icon className={`h-5 w-5 flex-shrink-0 ${
+                <Icon className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
                   isActive ? 'text-primary-600' : 'text-white group-hover:text-white'
                 }`} />
-                {expanded && (
-                  <span className="font-medium truncate">{item.label}</span>
+                {(mobileMenuOpen || expanded) && (
+                  <span className="text-sm sm:text-base font-medium truncate">{item.label}</span>
                 )}
               </Link>
             );
@@ -122,17 +208,27 @@ const Sidebar: React.FC<SidebarProps> = ({ expanded, onExpandedChange }) => {
         </div>
       </nav>
 
-      {/* Logout */}
-      <div className="p-3 border-t border-primary-500">
-        <button 
+      {/* Website & Logout */}
+      <div className="p-3 border-t border-primary-500 flex-shrink-0 space-y-2">
+        <Link
+          to="/"
+          onClick={() => onMobileMenuChange(false)}
+          className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:text-white rounded-lg transition-all duration-200 group"
+        >
+          <Globe className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
+          {(mobileMenuOpen || expanded) && <span className="font-medium">Website</span>}
+        </Link>
+
+        <button
           onClick={handleLogout}
           className="flex items-center space-x-3 px-3 py-3 w-full text-white hover:bg-primary-500 hover:text-white rounded-lg transition-all duration-200 group"
         >
           <LogOut className="h-5 w-5 flex-shrink-0 text-white group-hover:text-white" />
-          {expanded && <span className="font-medium">Logout</span>}
+          {(mobileMenuOpen || expanded) && <span className="font-medium">Logout</span>}
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

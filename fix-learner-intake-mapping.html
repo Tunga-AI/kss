@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Learner-Intake Mapping</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, updateDoc, doc, query, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0zPzaidQLDpNyrh7ReaiRyNhp8HOAPfc",
+            authDomain: "msommii.firebaseapp.com",
+            projectId: "msommii",
+            storageBucket: "msommii.firebasestorage.app",
+            messagingSenderId: "610946556395",
+            appId: "1:610946556395:web:facd538c2cbada7b88b9ae",
+            measurementId: "G-S60Y2Q9EXF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fixLearnerIntakeMapping() {
+            try {
+                console.log('=== FIXING LEARNER-INTAKE MAPPING ===');
+                
+                // Get all intakes
+                const intakesSnapshot = await getDocs(collection(db, 'intakes'));
+                const intakes = [];
+                intakesSnapshot.forEach(doc => {
+                    intakes.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`Found ${intakes.length} intakes:`, intakes);
+                
+                // Get all learners
+                const learnersSnapshot = await getDocs(collection(db, 'learners'));
+                const learners = [];
+                learnersSnapshot.forEach(doc => {
+                    learners.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`Found ${learners.length} learners`);
+                
+                // Create mapping based on intake names/patterns
+                const intakeMapping = {};
+                
+                // You can manually map old intakeIds to new document IDs here
+                // Based on your debug output, let's try to map by intake names or dates
+                for (const intake of intakes) {
+                    console.log(`Intake: ${intake.name} (${intake.id}) - Start: ${intake.startDate}`);
+                    
+                    // Try to map based on common patterns
+                    if (intake.name?.includes('Jul') || intake.startDate?.includes('2025-07')) {
+                        intakeMapping['INT002'] = intake.id; // Assuming INT002 should map to Jul 2025
+                    } else if (intake.name?.includes('Sep') || intake.startDate?.includes('2025-09')) {
+                        intakeMapping['INT003'] = intake.id; // Assuming INT003 should map to Sep 2025
+                    }
+                }
+                
+                console.log('Intake mapping:', intakeMapping);
+                
+                // Count updates needed
+                let updatesNeeded = 0;
+                let orphanedFixed = 0;
+                let unassignedToAssign = 0;
+                
+                const updates = [];
+                
+                for (const learner of learners) {
+                    let needsUpdate = false;
+                    let newIntakeId = learner.intakeId;
+                    
+                    // Fix orphaned learners (those with old intakeIds)
+                    if (learner.intakeId && intakeMapping[learner.intakeId]) {
+                        newIntakeId = intakeMapping[learner.intakeId];
+                        needsUpdate = true;
+                        orphanedFixed++;
+                        console.log(`Will fix orphaned learner: ${learner.firstName} ${learner.lastName} - ${learner.intakeId} → ${newIntakeId}`);
+                    }
+                    
+                    // For unassigned learners, we'll need manual assignment
+                    // For now, let's assign them to the first active intake (Jul 2025)
+                    if (!learner.intakeId) {
+                        const activeIntake = intakes.find(i => i.status === 'active');
+                        if (activeIntake) {
+                            newIntakeId = activeIntake.id;
+                            needsUpdate = true;
+                            unassignedToAssign++;
+                            console.log(`Will assign unassigned learner: ${learner.firstName} ${learner.lastName} → ${activeIntake.name} (${activeIntake.id})`);
+                        }
+                    }
+                    
+                    if (needsUpdate) {
+                        updates.push({
+                            learnerId: learner.id,
+                            learnerName: `${learner.firstName} ${learner.lastName}`,
+                            oldIntakeId: learner.intakeId || 'none',
+                            newIntakeId: newIntakeId
+                        });
+                        updatesNeeded++;
+                    }
+                }
+                
+                console.log(`\nSUMMARY:`);
+                console.log(`- Orphaned learners to fix: ${orphanedFixed}`);
+                console.log(`- Unassigned learners to assign: ${unassignedToAssign}`);
+                console.log(`- Total updates needed: ${updatesNeeded}`);
+                
+                document.getElementById('results').innerHTML = `
+                    <div style="font-family: monospace; white-space: pre-wrap; background: #f0f9ff; padding: 20px; border-radius: 8px; border: 2px solid #3b82f6;">
+                        <strong>🔍 ANALYSIS COMPLETE</strong>
+                        
+                        <strong>Intakes Found:</strong> ${intakes.length}
+                        ${intakes.map(i => `  - ${i.name} (${i.id}) - ${i.status} - Start: ${i.startDate}`).join('\n')}
+                        
+                        <strong>Updates Needed:</strong> ${updatesNeeded}
+                        <strong>Orphaned fixes:</strong> ${orphanedFixed}
+                        <strong>Unassigned assignments:</strong> ${unassignedToAssign}
+                        
+                        <strong>Planned Updates:</strong>
+                        ${updates.map(u => `  - ${u.learnerName}: ${u.oldIntakeId} → ${u.newIntakeId}`).join('\n')}
+                        
+                        <button onclick="executeUpdates()" style="background: #dc2626; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 20px;">
+                            Execute Updates (${updatesNeeded} learners)
+                        </button>
+                    </div>
+                `;
+                
+                // Store updates globally for the execute function
+                window.plannedUpdates = updates;
+                
+            } catch (error) {
+                console.error('Error fixing relationships:', error);
+                document.getElementById('results').innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function executeUpdates() {
+            if (!window.plannedUpdates || window.plannedUpdates.length === 0) {
+                alert('No updates planned. Run analysis first.');
+                return;
+            }
+            
+            const updates = window.plannedUpdates;
+            let successCount = 0;
+            let errorCount = 0;
+            
+            console.log(`\n=== EXECUTING ${updates.length} UPDATES ===`);
+            
+            for (const update of updates) {
+                try {
+                    const learnerRef = doc(db, 'learners', update.learnerId);
+                    await updateDoc(learnerRef, {
+                        intakeId: update.newIntakeId,
+                        updatedAt: new Date().toISOString()
+                    });
+                    
+                    console.log(`✅ Updated ${update.learnerName}: ${update.oldIntakeId} → ${update.newIntakeId}`);
+                    successCount++;
+                } catch (error) {
+                    console.error(`❌ Failed to update ${update.learnerName}:`, error);
+                    errorCount++;
+                }
+            }
+            
+            console.log(`\n=== UPDATE COMPLETE ===`);
+            console.log(`✅ Successful updates: ${successCount}`);
+            console.log(`❌ Failed updates: ${errorCount}`);
+            
+            document.getElementById('results').innerHTML += `
+                <div style="margin-top: 20px; padding: 15px; background: ${errorCount === 0 ? '#dcfce7' : '#fef3c7'}; border-radius: 8px;">
+                    <strong>🎯 UPDATE RESULTS:</strong><br>
+                    ✅ Successful: ${successCount}<br>
+                    ${errorCount > 0 ? `❌ Failed: ${errorCount}<br>` : ''}
+                    <br>
+                    ${errorCount === 0 ? 
+                        '🎉 All learners have been successfully assigned to intakes!' : 
+                        '⚠️ Some updates failed. Check browser console for details.'}
+                </div>
+            `;
+            
+            if (errorCount === 0) {
+                setTimeout(() => {
+                    alert('✅ All learner-intake relationships have been fixed!\n\nYou can now refresh your application to see the correct learner counts.');
+                }, 1000);
+            }
+        }
+
+        window.fixLearnerIntakeMapping = fixLearnerIntakeMapping;
+        window.executeUpdates = executeUpdates;
+        
+        window.addEventListener('load', () => {
+            console.log('Migration tool loaded. Click "Analyze & Plan Updates" to start.');
+        });
+    </script>
+</head>
+<body>
+    <h1>🔧 Fix Learner-Intake Mapping</h1>
+    <p>This tool will fix the broken relationships between learners and intakes.</p>
+    
+    <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #f59e0b;">
+        <strong>⚠️ ISSUE DETECTED:</strong><br>
+        • 31 learners found<br>
+        • 29 learners have no intake assignment<br>
+        • 2 learners have orphaned intake references<br>
+        • 3 intakes have 0 learners each<br><br>
+        <strong>This tool will:</strong><br>
+        1. Map old intake IDs to new intake document IDs<br>
+        2. Assign all unassigned learners to active intakes<br>
+        3. Fix orphaned learner references
+    </div>
+    
+    <p><strong>Open browser console to see detailed logs</strong></p>
+    
+    <button onclick="fixLearnerIntakeMapping()" style="background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 20px;">
+        🔍 Analyze & Plan Updates
+    </button>
+    
+    <div id="results" style="margin-top: 20px;"></div>
+    
+    <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-top: 20px;">
+        <strong>📋 Manual Assignment Guide:</strong><br>
+        If you want specific learners assigned to specific intakes, you can:
+        <ol>
+            <li>Run the analysis first to see all learners</li>
+            <li>Modify the intake assignments in the tool</li>
+            <li>Execute the updates</li>
+        </ol>
+        <strong>Available Intakes:</strong><br>
+        • Jul 2025 (active) - starts 2025-07-24<br>
+        • Oct 2025 (active) - starts 2025-08-15<br>
+        • Sep 2025 (active) - starts 2025-09-13
+    </div>
+</body>
+</html>

@@ -150,7 +150,7 @@ const JobDetailPage: React.FC = () => {
 
       if (result.success) {
         if (!id && (result as any).id) {
-          navigate(`/portal/recruitment/jobs/${(result as any).id}`);
+          navigate(`/portal/opportunities/jobs/${(result as any).id}`);
         }
         setIsEditing(false);
       }
@@ -240,7 +240,7 @@ const JobDetailPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/portal/recruitment')}
+              onClick={() => navigate('/portal/opportunities')}
               className="bg-white bg-opacity-20 p-2 rounded-lg hover:bg-opacity-30 transition-colors duration-200"
             >
               <ArrowLeft className="h-6 w-6 text-white" />

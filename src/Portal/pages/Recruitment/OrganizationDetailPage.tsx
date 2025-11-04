@@ -160,7 +160,7 @@ const OrganizationDetailPage: React.FC = () => {
 
       if (result.success) {
         if (!id && (result as any).id) {
-          navigate(`/portal/recruitment/organizations/${(result as any).id}`);
+          navigate(`/portal/opportunities/organizations/${(result as any).id}`);
         }
         setIsEditing(false);
       }
@@ -210,7 +210,7 @@ const OrganizationDetailPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/portal/recruitment')}
+              onClick={() => navigate('/portal/opportunities')}
               className="bg-white bg-opacity-20 p-2 rounded-lg hover:bg-opacity-30 transition-colors duration-200"
             >
               <ArrowLeft className="h-6 w-6 text-white" />
@@ -777,7 +777,7 @@ const OrganizationDetailPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-secondary-800">Posted Jobs</h2>
                 <button 
-                  onClick={() => navigate('/portal/recruitment/jobs/new')}
+                  onClick={() => navigate('/portal/opportunities/jobs/new')}
                   className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
                 >
                   <Briefcase className="h-4 w-4" />

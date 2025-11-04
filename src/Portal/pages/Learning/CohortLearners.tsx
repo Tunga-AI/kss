@@ -22,8 +22,8 @@ interface Learner {
   phoneNumber?: string;
   enrollmentDate?: string;
   academicStatus: 'active' | 'inactive' | 'completed' | 'suspended' | 'withdrawn';
-  cohortId?: string;
-  cohortName?: string;
+  intakeId?: string;
+  intakeName?: string;
   programId?: string;
   currentGPA?: number;
   progress?: number;
@@ -33,37 +33,37 @@ interface Learner {
   outstandingBalance?: number;
 }
 
-interface Cohort {
+interface Intake {
   id: string;
-  cohortId: string;
+  intakeId: string;
   name: string;
   startDate: string;
   maxStudents?: number;
 }
 
-const CohortLearners: React.FC = () => {
+const IntakeLearners: React.FC = () => {
   const navigate = useNavigate();
-  const { cohortId } = useParams<{ cohortId: string }>();
-  const [cohort, setCohort] = useState<Cohort | null>(null);
+  const { intakeId } = useParams<{ intakeId: string }>();
+  const [intake, setIntake] = useState<Intake | null>(null);
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (cohortId) {
-      loadCohortData();
+    if (intakeId) {
+      loadIntakeData();
       loadLearners();
     }
-  }, [cohortId]);
+  }, [intakeId]);
 
-  const loadCohortData = async () => {
-    if (!cohortId) return;
+  const loadIntakeData = async () => {
+    if (!intakeId) return;
     try {
-      const result = await FirestoreService.getById('cohorts', cohortId);
+      const result = await FirestoreService.getById('intakes', intakeId);
       if (result.success && result.data) {
-        setCohort(result.data as Cohort);
+        setIntake(result.data as Intake);
       }
     } catch (error) {
-      console.error('Error loading cohort:', error);
+      console.error('Error loading intake:', error);
     }
   };
 
@@ -71,7 +71,7 @@ const CohortLearners: React.FC = () => {
     setLoading(true);
     try {
       const result = await FirestoreService.getWithQuery('learners', [
-        { field: 'cohortId', operator: '==', value: cohortId }
+        { field: 'intakeId', operator: '==', value: intakeId }
       ]);
       
       if (result.success && result.data) {
@@ -104,9 +104,9 @@ const CohortLearners: React.FC = () => {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div>
-              <h1 className="text-4xl font-bold mb-2">Cohort Learners</h1>
+              <h1 className="text-4xl font-bold mb-2">Intake Learners</h1>
               <p className="text-lg text-primary-100">
-                {cohort ? `${cohort.name} (${cohort.cohortId})` : 'Manage learners in this cohort'}
+                {intake ? `${intake.name} (${intake.intakeId})` : 'Manage learners in this intake'}
               </p>
             </div>
           </div>
@@ -124,7 +124,7 @@ const CohortLearners: React.FC = () => {
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Learners Enrolled</h3>
-            <p className="text-secondary-600">No learners have been enrolled in this cohort yet.</p>
+            <p className="text-secondary-600">No learners have been enrolled in this intake yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -143,4 +143,4 @@ const CohortLearners: React.FC = () => {
   );
 };
 
-export default CohortLearners;
+export default IntakeLearners;

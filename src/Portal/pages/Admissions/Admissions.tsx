@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Search, Filter, Plus, Eye, CheckCircle, XCircle, Clock, Users, TrendingUp, Edit, X, FileText, Copy, Trash2, Download, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UserPlus, Search, Filter, Plus, Eye, CheckCircle, XCircle, Clock, Users, TrendingUp, Edit, X, FileText, Copy, Trash2, Download, BarChart3, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { FirestoreService, ProgramService } from '../../../services/firestore';
 import { useAuthContext } from '../../../contexts/AuthContext';
 
@@ -25,7 +25,7 @@ interface Applicant {
   paymentMethod?: 'mpesa' | 'bank_transfer' | 'cash' | 'other';
   submittedDate: string;
   feedback?: { date: string; message: string; author: string }[];
-  cohort?: string;
+  intake?: string;
   admittedProgram?: string;
 }
 
@@ -43,41 +43,18 @@ interface ActionModalProps {
   applicant: Applicant | null;
 }
 
-interface LetterTemplate {
-  id: string;
-  title: string;
-  type: 'acceptance' | 'rejection' | 'payment_reminder' | 'interview_invitation' | 'document_request' | 'custom';
-  subject: string;
-  content: string;
-  variables: string[];
-  status: 'active' | 'draft';
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  usageCount: number;
-}
 
-interface LetterModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (template: Partial<LetterTemplate>) => void;
-  template: LetterTemplate | null;
-  isEditing: boolean;
-}
 
-interface CommitteeMember {
+interface StaffMember {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  department: string;
-  position: string;
-  specialization?: string;
-  status: 'active' | 'inactive';
-  committeeRole: 'chair' | 'senior_reviewer' | 'reviewer' | 'junior_reviewer';
-  reviewedApplications: number;
-  averageScore: number;
-  joinedDate: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  designations: string[];
+  status: 'active' | 'inactive' | 'on_leave';
+  type: 'teaching' | 'administrative' | 'support';
 }
 
 interface ApplicationFeedback {
@@ -191,6 +168,21 @@ interface ResultDetailModalProps {
   test: CompetencyTest | null;
 }
 
+interface ViewProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  applicant: Applicant | null;
+  testAttempt: TestAttempt | null;
+}
+
+interface ConvertToCohortModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (cohortId: string, reason: string) => void;
+  applicant: Applicant | null;
+  testAttempt: TestAttempt | null;
+}
+
 const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onConfirm, type, applicant }) => {
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
@@ -243,7 +235,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onConfirm, t
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder={
                 type === 'approve' 
-                  ? 'Enter approval notes, cohort information, or additional instructions...'
+                  ? 'Enter approval notes, intake information, or additional instructions...'
                   : 'Enter the reason for rejection...'
               }
             />
@@ -1385,37 +1377,388 @@ const ResultDetailModal: React.FC<ResultDetailModalProps> = ({ isOpen, onClose, 
   );
 };
 
+const ViewProfileModal: React.FC<ViewProfileModalProps> = ({ isOpen, onClose, applicant, testAttempt }) => {
+  const [activeProfileTab, setActiveProfileTab] = useState('personal');
+  
+  if (!isOpen || !applicant) return null;
+
+  const profileTabs = [
+    { id: 'personal', label: 'Employee Information' },
+    { id: 'education', label: 'Education' },
+    { id: 'work', label: 'Work Experience' },
+    { id: 'results', label: 'Test Results' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h3 className="text-xl font-bold text-secondary-800">Applicant Profile</h3>
+            <p className="text-secondary-600">{applicant.firstName} {applicant.lastName}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-secondary-400 hover:text-secondary-600">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <div className="flex px-6">
+            {profileTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveProfileTab(tab.id)}
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeProfileTab === tab.id
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-secondary-600 hover:text-secondary-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          {/* Personal Information Tab */}
+          {activeProfileTab === 'personal' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-lg font-semibold text-secondary-800 mb-4">Personal Details</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Full Name</label>
+                      <p className="text-secondary-800">{applicant.firstName} {applicant.lastName}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Email</label>
+                      <p className="text-secondary-800">{applicant.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Phone Number</label>
+                      <p className="text-secondary-800">{applicant.phoneNumber}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Application Number</label>
+                      <p className="text-secondary-800">{applicant.applicationNumber}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-semibold text-secondary-800 mb-4">Application Status</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Status</label>
+                      <p className="text-secondary-800">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          applicant.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          applicant.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          applicant.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {applicant.status.charAt(0).toUpperCase() + applicant.status.slice(1).replace('_', ' ')}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Payment Status</label>
+                      <p className="text-secondary-800">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          applicant.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                          applicant.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {applicant.paymentStatus.charAt(0).toUpperCase() + applicant.paymentStatus.slice(1).replace('_', ' ')}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Amount Paid</label>
+                      <p className="text-secondary-800">KSh {applicant.amountPaid?.toLocaleString() || 0}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-secondary-600">Submitted Date</label>
+                      <p className="text-secondary-800">{new Date(applicant.submittedDate).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Education Tab */}
+          {activeProfileTab === 'education' && (
+            <div className="space-y-6">
+              <h4 className="text-lg font-semibold text-secondary-800">Education Background</h4>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-secondary-600">Education details would be displayed here when available in the applicant data structure.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Work Experience Tab */}
+          {activeProfileTab === 'work' && (
+            <div className="space-y-6">
+              <h4 className="text-lg font-semibold text-secondary-800">Work Experience</h4>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="text-sm font-medium text-secondary-600">Current Job Title</label>
+                  <p className="text-secondary-800">{applicant.currentJobTitle || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-secondary-600">Current Organization</label>
+                  <p className="text-secondary-800">{applicant.currentOrganisation || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-secondary-600">Sales Experience</label>
+                  <p className="text-secondary-800">{applicant.salesExperience || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-secondary-600">Key Achievements</label>
+                  <p className="text-secondary-800">{applicant.keyAchievements || 'Not provided'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-secondary-600">Learning Goals</label>
+                  <p className="text-secondary-800">{applicant.learningGoals || 'Not provided'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Test Results Tab */}
+          {activeProfileTab === 'results' && (
+            <div className="space-y-6">
+              <h4 className="text-lg font-semibold text-secondary-800">Test Results</h4>
+              {testAttempt ? (
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-blue-50 p-4 rounded-lg text-center">
+                      <p className="text-sm font-medium text-blue-600 mb-1">Score</p>
+                      <p className="text-2xl font-bold text-blue-800">{testAttempt.percentage}%</p>
+                    </div>
+                    <div className={`p-4 rounded-lg text-center ${testAttempt.passed ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <p className={`text-sm font-medium mb-1 ${testAttempt.passed ? 'text-green-600' : 'text-red-600'}`}>Result</p>
+                      <p className={`text-2xl font-bold ${testAttempt.passed ? 'text-green-800' : 'text-red-800'}`}>
+                        {testAttempt.passed ? 'PASSED' : 'FAILED'}
+                      </p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg text-center">
+                      <p className="text-sm font-medium text-purple-600 mb-1">Time</p>
+                      <p className="text-2xl font-bold text-purple-800">{testAttempt.timeSpent}m</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-secondary-600">Test Completed</label>
+                    <p className="text-secondary-800">{new Date(testAttempt.submittedAt || testAttempt.endTime || '').toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-secondary-600">No test results available for this applicant.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors duration-200"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ConvertToCohortModal: React.FC<ConvertToCohortModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  applicant, 
+  testAttempt 
+}) => {
+  const [selectedCohortId, setSelectedCohortId] = useState('');
+  const [reason, setReason] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [cohorts, setCohorts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadCohorts();
+      setReason('');
+      setSelectedCohortId('');
+    }
+  }, [isOpen]);
+
+  const loadCohorts = async () => {
+    try {
+      const result = await FirestoreService.getCollection('cohorts');
+      if (result.success) {
+        setCohorts(result.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading cohorts:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCohortId || !reason.trim()) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onConfirm(selectedCohortId, reason.trim());
+      onClose();
+    } catch (error) {
+      console.error('Error converting to cohort:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen || !applicant) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h3 className="text-xl font-bold text-secondary-800">Convert to Cohort</h3>
+            <p className="text-secondary-600">{applicant.firstName} {applicant.lastName}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-secondary-400 hover:text-secondary-600">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Applicant Summary */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-secondary-800 mb-2">Applicant Summary</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-secondary-600">Email:</span>
+                <span className="ml-2 text-secondary-800">{applicant.email}</span>
+              </div>
+              <div>
+                <span className="text-secondary-600">Application:</span>
+                <span className="ml-2 text-secondary-800">{applicant.applicationNumber}</span>
+              </div>
+              {testAttempt && (
+                <>
+                  <div>
+                    <span className="text-secondary-600">Test Score:</span>
+                    <span className="ml-2 text-secondary-800">{testAttempt.percentage}%</span>
+                  </div>
+                  <div>
+                    <span className="text-secondary-600">Test Result:</span>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                      testAttempt.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {testAttempt.passed ? 'Passed' : 'Failed'}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Cohort Selection */}
+          <div>
+            <label htmlFor="cohort" className="block text-sm font-medium text-secondary-700 mb-2">
+              Select Cohort *
+            </label>
+            <select
+              id="cohort"
+              value={selectedCohortId}
+              onChange={(e) => setSelectedCohortId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+            >
+              <option value="">Choose a cohort...</option>
+              {cohorts.map((cohort) => (
+                <option key={cohort.id} value={cohort.id}>
+                  {cohort.name} - {cohort.programName} ({cohort.startDate})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reason */}
+          <div>
+            <label htmlFor="reason" className="block text-sm font-medium text-secondary-700 mb-2">
+              Reason for Conversion *
+            </label>
+            <textarea
+              id="reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              placeholder="Provide a reason for converting this applicant to the selected cohort..."
+              required
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-secondary-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !selectedCohortId || !reason.trim()}
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {loading && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              )}
+              <span>Convert to Cohort</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const Admissions: React.FC = () => {
   const navigate = useNavigate();
   const { user, userProfile, refreshUserProfile } = useAuthContext();
-  const [activeTab, setActiveTab] = useState('applications');
+  // Role-based access control
+  const isAdmin = userProfile?.role === 'admin';
+  const isStaff = userProfile?.role === 'staff';
+  
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'analytics' : 'applications');
   const [applications, setApplications] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
-  const [cohorts, setCohorts] = useState<any[]>([]);
+  const [intakes, setIntakes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
-  // Letter templates state
-  const [letterTemplates, setLetterTemplates] = useState<LetterTemplate[]>([]);
-  const [letterModal, setLetterModal] = useState({
-    isOpen: false,
-    template: null as LetterTemplate | null,
-    isEditing: false
-  });
-  const [letterSearchTerm, setLetterSearchTerm] = useState('');
-  const [letterTypeFilter, setLetterTypeFilter] = useState('all');
   
-  // Committee members state
-  const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>([]);
+  const [allStaff, setAllStaff] = useState<StaffMember[]>([]);
   const [applicationFeedback, setApplicationFeedback] = useState<ApplicationFeedback[]>([]);
   const [feedbackModal, setFeedbackModal] = useState({
     isOpen: false,
     applicant: null as Applicant | null,
     existingFeedback: null as ApplicationFeedback | null
   });
-  const [committeeSearchTerm, setCommitteeSearchTerm] = useState('');
-  const [committeeStatusFilter, setCommitteeStatusFilter] = useState('all');
+  const [staffSearchTerm, setStaffSearchTerm] = useState('');
   
   // Competency tests state
   const [competencyTests, setCompetencyTests] = useState<CompetencyTest[]>([]);
@@ -1436,6 +1779,16 @@ const Admissions: React.FC = () => {
     attempt: null as TestAttempt | null,
     test: null as CompetencyTest | null
   });
+  const [viewProfileModal, setViewProfileModal] = useState({
+    isOpen: false,
+    applicant: null as Applicant | null,
+    testAttempt: null as TestAttempt | null
+  });
+  const [convertToCohortModal, setConvertToCohortModal] = useState({
+    isOpen: false,
+    applicant: null as Applicant | null,
+    testAttempt: null as TestAttempt | null
+  });
   const [testSearchTerm, setTestSearchTerm] = useState('');
   const [testStatusFilter, setTestStatusFilter] = useState('all');
   const [resultSearchTerm, setResultSearchTerm] = useState('');
@@ -1454,16 +1807,16 @@ const Admissions: React.FC = () => {
 
   // Pagination state
   const [pagination, setPagination] = useState({
-    applications: { currentPage: 1, itemsPerPage: 10 },
-    cohorts: { currentPage: 1, itemsPerPage: 10 },
-    letters: { currentPage: 1, itemsPerPage: 10 },
-    committee: { currentPage: 1, itemsPerPage: 10 },
-    tests: { currentPage: 1, itemsPerPage: 10 }
+    applications: { currentPage: 1, itemsPerPage: 15 },
+    intakes: { currentPage: 1, itemsPerPage: 15 },
+    letters: { currentPage: 1, itemsPerPage: 15 },
+    committee: { currentPage: 1, itemsPerPage: 15 },
+    tests: { currentPage: 1, itemsPerPage: 15 }
   });
 
   const stats = [
     { title: 'Total Applications', value: applications.length.toString(), change: '+23%', icon: UserPlus, color: 'primary' },
-    { title: 'Active Cohorts', value: cohorts.filter(cohort => cohort.status === 'active').length.toString(), change: '+12%', icon: Users, color: 'secondary' },
+    { title: 'Active Intakes', value: intakes.filter(intake => intake.status === 'active').length.toString(), change: '+12%', icon: Users, color: 'secondary' },
     { title: 'Approved', value: applications.filter(app => app.status === 'approved').length.toString(), change: '+18%', icon: CheckCircle, color: 'accent' },
     { title: 'Pending Review', value: applications.filter(app => app.status === 'pending' || app.status === 'under_review').length.toString(), change: '+8', icon: Clock, color: 'yellow' },
   ];
@@ -1473,8 +1826,7 @@ const Admissions: React.FC = () => {
       checkUserApplication();
     } else {
       loadData();
-      loadLetterTemplates();
-      loadCommitteeMembers();
+      loadAllStaff();
       loadApplicationFeedback();
       loadCompetencyTests();
       loadTestAttempts();
@@ -1504,11 +1856,10 @@ const Admissions: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      // Load applications, programs, and cohorts
-      const [applicationsResult, programsResult, cohortsResult] = await Promise.all([
+      // Load applications, programs, and intakes with learner counts
+      const [applicationsResult, programsResult] = await Promise.all([
         FirestoreService.getAll('applicants'),
-        ProgramService.getAll('programs'),
-        FirestoreService.getAll('cohorts')
+        ProgramService.getAll('programs')
       ]);
       
       if (applicationsResult.success && applicationsResult.data) {
@@ -1519,9 +1870,8 @@ const Admissions: React.FC = () => {
         setPrograms(programsResult.data);
       }
       
-      if (cohortsResult.success && cohortsResult.data) {
-        setCohorts(cohortsResult.data);
-      }
+      // Load intakes with learner counts using the dedicated function
+      await loadIntakes();
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -1529,137 +1879,19 @@ const Admissions: React.FC = () => {
     }
   };
 
-  const loadLetterTemplates = async () => {
-    try {
-      const result = await FirestoreService.getAll('letterTemplates');
-      if (result.success && result.data) {
-        setLetterTemplates(result.data as LetterTemplate[]);
-      }
-    } catch (error) {
-      console.error('Error loading letter templates:', error);
-    }
-  };
 
-  const saveLetterTemplate = async (templateData: Partial<LetterTemplate>) => {
-    try {
-      const isEditing = letterModal.isEditing && letterModal.template?.id;
-      
-      if (isEditing) {
-        const result = await FirestoreService.update('letterTemplates', letterModal.template!.id, {
-          ...templateData,
-          updatedAt: new Date().toISOString()
-        });
-        
-        if (result.success) {
-          setLetterTemplates(prev => 
-            prev.map(template => 
-              template.id === letterModal.template!.id 
-                ? { ...template, ...templateData, updatedAt: new Date().toISOString() }
-                : template
-            )
-          );
-          alert('Template updated successfully!');
-        }
-      } else {
-        const newTemplate: Omit<LetterTemplate, 'id'> = {
-          ...templateData as LetterTemplate,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          createdBy: user?.uid || '',
-          usageCount: 0
-        };
-        
-        const result = await FirestoreService.create('letterTemplates', newTemplate);
-        
-        if (result.success && result.id) {
-          setLetterTemplates(prev => [...prev, { ...newTemplate, id: result.id }]);
-          alert('Template created successfully!');
-        }
-      }
-      
-      setLetterModal({ isOpen: false, template: null, isEditing: false });
-    } catch (error) {
-      console.error('Error saving letter template:', error);
-      alert('Error saving template. Please try again.');
-    }
-  };
 
-  const deleteLetterTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
-    
-    try {
-      const result = await FirestoreService.delete('letterTemplates', templateId);
-      
-      if (result.success) {
-        setLetterTemplates(prev => prev.filter(template => template.id !== templateId));
-        alert('Template deleted successfully!');
-      }
-    } catch (error) {
-      console.error('Error deleting letter template:', error);
-      alert('Error deleting template. Please try again.');
-    }
-  };
-
-  const duplicateLetterTemplate = async (template: LetterTemplate) => {
-    try {
-      const newTemplate: Omit<LetterTemplate, 'id'> = {
-        ...template,
-        title: `${template.title} (Copy)`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: user?.uid || '',
-        usageCount: 0
-      };
-      
-      const result = await FirestoreService.create('letterTemplates', newTemplate);
-      
-      if (result.success && result.id) {
-        setLetterTemplates(prev => [...prev, { ...newTemplate, id: result.id }]);
-        alert('Template duplicated successfully!');
-      }
-    } catch (error) {
-      console.error('Error duplicating letter template:', error);
-      alert('Error duplicating template. Please try again.');
-    }
-  };
-
-  const loadCommitteeMembers = async () => {
+  const loadAllStaff = async () => {
     try {
       const result = await FirestoreService.getAll('staff');
       if (result.success && result.data) {
-        // Transform staff data to committee members format
-        const members: CommitteeMember[] = result.data.map((staff: any) => ({
-          id: staff.id,
-          firstName: staff.firstName || '',
-          lastName: staff.lastName || '',
-          email: staff.email || '',
-          department: staff.department || '',
-          position: staff.position || '',
-          specialization: staff.specialization || '',
-          status: staff.status || 'active',
-          committeeRole: determineCommitteeRole(staff.position),
-          reviewedApplications: 0, // Will be calculated from feedback
-          averageScore: 0, // Will be calculated from feedback
-          joinedDate: staff.createdAt || new Date().toISOString()
-        }));
-        
-        setCommitteeMembers(members);
-        
-        // Update review statistics
-        await updateCommitteeStatistics(members);
+        setAllStaff(result.data as StaffMember[]);
       }
     } catch (error) {
-      console.error('Error loading committee members:', error);
+      console.error('Error loading all staff:', error);
     }
   };
 
-  const determineCommitteeRole = (position: string): CommitteeMember['committeeRole'] => {
-    const pos = position.toLowerCase();
-    if (pos.includes('director') || pos.includes('dean') || pos.includes('head')) return 'chair';
-    if (pos.includes('senior') || pos.includes('professor')) return 'senior_reviewer';
-    if (pos.includes('junior') || pos.includes('assistant')) return 'junior_reviewer';
-    return 'reviewer';
-  };
 
   const loadApplicationFeedback = async () => {
     try {
@@ -1672,27 +1904,6 @@ const Admissions: React.FC = () => {
     }
   };
 
-  const updateCommitteeStatistics = async (members: CommitteeMember[]) => {
-    try {
-      const updatedMembers = members.map(member => {
-        const memberFeedback = applicationFeedback.filter(feedback => feedback.reviewerId === member.id);
-        const reviewedCount = memberFeedback.length;
-        const averageScore = reviewedCount > 0 
-          ? memberFeedback.reduce((sum, feedback) => sum + feedback.score, 0) / reviewedCount 
-          : 0;
-
-        return {
-          ...member,
-          reviewedApplications: reviewedCount,
-          averageScore: Math.round(averageScore * 10) / 10
-        };
-      });
-
-      setCommitteeMembers(updatedMembers);
-    } catch (error) {
-      console.error('Error updating committee statistics:', error);
-    }
-  };
 
   const submitFeedback = async (feedbackData: Partial<ApplicationFeedback>) => {
     try {
@@ -1726,8 +1937,6 @@ const Admissions: React.FC = () => {
       
       setFeedbackModal({ isOpen: false, applicant: null, existingFeedback: null });
       
-      // Update committee statistics
-      await updateCommitteeStatistics(committeeMembers);
     } catch (error) {
       console.error('Error submitting feedback:', error);
       alert('Error submitting feedback. Please try again.');
@@ -1746,25 +1955,7 @@ const Admissions: React.FC = () => {
     });
   };
 
-  const getCommitteeRoleBadgeColor = (role: CommitteeMember['committeeRole']) => {
-    switch (role) {
-      case 'chair': return 'bg-purple-100 text-purple-800';
-      case 'senior_reviewer': return 'bg-blue-100 text-blue-800';
-      case 'reviewer': return 'bg-green-100 text-green-800';
-      case 'junior_reviewer': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  const getCommitteeRoleText = (role: CommitteeMember['committeeRole']) => {
-    switch (role) {
-      case 'chair': return 'Committee Chair';
-      case 'senior_reviewer': return 'Senior Reviewer';
-      case 'reviewer': return 'Reviewer';
-      case 'junior_reviewer': return 'Junior Reviewer';
-      default: return 'Member';
-    }
-  };
 
   // Pagination helper functions
   const updatePagination = (tab: keyof typeof pagination, updates: Partial<typeof pagination.applications>) => {
@@ -1928,6 +2119,80 @@ const Admissions: React.FC = () => {
     }
   };
 
+  const handleConvertToCohort = async (cohortId: string, reason: string) => {
+    const { applicant, testAttempt } = convertToCohortModal;
+    if (!applicant || !testAttempt) return;
+
+    try {
+      // Step 1: Create learner record
+      const learnerData = {
+        firstName: applicant.firstName,
+        lastName: applicant.lastName,
+        email: applicant.email,
+        phoneNumber: applicant.phoneNumber,
+        cohortId: cohortId,
+        applicationId: applicant.id,
+        applicationNumber: applicant.applicationNumber,
+        testScore: testAttempt.percentage,
+        testPassed: testAttempt.passed,
+        conversionReason: reason,
+        status: 'active',
+        enrollmentDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdBy: user?.uid || ''
+      };
+
+      const learnerResult = await FirestoreService.create('learners', learnerData);
+      if (!learnerResult.success) {
+        throw new Error('Failed to create learner record');
+      }
+
+      // Step 2: Create user record for authentication
+      const userData = {
+        firstName: applicant.firstName,
+        lastName: applicant.lastName,
+        email: applicant.email,
+        phoneNumber: applicant.phoneNumber,
+        role: 'learner',
+        status: 'active',
+        learnerId: learnerResult.id,
+        cohortId: cohortId,
+        hasFirebaseAuth: false, // They'll set up password on first login
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdBy: user?.uid || ''
+      };
+
+      const userResult = await FirestoreService.create('users', userData);
+      if (!userResult.success) {
+        // Rollback learner creation if user creation fails
+        await FirestoreService.delete('learners', learnerResult.id);
+        throw new Error('Failed to create user record');
+      }
+
+      // Step 3: Update applicant status
+      await FirestoreService.update('applicants', applicant.id, {
+        status: 'approved',
+        admittedProgram: cohortId,
+        conversionDate: new Date().toISOString(),
+        conversionReason: reason,
+        learnerId: learnerResult.id,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Close modal and refresh data
+      setConvertToCohortModal({ isOpen: false, applicant: null, testAttempt: null });
+      loadData(); // Refresh the applicants data
+      
+      alert(`${applicant.firstName} ${applicant.lastName} has been successfully converted to a learner!`);
+    } catch (error) {
+      console.error('Error converting to cohort:', error);
+      alert('Error converting applicant to learner. Please try again.');
+      throw error; // Re-throw so the modal can handle the loading state
+    }
+  };
+
   const saveQuestion = (questionData: Partial<TestQuestion>) => {
     if (!currentEditingTest) return;
 
@@ -2024,14 +2289,72 @@ const Admissions: React.FC = () => {
     }
   };
 
-  const loadCohorts = async () => {
+  const loadIntakes = async () => {
     try {
-      const result = await FirestoreService.getAll('cohorts');
+      const result = await FirestoreService.getAll('intakes');
       if (result.success && result.data) {
-        setCohorts(result.data);
+        // Calculate enrolled count for each intake by counting learners with matching intakeId
+        const intakesWithCounts = await Promise.all(
+          result.data.map(async (intake: any) => {
+            try {
+              const learnersResult = await FirestoreService.getWithQuery('learners', [
+                { field: 'intakeId', operator: '==', value: intake.id }
+              ]);
+              
+              const enrolledCount = learnersResult.success && learnersResult.data 
+                ? learnersResult.data.length 
+                : 0;
+              
+              return {
+                ...intake,
+                enrolledCount
+              };
+            } catch (error) {
+              console.error(`Error counting learners for intake ${intake.id}:`, error);
+              return {
+                ...intake,
+                enrolledCount: 0
+              };
+            }
+          })
+        );
+        
+        // Sort intakes by date: recent/upcoming first, then by status
+        const sortedIntakes = intakesWithCounts.sort((a: any, b: any) => {
+          const aDate = new Date(a.startDate);
+          const bDate = new Date(b.startDate);
+          
+          // Priority order: upcoming > active > completed/cancelled
+          const statusPriority = {
+            'upcoming': 1,
+            'active': 2, 
+            'draft': 3,
+            'completed': 4,
+            'cancelled': 5
+          };
+          
+          // First sort by status priority
+          const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 6;
+          const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 6;
+          
+          if (aPriority !== bPriority) {
+            return aPriority - bPriority;
+          }
+          
+          // Within same status, sort by date:
+          // - For upcoming/active: earliest first
+          // - For completed: most recent first
+          if (a.status === 'upcoming' || a.status === 'active' || a.status === 'draft') {
+            return aDate.getTime() - bDate.getTime(); // Earlier dates first
+          } else {
+            return bDate.getTime() - aDate.getTime(); // Later dates first for completed
+          }
+        });
+        
+        setIntakes(sortedIntakes);
       }
     } catch (error) {
-      console.error('Error loading cohorts:', error);
+      console.error('Error loading intakes:', error);
     }
   };
 
@@ -2039,7 +2362,11 @@ const Admissions: React.FC = () => {
     try {
       const result = await FirestoreService.getAll('applicants');
       if (result.success && result.data) {
-        setApplications(result.data);
+        // Sort applications by submission date, newest first
+        const sortedApplications = result.data.sort((a: any, b: any) => 
+          new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime()
+        );
+        setApplications(sortedApplications);
       }
     } catch (error) {
       console.error('Error loading applications:', error);
@@ -2061,6 +2388,8 @@ const Admissions: React.FC = () => {
   };
 
   const convertApplicantToLearner = async (applicant: Applicant) => {
+    console.log('🔄 Starting conversion of applicant to learner:', applicant.email);
+    console.log('👤 Current user role:', userProfile?.role);
     try {
       // Check if learner already exists
       const existingLearnerCheck = await FirestoreService.getWithQuery('learners', [
@@ -2078,38 +2407,54 @@ const Admissions: React.FC = () => {
       // Get program information
       const selectedProgram = programs.find(p => p.id === applicant.programId);
       
-      // Get the selected cohort details
-      const selectedCohort = cohorts.find(c => c.id === applicant.cohort);
+      // Get the selected intake details
+      const selectedIntake = intakes.find(i => i.id === applicant.intake);
       
-      // Create learner data
+      // Determine the correct fee amount - prioritize intake programCost, fallback to program fees, then 0
+      const expectedAmount = selectedIntake?.programCost || selectedProgram?.fees || 0;
+      
+      // Create learner data - simplified for debugging
       const learnerData = {
         studentId,
-        firstName: applicant.firstName,
-        lastName: applicant.lastName,
+        firstName: applicant.firstName || '',
+        lastName: applicant.lastName || '',
         email: applicant.email,
-        phoneNumber: applicant.phoneNumber,
-        currentJobTitle: applicant.currentJobTitle || '',
-        currentOrganisation: applicant.currentOrganisation || '',
-        salesExperience: applicant.salesExperience || '',
-        keyAchievements: applicant.keyAchievements || '',
-        programId: applicant.programId,
-        learningGoals: applicant.learningGoals || '',
+        phoneNumber: applicant.phoneNumber || '',
+        programId: applicant.programId || '',
         enrollmentDate: new Date().toISOString().split('T')[0],
-        academicStatus: 'active' as const,
-        cohortId: applicant.cohort || '', // Use the cohort ID from cohorts collection
-        cohortName: selectedCohort?.name || '',
-        cohort: applicant.cohort || `${new Date().getFullYear()}-${Math.ceil((new Date().getMonth() + 1) / 3)}Q`, // Keep for backward compatibility
-        currentGPA: 0,
-        paymentRecords: [],
-        totalFees: selectedProgram?.fees || 0,
+        academicStatus: 'active',
+        intakeId: applicant.intake || '',
+        intakeName: selectedIntake?.name || '',
+        totalFees: expectedAmount || 0,
         amountPaid: applicant.amountPaid || 0,
-        outstandingBalance: (selectedProgram?.fees || 0) - (applicant.amountPaid || 0),
-        paymentPlan: 'full',
-        role: 'learner' // Ensure role is set for user profile updates
+        outstandingBalance: Math.max(0, (expectedAmount || 0) - (applicant.amountPaid || 0)),
+        role: 'learner'
       };
+      
+      // Log the simplified data structure
+      console.log('🎓 Simplified learner data for debugging:', JSON.stringify(learnerData, null, 2));
 
-      // Create learner in learners collection
-      const learnerResult = await FirestoreService.create('learners', learnerData);
+      // Create learner in learners collection using the same method as the working manual script
+      console.log('🎓 Creating learner with data:', { 
+        studentId, 
+        email: applicant.email,
+        programId: applicant.programId,
+        intakeId: applicant.intake
+      });
+      console.log('🎓 Full learner data object:', JSON.stringify(learnerData, null, 2));
+      
+      // Add the timestamps that FirestoreService.create would add
+      const learnerDataWithTimestamps = {
+        ...learnerData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const learnerResult = await FirestoreService.create('learners', learnerDataWithTimestamps);
+      console.log('📝 Learner creation result:', learnerResult);
+      console.log('📝 Learner creation success:', learnerResult.success);
+      console.log('📝 Learner creation error:', learnerResult.error);
+      console.log('📝 Learner creation data:', learnerResult.data);
       
       if (learnerResult.success) {
         // Update user profile role from 'applicant' to 'learner'
@@ -2137,14 +2482,40 @@ const Admissions: React.FC = () => {
           // Don't fail the whole process if user profile update fails
         }
 
-        console.log('Successfully converted applicant to learner:', studentId);
+        console.log('✅ Learner creation successful! Student ID:', studentId);
+        
+        // Verify learner was actually created
+        try {
+          const verificationResult = await FirestoreService.getWithQuery('learners', [
+            { field: 'email', operator: '==', value: applicant.email }
+          ]);
+          
+          if (verificationResult.success && verificationResult.data && verificationResult.data.length > 0) {
+            console.log('✅ VERIFIED: Learner exists in database:', verificationResult.data[0]);
+          } else {
+            console.error('❌ VERIFICATION FAILED: Learner not found in database after creation!');
+          }
+        } catch (verifyError) {
+          console.error('❌ Error verifying learner creation:', verifyError);
+        }
+        
         return true;
       } else {
-        console.error('Failed to create learner:', learnerResult);
+        console.error('❌ Failed to create learner:', learnerResult);
+        console.error('❌ Error details:', JSON.stringify(learnerResult, null, 2));
+        if (learnerResult.error && (learnerResult.error.includes('permission') || learnerResult.error.includes('PERMISSION_DENIED'))) {
+          console.error('🚫 Permission denied - make sure user has staff role');
+        }
+        alert(`❌ LEARNER CREATION FAILED:\n\nError: ${learnerResult.error || 'Unknown error'}\n\nFull details logged to console.`);
         return false;
       }
     } catch (error) {
-      console.error('Error converting applicant to learner:', error);
+      console.error('❌ CRITICAL ERROR in convertApplicantToLearner:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      alert(`❌ CONVERSION FAILED:\n${error instanceof Error ? error.message : 'Unknown error'}\n\nCheck console for full details.`);
       return false;
     }
   };
@@ -2155,9 +2526,11 @@ const Admissions: React.FC = () => {
       const conversionSuccess = await convertApplicantToLearner(applicant);
       
       if (!conversionSuccess) {
-        alert('Failed to convert applicant to learner. Please try again.');
+        alert('❌ CRITICAL ERROR: Failed to convert applicant to learner.\n\nThis means the learner record was NOT created.\nCheck browser console for details.\n\nPossible causes:\n• User lacks staff permissions\n• Firestore rules blocking creation\n• Network/connection issue');
         return;
       }
+      
+      console.log('✅ Learner conversion successful, proceeding with status update');
 
       // Update application status with feedback
       const feedback = applicant.feedback || [];
@@ -2169,7 +2542,7 @@ const Admissions: React.FC = () => {
 
       const selectedProgram = programs.find(p => p.id === applicant.programId);
       const updateData = {
-        status: 'approved',
+        status: 'admitted',
         feedback,
         admittedProgram: selectedProgram?.programName || '',
         approvalDate: new Date().toISOString().split('T')[0],
@@ -2276,12 +2649,11 @@ const Admissions: React.FC = () => {
   };
 
   const tabs = [
+    ...(isAdmin ? [{ id: 'analytics', label: 'Analytics' }] : []),
     { id: 'applications', label: 'Applications' },
-    { id: 'cohorts', label: 'Cohorts' },
-    { id: 'tests', label: 'Competency Tests' },
-    { id: 'letters', label: 'Letters' },
-    { id: 'committee', label: 'Admissions Committee' },
-    { id: 'analytics', label: 'Analytics' },
+    { id: 'intakes', label: 'Intakes' },
+    { id: 'tests', label: 'Test Results' },
+    { id: 'admissions', label: 'Admissions' },
   ];
 
   const getStatusColor = (status: string) => {
@@ -2290,6 +2662,7 @@ const Admissions: React.FC = () => {
       case 'rejected': return 'bg-red-100 text-red-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'under_review': return 'bg-blue-100 text-blue-800';
+      case 'admitted': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -2300,6 +2673,7 @@ const Admissions: React.FC = () => {
       case 'rejected': return 'Rejected';
       case 'pending': return 'Pending';
       case 'under_review': return 'Under Review';
+      case 'admitted': return 'Admitted';
       default: return status;
     }
   };
@@ -2401,6 +2775,40 @@ const Admissions: React.FC = () => {
     }
   };
 
+  const handleApprovalAction = async (reason: string) => {
+    if (!actionModal.applicant) return;
+
+    try {
+      const status = actionModal.type === 'approve' ? 'approved' : 'rejected';
+      const result = await FirestoreService.update('applicants', actionModal.applicant.id, {
+        status,
+        feedback: [
+          ...(actionModal.applicant.feedback || []),
+          {
+            date: new Date().toISOString(),
+            message: reason,
+            author: userProfile?.displayName || user?.email || 'System'
+          }
+        ]
+      });
+
+      if (result.success) {
+        // If approving, optionally convert to learner
+        if (actionModal.type === 'approve') {
+          await convertApplicantToLearner(actionModal.applicant);
+        }
+        
+        // Reload applications to show updated status
+        await loadData();
+        alert(`Application ${status === 'approved' ? 'approved' : 'rejected'} successfully!`);
+      }
+    } catch (error) {
+      console.error('Error updating application:', error);
+      alert('Error updating application. Please try again.');
+    }
+  };
+
+
   // Applicant View Component
   const ApplicantView = () => {
     if (loading) {
@@ -2465,7 +2873,7 @@ const Admissions: React.FC = () => {
               <p className="text-secondary-600">Application #{userApplication?.applicationNumber}</p>
             </div>
             <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-              userApplication?.status === 'approved' ? 'bg-green-100 text-green-800' :
+              userApplication?.status === 'approved' || userApplication?.status === 'admitted' ? 'bg-green-100 text-green-800' :
               userApplication?.status === 'rejected' ? 'bg-red-100 text-red-800' :
               userApplication?.status === 'under_review' ? 'bg-yellow-100 text-yellow-800' :
               'bg-gray-100 text-gray-800'
@@ -2532,7 +2940,7 @@ const Admissions: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className={`w-3 h-3 rounded-full ${
                   userApplication?.status === 'under_review' ? 'bg-yellow-500' :
-                  userApplication?.status === 'approved' ? 'bg-green-500' :
+                  userApplication?.status === 'approved' || userApplication?.status === 'admitted' ? 'bg-green-500' :
                   userApplication?.status === 'rejected' ? 'bg-red-500' : 'bg-gray-300'
                 }`}></div>
                 <div>
@@ -2555,7 +2963,7 @@ const Admissions: React.FC = () => {
       <div className="space-y-6">
         {/* Hero Section */}
         <div className="bg-primary-600 text-white rounded-2xl shadow-lg p-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
             <div>
               <h1 className="text-4xl font-bold mb-2">My Application</h1>
               <p className="text-lg text-primary-100">
@@ -2582,15 +2990,6 @@ const Admissions: React.FC = () => {
         onConfirm={handleModalConfirm}
         type={actionModal.type}
         applicant={actionModal.applicant}
-      />
-
-      {/* Letter Template Modal */}
-      <LetterModal
-        isOpen={letterModal.isOpen}
-        onClose={() => setLetterModal({ isOpen: false, template: null, isEditing: false })}
-        onSave={saveLetterTemplate}
-        template={letterModal.template}
-        isEditing={letterModal.isEditing}
       />
 
       {/* Feedback Modal */}
@@ -2631,7 +3030,7 @@ const Admissions: React.FC = () => {
 
       {/* Hero Section */}
       <div className="bg-primary-600 text-white rounded-2xl shadow-lg p-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">Admissions</h1>
             <p className="text-lg text-primary-100">
@@ -2708,13 +3107,15 @@ const Admissions: React.FC = () => {
                     <span>Filter</span>
                   </button>
                 </div>
-                <button 
-                  onClick={() => navigate('/portal/admissions/applicants/new')}
-                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>New Application</span>
-                </button>
+                {isAdmin && (
+                  <button 
+                    onClick={() => navigate('/portal/admissions/applicants/new')}
+                    className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>New Application</span>
+                  </button>
+                )}
               </div>
 
               {/* Applications Table */}
@@ -2770,16 +3171,8 @@ const Admissions: React.FC = () => {
                                   <Eye className="h-4 w-4" />
                                 </button>
                                 
-                                {/* Review button for committee members */}
-                                <button 
-                                  onClick={() => openFeedbackModal(app)}
-                                  className="p-1 text-secondary-400 hover:text-blue-600 transition-colors duration-200"
-                                  title="Review Application"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
                                 
-                                {app.status !== 'approved' && app.status !== 'rejected' && (
+                                {app.status !== 'approved' && app.status !== 'rejected' && app.status !== 'admitted' && (
                                   <>
                                     <button 
                                       onClick={() => openActionModal('approve', app)}
@@ -2839,7 +3232,7 @@ const Admissions: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'cohorts' && (
+          {activeTab === 'intakes' && (
             <div>
               {/* Actions Bar */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -2848,7 +3241,7 @@ const Admissions: React.FC = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                     <input
                       type="text"
-                      placeholder="Search cohorts..."
+                      placeholder="Search intakes..."
                       className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -2858,14 +3251,24 @@ const Admissions: React.FC = () => {
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
                   </button>
+                  <button 
+                    onClick={loadIntakes}
+                    disabled={loading}
+                    className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
+                  </button>
                 </div>
-                <button 
-                  onClick={() => navigate('/portal/admissions/cohorts/new')}
-                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>New Cohort</span>
-                </button>
+                {isAdmin && (
+                  <button 
+                    onClick={() => navigate('/portal/admissions/intakes/new')}
+                    className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>New Intake</span>
+                  </button>
+                )}
               </div>
 
               {/* Cohorts Table */}
@@ -2878,7 +3281,7 @@ const Admissions: React.FC = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Cohort ID</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Intake ID</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Name</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Program</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Start Date</th>
@@ -2890,29 +3293,29 @@ const Admissions: React.FC = () => {
                     </thead>
                     <tbody>
                       {(() => {
-                        const filteredCohorts = cohorts.filter(cohort => 
-                          cohort.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          cohort.cohortId?.toLowerCase().includes(searchTerm.toLowerCase())
-                        );
-                        const { paginatedData } = getPaginatedData(filteredCohorts, 'cohorts');
-                        return paginatedData.map((cohort) => {
-                          const program = programs.find(p => p.id === cohort.programId);
-                          const isActive = new Date(cohort.startDate) <= new Date() && new Date(cohort.closeDate) >= new Date();
-                          const isUpcoming = new Date(cohort.startDate) > new Date();
-                          const isPast = new Date(cohort.closeDate) < new Date();
+                                        const filteredIntakes = intakes.filter(intake =>
+                  intake.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  intake.intakeId?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                const { paginatedData } = getPaginatedData(filteredIntakes, 'intakes');
+                return paginatedData.map((intake) => {
+                  const program = programs.find(p => p.id === intake.programId);
+                  const isActive = new Date(intake.startDate) <= new Date() && new Date(intake.closeDate) >= new Date();
+                  const isUpcoming = new Date(intake.startDate) > new Date();
+                  const isPast = new Date(intake.closeDate) < new Date();
                           
                           return (
-                            <tr key={cohort.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                              <td className="py-4 px-4 font-medium text-secondary-800">{cohort.cohortId || 'N/A'}</td>
+                            <tr key={intake.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                              <td className="py-4 px-4 font-medium text-secondary-800">{intake.intakeId || 'N/A'}</td>
                               <td className="py-4 px-4">
-                                <div className="font-medium text-secondary-800">{cohort.name}</div>
+                                <div className="font-medium text-secondary-800">{intake.name}</div>
                               </td>
                               <td className="py-4 px-4 text-secondary-600">{program?.programName || 'N/A'}</td>
                               <td className="py-4 px-4 text-secondary-600">
-                                {cohort.startDate ? new Date(cohort.startDate).toLocaleDateString() : 'N/A'}
+                                {intake.startDate ? new Date(intake.startDate).toLocaleDateString() : 'N/A'}
                               </td>
                               <td className="py-4 px-4 text-secondary-600">
-                                {cohort.applicationDeadline ? new Date(cohort.applicationDeadline).toLocaleDateString() : 'N/A'}
+                                {intake.applicationDeadline ? new Date(intake.applicationDeadline).toLocaleDateString() : 'N/A'}
                               </td>
                               <td className="py-4 px-4">
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -2924,20 +3327,20 @@ const Admissions: React.FC = () => {
                                   {isActive ? 'Active' : isUpcoming ? 'Upcoming' : isPast ? 'Completed' : 'Draft'}
                                 </span>
                               </td>
-                              <td className="py-4 px-4 text-secondary-600">{cohort.enrolledCount || 0}</td>
+                              <td className="py-4 px-4 text-secondary-600">{intake.enrolledCount || 0}</td>
                               <td className="py-4 px-4">
                                 <div className="flex items-center space-x-2">
                                   <button 
-                                    onClick={() => navigate(`/portal/admissions/cohorts/${cohort.id}`)}
+                                    onClick={() => navigate(`/portal/admissions/intakes/${intake.id}`)}
                                     className="p-1 text-secondary-400 hover:text-primary-600 transition-colors duration-200"
-                                    title="View Cohort"
+                                    title="View Intake"
                                   >
                                     <Eye className="h-4 w-4" />
                                   </button>
                                   <button 
-                                    onClick={() => navigate(`/portal/admissions/cohorts/${cohort.id}/edit`)}
+                                    onClick={() => navigate(`/portal/admissions/intakes/${intake.id}/edit`)}
                                     className="p-1 text-secondary-400 hover:text-blue-600 transition-colors duration-200"
-                                    title="Edit Cohort"
+                                    title="Edit Intake"
                                   >
                                     <Edit className="h-4 w-4" />
                                   </button>
@@ -2950,16 +3353,16 @@ const Admissions: React.FC = () => {
                     </tbody>
                   </table>
                   
-                  {/* Cohorts Pagination */}
+                  {/* Intakes Pagination */}
                   {(() => {
-                    const filteredCohorts = cohorts.filter(cohort => 
-                      cohort.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      cohort.cohortId?.toLowerCase().includes(searchTerm.toLowerCase())
+                    const filteredIntakes = intakes.filter(intake => 
+                      intake.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      intake.intakeId?.toLowerCase().includes(searchTerm.toLowerCase())
                     );
-                    const paginationData = getPaginatedData(filteredCohorts, 'cohorts');
+                    const paginationData = getPaginatedData(filteredIntakes, 'intakes');
                     return (
                       <PaginationControls
-                        tab="cohorts"
+                        tab="intakes"
                         totalItems={paginationData.totalItems}
                         currentPage={paginationData.currentPage}
                         totalPages={paginationData.totalPages}
@@ -2969,452 +3372,33 @@ const Admissions: React.FC = () => {
                     );
                   })()}
                   
-                  {cohorts.length === 0 && !loading && (
+                  {intakes.length === 0 && !loading && (
                     <div className="text-center py-12">
                       <Users className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Cohorts Yet</h3>
-                      <p className="text-secondary-600 mb-6">Create your first cohort to get started.</p>
+                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Intakes Yet</h3>
+                      <p className="text-secondary-600 mb-6">Create your first intake to get started.</p>
                       <button 
-                        onClick={() => navigate('/portal/admissions/cohorts/new')}
+                        onClick={() => navigate('/portal/admissions/intakes/new')}
                         className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2 mx-auto"
                       >
                         <Plus className="h-4 w-4" />
-                        <span>New Cohort</span>
+                        <span>New Intake</span>
                       </button>
                     </div>
                   )}
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === 'letters' && (
-            <div>
-              {/* Actions Bar */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
-                    <input
-                      type="text"
-                      placeholder="Search templates..."
-                      value={letterSearchTerm}
-                      onChange={(e) => setLetterSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64"
-                    />
-                  </div>
-                  <select
-                    value={letterTypeFilter}
-                    onChange={(e) => setLetterTypeFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="all">All Types</option>
-                    <option value="acceptance">Acceptance</option>
-                    <option value="rejection">Rejection</option>
-                    <option value="payment_reminder">Payment Reminder</option>
-                    <option value="interview_invitation">Interview</option>
-                    <option value="document_request">Documents</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                </div>
-                <button 
-                  onClick={() => setLetterModal({ isOpen: true, template: null, isEditing: false })}
-                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>New Template</span>
-                </button>
-              </div>
-
-              {/* Letter Templates Grid */}
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(() => {
-                    const filteredTemplates = letterTemplates.filter(template => {
-                      const matchesSearch = template.title.toLowerCase().includes(letterSearchTerm.toLowerCase()) ||
-                                          template.subject.toLowerCase().includes(letterSearchTerm.toLowerCase());
-                      const matchesType = letterTypeFilter === 'all' || template.type === letterTypeFilter;
-                      return matchesSearch && matchesType;
-                    });
-                    const { paginatedData } = getPaginatedData(filteredTemplates, 'letters');
-                    return paginatedData.map((template) => (
-                      <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-secondary-800 mb-1">{template.title}</h3>
-                            <p className="text-sm text-secondary-600 mb-3 line-clamp-2">{template.subject}</p>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            template.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {template.status}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between text-sm text-secondary-500 mb-4">
-                          <span className="capitalize bg-gray-100 px-2 py-1 rounded text-xs">
-                            {template.type.replace('_', ' ')}
-                          </span>
-                          <span className="flex items-center space-x-1">
-                            <FileText className="h-3 w-3" />
-                            <span>{template.usageCount} uses</span>
-                          </span>
-                        </div>
-
-                        <div className="mb-4">
-                          <div className="flex flex-wrap gap-1">
-                            {template.variables.slice(0, 3).map((variable, index) => (
-                              <span
-                                key={index}
-                                className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                              >
-                                {`{{${variable}}}`}
-                              </span>
-                            ))}
-                            {template.variables.length > 3 && (
-                              <span className="text-xs text-secondary-500">
-                                +{template.variables.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => setLetterModal({ isOpen: true, template, isEditing: true })}
-                            className="flex-1 bg-primary-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200"
-                          >
-                            Edit Template
-                          </button>
-                          <button 
-                            onClick={() => duplicateLetterTemplate(template)}
-                            className="p-2 text-secondary-400 hover:text-secondary-600 transition-colors duration-200"
-                            title="Duplicate template"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => deleteLetterTemplate(template.id)}
-                            className="p-2 text-red-400 hover:text-red-600 transition-colors duration-200"
-                            title="Delete template"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ));
-                  })()}
-                </div>
-                
-                {/* Letters Pagination */}
-                {(() => {
-                  const filteredTemplates = letterTemplates.filter(template => {
-                    const matchesSearch = template.title.toLowerCase().includes(letterSearchTerm.toLowerCase()) ||
-                                        template.subject.toLowerCase().includes(letterSearchTerm.toLowerCase());
-                    const matchesType = letterTypeFilter === 'all' || template.type === letterTypeFilter;
-                    return matchesSearch && matchesType;
-                  });
-                  const paginationData = getPaginatedData(filteredTemplates, 'letters');
-                  return (
-                    <div className="mt-6">
-                      <PaginationControls
-                        tab="letters"
-                        totalItems={paginationData.totalItems}
-                        currentPage={paginationData.currentPage}
-                        totalPages={paginationData.totalPages}
-                        startIndex={paginationData.startIndex}
-                        endIndex={paginationData.endIndex}
-                      />
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Empty State */}
-              {letterTemplates.length === 0 && (
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-secondary-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-secondary-800 mb-2">No Letter Templates</h3>
-                  <p className="text-secondary-600 mb-4">Create your first letter template to get started.</p>
-                  <button 
-                    onClick={() => setLetterModal({ isOpen: true, template: null, isEditing: false })}
-                    className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
-                  >
-                    Create Template
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'committee' && (
-            <div>
-              {/* Actions Bar */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
-                    <input
-                      type="text"
-                      placeholder="Search committee members..."
-                      value={committeeSearchTerm}
-                      onChange={(e) => setCommitteeSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64"
-                    />
-                  </div>
-                  <select
-                    value={committeeStatusFilter}
-                    onChange={(e) => setCommitteeStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="all">All Members</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <button 
-                    onClick={loadCommitteeMembers}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-secondary-700 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    Refresh
-                  </button>
-                  <button 
-                    onClick={() => navigate('/portal/staff/new')}
-                    className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Add Member</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Committee Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-secondary-600">Total Members</p>
-                      <p className="text-2xl font-bold text-secondary-800">{committeeMembers.length}</p>
-                    </div>
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <Users className="h-5 w-5 text-blue-600" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-secondary-600">Active Members</p>
-                      <p className="text-2xl font-bold text-secondary-800">
-                        {committeeMembers.filter(m => m.status === 'active').length}
-                      </p>
-                    </div>
-                    <div className="bg-green-100 p-2 rounded-lg">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-secondary-600">Avg Reviews</p>
-                      <p className="text-2xl font-bold text-secondary-800">
-                        {committeeMembers.length > 0 
-                          ? Math.round(committeeMembers.reduce((sum, m) => sum + m.reviewedApplications, 0) / committeeMembers.length)
-                          : 0
-                        }
-                      </p>
-                    </div>
-                    <div className="bg-purple-100 p-2 rounded-lg">
-                      <Eye className="h-5 w-5 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-secondary-600">Avg Score</p>
-                      <p className="text-2xl font-bold text-secondary-800">
-                        {committeeMembers.length > 0 
-                          ? (committeeMembers.reduce((sum, m) => sum + m.averageScore, 0) / committeeMembers.length).toFixed(1)
-                          : '0.0'
-                        }
-                      </p>
-                    </div>
-                    <div className="bg-yellow-100 p-2 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-yellow-600" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Committee Members Table */}
-              <div className="bg-white rounded-lg border border-gray-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200 bg-gray-50">
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Member</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Committee Role</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Department</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Applications Reviewed</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Average Score</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(() => {
-                        const filteredMembers = committeeMembers.filter(member => {
-                          const matchesSearch = 
-                            member.firstName.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                            member.lastName.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                            member.email.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                            member.department.toLowerCase().includes(committeeSearchTerm.toLowerCase());
-                          const matchesStatus = committeeStatusFilter === 'all' || member.status === committeeStatusFilter;
-                          return matchesSearch && matchesStatus;
-                        });
-                        const { paginatedData } = getPaginatedData(filteredMembers, 'committee');
-                        return paginatedData.map((member) => (
-                          <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                            <td className="py-4 px-4">
-                              <div>
-                                <div className="font-medium text-secondary-800">
-                                  {member.firstName} {member.lastName}
-                                </div>
-                                <div className="text-sm text-secondary-500">{member.email}</div>
-                                <div className="text-xs text-secondary-400">{member.position}</div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCommitteeRoleBadgeColor(member.committeeRole)}`}>
-                                {getCommitteeRoleText(member.committeeRole)}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div>
-                                <div className="text-secondary-800">{member.department}</div>
-                                {member.specialization && (
-                                  <div className="text-xs text-secondary-500">{member.specialization}</div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-4 px-4 text-center">
-                              <span className="font-medium text-secondary-800">{member.reviewedApplications}</span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium text-secondary-800">
-                                  {member.averageScore > 0 ? member.averageScore.toFixed(1) : '--'}
-                                </span>
-                                {member.averageScore > 0 && (
-                                  <div className="flex">
-                                    {[...Array(5)].map((_, i) => (
-                                      <div
-                                        key={i}
-                                        className={`w-2 h-2 rounded-full mr-1 ${
-                                          i < Math.floor(member.averageScore / 2) ? 'bg-yellow-400' : 'bg-gray-200'
-                                        }`}
-                                      />
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                member.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}>
-                                {member.status}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center space-x-2">
-                                <button 
-                                  onClick={() => navigate(`/portal/staff/${member.id}`)}
-                                  className="p-1 text-secondary-400 hover:text-primary-600 transition-colors duration-200"
-                                  title="View Member Profile"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </button>
-                                <button 
-                                  onClick={() => navigate(`/portal/staff/${member.id}/edit`)}
-                                  className="p-1 text-secondary-400 hover:text-blue-600 transition-colors duration-200"
-                                  title="Edit Member"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ));
-                      })()}
-                    </tbody>
-                  </table>
-                  
-                  {/* Committee Pagination */}
-                  {(() => {
-                    const filteredMembers = committeeMembers.filter(member => {
-                      const matchesSearch = 
-                        member.firstName.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                        member.lastName.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                        member.email.toLowerCase().includes(committeeSearchTerm.toLowerCase()) ||
-                        member.department.toLowerCase().includes(committeeSearchTerm.toLowerCase());
-                      const matchesStatus = committeeStatusFilter === 'all' || member.status === committeeStatusFilter;
-                      return matchesSearch && matchesStatus;
-                    });
-                    const paginationData = getPaginatedData(filteredMembers, 'committee');
-                    return (
-                      <PaginationControls
-                        tab="committee"
-                        totalItems={paginationData.totalItems}
-                        currentPage={paginationData.currentPage}
-                        totalPages={paginationData.totalPages}
-                        startIndex={paginationData.startIndex}
-                        endIndex={paginationData.endIndex}
-                      />
-                    );
-                  })()}
-
-                  {/* Empty State */}
-                  {committeeMembers.length === 0 && (
-                    <div className="text-center py-12">
-                      <Users className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Committee Members</h3>
-                      <p className="text-secondary-600 mb-6">Add staff members to the admissions committee.</p>
-                      <button 
-                        onClick={() => navigate('/portal/staff/new')}
-                        className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2 mx-auto"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Add First Member</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           )}
 
           {activeTab === 'tests' && (
             <div className="space-y-6">
-              {/* Header with Actions */}
-              <div className="flex items-center justify-between">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-secondary-800">Competency Tests</h2>
-                  <p className="text-secondary-600">Manage assessment tests for applicants</p>
+                  <h2 className="text-2xl font-bold text-secondary-800">Test Results</h2>
+                  <p className="text-secondary-600">View all test attempts and results from applicants</p>
                 </div>
-                <button
-                  onClick={() => navigate('/portal/admissions/test/new')}
-                  className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>Create Test</span>
-                </button>
               </div>
 
               {/* Search and Filter */}
@@ -3425,9 +3409,9 @@ const Admissions: React.FC = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                       <input
                         type="text"
-                        placeholder="Search tests..."
-                        value={testSearchTerm}
-                        onChange={(e) => setTestSearchTerm(e.target.value)}
+                        placeholder="Search by applicant name or test..."
+                        value={resultSearchTerm}
+                        onChange={(e) => setResultSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
@@ -3438,97 +3422,95 @@ const Admissions: React.FC = () => {
                       onChange={(e) => setTestStatusFilter(e.target.value)}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="draft">Draft</option>
-                      <option value="archived">Archived</option>
+                      <option value="all">All Results</option>
+                      <option value="passed">Passed</option>
+                      <option value="failed">Failed</option>
+                      <option value="completed">Completed</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Tests Table */}
+              {/* Test Results Table */}
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Applicant</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Test</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Category</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Questions</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Time Limit</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Attempts</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Pass Rate</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Score</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Result</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Time Taken</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Date</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {competencyTests
-                        .filter(test => 
-                          test.title.toLowerCase().includes(testSearchTerm.toLowerCase()) ||
-                          test.category.toLowerCase().includes(testSearchTerm.toLowerCase())
+                      {testAttempts
+                        .filter(attempt => 
+                          attempt.applicantName.toLowerCase().includes(resultSearchTerm.toLowerCase()) ||
+                          attempt.applicantEmail.toLowerCase().includes(resultSearchTerm.toLowerCase()) ||
+                          competencyTests.find(t => t.id === attempt.testId)?.title.toLowerCase().includes(resultSearchTerm.toLowerCase())
                         )
-                        .filter(test => testStatusFilter === 'all' || test.status === testStatusFilter)
-                        .map((test) => {
-                          const stats = getTestStatistics(test.id);
+                        .filter(attempt => {
+                          if (testStatusFilter === 'all') return true;
+                          if (testStatusFilter === 'passed') return attempt.passed;
+                          if (testStatusFilter === 'failed') return !attempt.passed;
+                          if (testStatusFilter === 'completed') return attempt.status === 'completed';
+                          return true;
+                        })
+                        .sort((a, b) => new Date(b.submittedAt || b.endTime || '').getTime() - new Date(a.submittedAt || a.endTime || '').getTime())
+                        .map((attempt) => {
+                          const test = competencyTests.find(t => t.id === attempt.testId);
                           return (
-                            <tr key={test.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                            <tr key={attempt.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
                               <td className="py-4 px-4">
                                 <div>
-                                  <p className="font-medium text-secondary-800">{test.title}</p>
-                                  <p className="text-sm text-secondary-600 line-clamp-1">{test.description}</p>
-                                  <div className="flex items-center space-x-2 mt-1">
-                                    <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyBadgeColor(test.difficulty)}`}>
-                                      {test.difficulty.charAt(0).toUpperCase() + test.difficulty.slice(1)}
-                                    </span>
-                                  </div>
+                                  <p className="font-medium text-secondary-800">{attempt.applicantName}</p>
+                                  <p className="text-sm text-secondary-600">{attempt.applicantEmail}</p>
                                 </div>
                               </td>
-                              <td className="py-4 px-4 text-secondary-600">{test.category}</td>
+                              <td className="py-4 px-4">
+                                <div>
+                                  <p className="font-medium text-secondary-800">{test?.title || 'Unknown Test'}</p>
+                                  <p className="text-sm text-secondary-600">{test?.category || 'N/A'}</p>
+                                </div>
+                              </td>
                               <td className="py-4 px-4">
                                 <div className="text-center">
-                                  <p className="font-medium text-secondary-800">{test.questions.length}</p>
-                                  <p className="text-xs text-secondary-600">{test.totalPoints} pts</p>
+                                  <p className="font-medium text-secondary-800">{attempt.percentage}%</p>
+                                  <p className="text-xs text-secondary-600">{attempt.totalScore}/{test?.totalPoints || 0} pts</p>
                                 </div>
                               </td>
-                              <td className="py-4 px-4 text-secondary-600">{test.timeLimit}m</td>
                               <td className="py-4 px-4">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(test.status)}`}>
-                                  {test.status.charAt(0).toUpperCase() + test.status.slice(1)}
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  attempt.passed 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : attempt.status === 'completed' 
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {attempt.passed ? 'Passed' : attempt.status === 'completed' ? 'Failed' : attempt.status}
                                 </span>
                               </td>
-                              <td className="py-4 px-4 text-center font-medium text-secondary-800">{stats.totalAttempts}</td>
-                              <td className="py-4 px-4 text-center font-medium text-secondary-800">{stats.passRate}%</td>
+                              <td className="py-4 px-4 text-secondary-600">{attempt.timeSpent}m</td>
+                              <td className="py-4 px-4 text-secondary-600">
+                                {new Date(attempt.submittedAt || attempt.endTime || '').toLocaleDateString()}
+                              </td>
                               <td className="py-4 px-4">
                                 <div className="flex items-center space-x-2">
                                   <button
-                                    onClick={() => navigate(`/portal/admissions/test/${test.id}`)}
-                                    className="text-primary-600 hover:text-primary-700 font-medium text-sm"
-                                    title="View/Edit test"
+                                    onClick={() => setResultDetailModal({
+                                      isOpen: true,
+                                      attempt,
+                                      test: test || null
+                                    })}
+                                    className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center space-x-1"
+                                    title="View detailed results"
                                   >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => navigate(`/portal/admissions/test/${test.id}/take`)}
-                                    className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                                    title="Take test"
-                                  >
-                                    Take Test
-                                  </button>
-                                  <button
-                                    onClick={() => navigate(`/portal/admissions/test/${test.id}/results`)}
-                                    className="text-green-600 hover:text-green-700 font-medium text-sm"
-                                    title="View results"
-                                  >
-                                    Results
-                                  </button>
-                                  <button
-                                    onClick={() => deleteCompetencyTest(test.id)}
-                                    className="text-red-600 hover:text-red-700 font-medium text-sm"
-                                    title="Delete test"
-                                  >
-                                    Delete
+                                    <Eye className="h-4 w-4" />
+                                    <span>View Results</span>
                                   </button>
                                 </div>
                               </td>
@@ -3539,18 +3521,162 @@ const Admissions: React.FC = () => {
                   </table>
 
                   {/* Empty State */}
-                  {competencyTests.length === 0 && (
+                  {testAttempts.length === 0 && (
                     <div className="text-center py-12">
-                      <FileText className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Tests Created</h3>
-                      <p className="text-secondary-600 mb-6">Create your first competency test to assess applicants.</p>
-                      <button
-                        onClick={() => navigate('/portal/admissions/test/new')}
-                        className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2 mx-auto"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Create First Test</span>
-                      </button>
+                      <BarChart3 className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Test Results</h3>
+                      <p className="text-secondary-600 mb-6">Test results will appear here once applicants complete assessments.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'admissions' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-secondary-800">Admissions</h2>
+                  <p className="text-secondary-600">Manage applicants who have passed tests and are ready for admission</p>
+                </div>
+              </div>
+
+              {/* Search and Filter */}
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+                  <div className="flex-1 max-w-md">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by applicant name..."
+                        value={resultSearchTerm}
+                        onChange={(e) => setResultSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <select
+                      value={testStatusFilter}
+                      onChange={(e) => setTestStatusFilter(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="all">All Passed</option>
+                      <option value="pending_admission">Pending Admission</option>
+                      <option value="admitted">Admitted</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admissions Table */}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Applicant</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Test</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Score</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Date Passed</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {testAttempts
+                        .filter(attempt => attempt.passed) // Only show passed tests
+                        .filter(attempt => 
+                          attempt.applicantName.toLowerCase().includes(resultSearchTerm.toLowerCase()) ||
+                          attempt.applicantEmail.toLowerCase().includes(resultSearchTerm.toLowerCase()) ||
+                          competencyTests.find(t => t.id === attempt.testId)?.title.toLowerCase().includes(resultSearchTerm.toLowerCase())
+                        )
+                        .sort((a, b) => new Date(b.submittedAt || b.endTime || '').getTime() - new Date(a.submittedAt || a.endTime || '').getTime())
+                        .map((attempt) => {
+                          const test = competencyTests.find(t => t.id === attempt.testId);
+                          return (
+                            <tr key={attempt.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                              <td className="py-4 px-4">
+                                <div>
+                                  <p className="font-medium text-secondary-800">{attempt.applicantName}</p>
+                                  <p className="text-sm text-secondary-600">{attempt.applicantEmail}</p>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div>
+                                  <p className="font-medium text-secondary-800">{test?.title || 'Unknown Test'}</p>
+                                  <p className="text-sm text-secondary-600">{test?.category || 'N/A'}</p>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="text-center">
+                                  <p className="font-medium text-secondary-800">{attempt.percentage}%</p>
+                                  <p className="text-xs text-secondary-600">{attempt.totalScore}/{test?.totalPoints || 0} pts</p>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4 text-secondary-600">
+                                {new Date(attempt.submittedAt || attempt.endTime || '').toLocaleDateString()}
+                              </td>
+                              <td className="py-4 px-4">
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Passed
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={async () => {
+                                      // Find the applicant data based on the test attempt
+                                      const applicant = applicants.find(app => app.email === attempt.applicantEmail);
+                                      if (applicant) {
+                                        setViewProfileModal({
+                                          isOpen: true,
+                                          applicant,
+                                          testAttempt: attempt
+                                        });
+                                      }
+                                    }}
+                                    className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center space-x-1"
+                                    title="View applicant profile"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                    <span>View Profile</span>
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      // Find the applicant data based on the test attempt
+                                      const applicant = applicants.find(app => app.email === attempt.applicantEmail);
+                                      if (applicant) {
+                                        setConvertToCohortModal({
+                                          isOpen: true,
+                                          applicant,
+                                          testAttempt: attempt
+                                        });
+                                      }
+                                    }}
+                                    className="text-accent-600 hover:text-accent-700 font-medium text-sm flex items-center space-x-1 ml-3"
+                                    title="Convert to cohort"
+                                  >
+                                    <UserPlus className="h-4 w-4" />
+                                    <span>Convert to Cohort</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+
+                  {/* Empty State */}
+                  {testAttempts.filter(attempt => attempt.passed).length === 0 && (
+                    <div className="text-center py-12">
+                      <Users className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No Qualified Applicants</h3>
+                      <p className="text-secondary-600 mb-6">Qualified applicants who have passed tests will appear here.</p>
                     </div>
                   )}
                 </div>
@@ -3560,30 +3686,25 @@ const Admissions: React.FC = () => {
 
           {activeTab === 'analytics' && (
             <div className="space-y-6">
-              {/* Key Metrics Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-secondary-600">Conversion Rate</p>
-                      <p className="text-2xl font-bold text-secondary-800">68.5%</p>
-                      <p className="text-sm text-green-600 font-medium">+5.2% from last month</p>
-                    </div>
-                    <div className="bg-green-100 p-3 rounded-lg">
-                      <TrendingUp className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-secondary-800">Admissions Analytics</h2>
+                  <p className="text-secondary-600">Comprehensive overview of all admissions activities and performance metrics</p>
                 </div>
+              </div>
 
+              {/* Key Metrics Cards - Dynamic calculations */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-secondary-600">Avg. Review Time</p>
-                      <p className="text-2xl font-bold text-secondary-800">3.2 days</p>
-                      <p className="text-sm text-green-600 font-medium">-0.8 days improved</p>
+                      <p className="text-sm font-medium text-secondary-600">Total Applications</p>
+                      <p className="text-2xl font-bold text-secondary-800">{applications.length}</p>
+                      <p className="text-sm text-blue-600 font-medium">All submissions</p>
                     </div>
                     <div className="bg-blue-100 p-3 rounded-lg">
-                      <Clock className="h-6 w-6 text-blue-600" />
+                      <FileText className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
@@ -3591,12 +3712,25 @@ const Admissions: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-secondary-600">Application Quality</p>
-                      <p className="text-2xl font-bold text-secondary-800">7.8/10</p>
-                      <p className="text-sm text-green-600 font-medium">+0.3 improvement</p>
+                      <p className="text-sm font-medium text-secondary-600">Active Intakes</p>
+                      <p className="text-2xl font-bold text-secondary-800">{intakes.filter(i => i.status === 'active').length}</p>
+                      <p className="text-sm text-green-600 font-medium">Currently open</p>
+                    </div>
+                    <div className="bg-green-100 p-3 rounded-lg">
+                      <Users className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-secondary-600">Test Attempts</p>
+                      <p className="text-2xl font-bold text-secondary-800">{testAttempts.length}</p>
+                      <p className="text-sm text-purple-600 font-medium">All assessments</p>
                     </div>
                     <div className="bg-purple-100 p-3 rounded-lg">
-                      <UserPlus className="h-6 w-6 text-purple-600" />
+                      <BarChart3 className="h-6 w-6 text-purple-600" />
                     </div>
                   </div>
                 </div>
@@ -3604,9 +3738,24 @@ const Admissions: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-secondary-600">Revenue Impact</p>
-                      <p className="text-2xl font-bold text-secondary-800">$127K</p>
-                      <p className="text-sm text-green-600 font-medium">+18% this quarter</p>
+                      <p className="text-sm font-medium text-secondary-600">Qualified Applicants</p>
+                      <p className="text-2xl font-bold text-secondary-800">{testAttempts.filter(t => t.passed).length}</p>
+                      <p className="text-sm text-accent-600 font-medium">Ready for admission</p>
+                    </div>
+                    <div className="bg-accent-100 p-3 rounded-lg">
+                      <CheckCircle className="h-6 w-6 text-accent-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-secondary-600">Pass Rate</p>
+                      <p className="text-2xl font-bold text-secondary-800">
+                        {testAttempts.length > 0 ? Math.round((testAttempts.filter(t => t.passed).length / testAttempts.length) * 100) : 0}%
+                      </p>
+                      <p className="text-sm text-yellow-600 font-medium">Test success rate</p>
                     </div>
                     <div className="bg-yellow-100 p-3 rounded-lg">
                       <TrendingUp className="h-6 w-6 text-yellow-600" />
@@ -3615,121 +3764,342 @@ const Admissions: React.FC = () => {
                 </div>
               </div>
 
-              {/* Charts Section */}
+              {/* Tab-Specific Analytics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Application Status Distribution */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-secondary-800 mb-4">Application Status Distribution</h3>
                   <div className="space-y-4">
-                    {[
-                      { status: 'Approved', count: 156, percentage: 68.5, color: 'bg-green-500' },
-                      { status: 'Under Review', count: 45, percentage: 19.7, color: 'bg-yellow-500' },
-                      { status: 'Rejected', count: 18, percentage: 7.9, color: 'bg-red-500' },
-                      { status: 'Pending', count: 9, percentage: 3.9, color: 'bg-gray-500' },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <div className={`w-4 h-4 rounded ${item.color}`}></div>
-                        <div className="flex-1 flex items-center justify-between">
-                          <span className="text-sm font-medium text-secondary-700">{item.status}</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-secondary-600">{item.count}</span>
-                            <span className="text-sm text-secondary-500">({item.percentage}%)</span>
+                    {(() => {
+                      const statusCounts = applications.reduce((acc, app) => {
+                        acc[app.status] = (acc[app.status] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      
+                      const total = applications.length;
+                      const statusData = [
+                        { status: 'Approved', count: statusCounts.approved || 0, color: 'bg-green-500' },
+                        { status: 'Under Review', count: statusCounts.under_review || 0, color: 'bg-yellow-500' },
+                        { status: 'Rejected', count: statusCounts.rejected || 0, color: 'bg-red-500' },
+                        { status: 'Pending', count: statusCounts.pending || 0, color: 'bg-gray-500' },
+                      ];
+
+                      return statusData.map((item, index) => (
+                        <div key={index} className="flex items-center space-x-4">
+                          <div className={`w-4 h-4 rounded ${item.color}`}></div>
+                          <div className="flex-1 flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">{item.status}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-secondary-600">{item.count}</span>
+                              <span className="text-sm text-secondary-500">
+                                ({total > 0 ? Math.round((item.count / total) * 100) : 0}%)
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
                   </div>
                 </div>
 
-                {/* Monthly Application Trends */}
+                {/* Intakes Analytics */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-secondary-800 mb-4">Monthly Application Trends</h3>
-                  <div className="h-64 flex items-end space-x-2">
-                    {[
-                      { month: 'Jan', apps: 45, approved: 32 },
-                      { month: 'Feb', apps: 52, approved: 38 },
-                      { month: 'Mar', apps: 61, approved: 41 },
-                      { month: 'Apr', apps: 48, approved: 35 },
-                      { month: 'May', apps: 67, approved: 48 },
-                      { month: 'Jun', apps: 58, approved: 42 },
-                    ].map((data, index) => (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div className="w-full flex flex-col items-center space-y-1 mb-2">
-                          <div 
-                            className="w-full bg-primary-200 rounded-t"
-                            style={{ height: `${(data.apps / 70) * 200}px` }}
-                          ></div>
-                          <div 
-                            className="w-full bg-primary-600 rounded-b"
-                            style={{ height: `${(data.approved / 70) * 200}px` }}
-                          ></div>
+                  <h3 className="text-lg font-semibold text-secondary-800 mb-4">Intakes Overview</h3>
+                  <div className="space-y-4">
+                    {(() => {
+                      const statusCounts = intakes.reduce((acc, intake) => {
+                        acc[intake.status] = (acc[intake.status] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      
+                      const total = intakes.length;
+                      const intakeData = [
+                        { status: 'Active', count: statusCounts.active || 0, color: 'bg-green-500' },
+                        { status: 'Upcoming', count: statusCounts.upcoming || 0, color: 'bg-blue-500' },
+                        { status: 'Closed', count: statusCounts.closed || 0, color: 'bg-gray-500' },
+                        { status: 'Cancelled', count: statusCounts.cancelled || 0, color: 'bg-red-500' },
+                      ];
+
+                      return intakeData.map((item, index) => (
+                        <div key={index} className="flex items-center space-x-4">
+                          <div className={`w-4 h-4 rounded ${item.color}`}></div>
+                          <div className="flex-1 flex items-center justify-between">
+                            <span className="text-sm font-medium text-secondary-700">{item.status}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-secondary-600">{item.count}</span>
+                              <span className="text-sm text-secondary-500">
+                                ({total > 0 ? Math.round((item.count / total) * 100) : 0}%)
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-xs text-secondary-600">{data.month}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-center space-x-4 mt-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-primary-200 rounded"></div>
-                      <span className="text-secondary-600">Total Applications</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-primary-600 rounded"></div>
-                      <span className="text-secondary-600">Approved</span>
-                    </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>
 
-              {/* Program Performance */}
+              {/* Test Results Analytics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-secondary-800 mb-4">Test Performance Metrics</h3>
+                  <div className="space-y-4">
+                    {(() => {
+                      if (testAttempts.length === 0) {
+                        return (
+                          <div className="text-center py-8 text-secondary-600">
+                            No test data available
+                          </div>
+                        );
+                      }
+
+                      const avgScore = testAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / testAttempts.length;
+                      const passedCount = testAttempts.filter(t => t.passed).length;
+                      const failedCount = testAttempts.length - passedCount;
+                      const avgTimeSpent = testAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0) / testAttempts.length;
+
+                      return (
+                        <>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Average Score</span>
+                            <span className="text-lg font-bold text-secondary-800">{avgScore.toFixed(1)}%</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Tests Passed</span>
+                            <span className="text-lg font-bold text-green-600">{passedCount}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Tests Failed</span>
+                            <span className="text-lg font-bold text-red-600">{failedCount}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Avg. Time Spent</span>
+                            <span className="text-lg font-bold text-secondary-800">{avgTimeSpent.toFixed(1)}m</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-secondary-800 mb-4">Admissions Pipeline</h3>
+                  <div className="space-y-4">
+                    {(() => {
+                      const qualifiedApplicants = testAttempts.filter(t => t.passed);
+                      const totalRevenue = applications.reduce((sum, app) => sum + (app.amountPaid || 0), 0);
+                      const paidApplications = applications.filter(app => app.paymentStatus === 'paid').length;
+                      
+                      return (
+                        <>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Qualified for Admission</span>
+                            <span className="text-lg font-bold text-accent-600">{qualifiedApplicants.length}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Fully Paid Applications</span>
+                            <span className="text-lg font-bold text-green-600">{paidApplications}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Total Revenue</span>
+                            <span className="text-lg font-bold text-secondary-800">KSh {totalRevenue.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <span className="text-sm font-medium text-secondary-700">Conversion Rate</span>
+                            <span className="text-lg font-bold text-yellow-600">
+                              {applications.length > 0 ? Math.round((qualifiedApplicants.length / applications.length) * 100) : 0}%
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Program Performance Table */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-secondary-800 mb-4">Program Performance</h3>
+                <h3 className="text-lg font-semibold text-secondary-800 mb-4">Program Performance Analysis</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50">
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Program</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Applications</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Approved</th>
-                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Conversion Rate</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Tests Taken</th>
+                        <th className="text-left py-3 px-4 font-medium text-secondary-600">Pass Rate</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Avg. Score</th>
                         <th className="text-left py-3 px-4 font-medium text-secondary-600">Revenue</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {[
-                        { name: 'Sales Foundations', apps: 89, approved: 67, rate: 75.3, score: 8.1, revenue: 45200 },
-                        { name: 'Advanced Sales Strategies', apps: 76, approved: 48, rate: 63.2, score: 7.8, revenue: 38400 },
-                        { name: 'Sales Leadership', apps: 34, approved: 26, rate: 76.5, score: 8.4, revenue: 31200 },
-                        { name: 'Digital Sales Mastery', apps: 52, approved: 38, rate: 73.1, score: 8.0, revenue: 28800 },
-                      ].map((program, index) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                          <td className="py-4 px-4 font-medium text-secondary-800">{program.name}</td>
-                          <td className="py-4 px-4 text-secondary-600">{program.apps}</td>
-                          <td className="py-4 px-4 text-secondary-600">{program.approved}</td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-secondary-800 font-medium">{program.rate}%</span>
-                              <div className="w-16 bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-primary-600 h-2 rounded-full" 
-                                  style={{ width: `${program.rate}%` }}
-                                ></div>
+                      {(() => {
+                        const programStats = programs.map(program => {
+                          const programApps = applications.filter(app => app.programId === program.id);
+                          const programTests = testAttempts.filter(attempt => 
+                            programApps.some(app => app.email === attempt.applicantEmail)
+                          );
+                          const passedTests = programTests.filter(t => t.passed);
+                          const avgScore = programTests.length > 0 
+                            ? programTests.reduce((sum, t) => sum + t.percentage, 0) / programTests.length 
+                            : 0;
+                          const revenue = programApps.reduce((sum, app) => sum + (app.amountPaid || 0), 0);
+                          const passRate = programTests.length > 0 
+                            ? (passedTests.length / programTests.length) * 100 
+                            : 0;
+
+                          return {
+                            name: program.programName || program.name || 'Unknown Program',
+                            applications: programApps.length,
+                            tests: programTests.length,
+                            passRate: passRate,
+                            avgScore: avgScore,
+                            revenue: revenue
+                          };
+                        });
+
+                        if (programStats.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-secondary-600">
+                                No program data available
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return programStats.map((program, index) => (
+                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                            <td className="py-4 px-4 font-medium text-secondary-800">{program.name}</td>
+                            <td className="py-4 px-4 text-secondary-600">{program.applications}</td>
+                            <td className="py-4 px-4 text-secondary-600">{program.tests}</td>
+                            <td className="py-4 px-4">
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-sm font-medium ${
+                                  program.passRate >= 70 ? 'text-green-600' : 
+                                  program.passRate >= 50 ? 'text-yellow-600' : 'text-red-600'
+                                }`}>
+                                  {program.passRate.toFixed(1)}%
+                                </span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-20">
+                                  <div 
+                                    className={`h-2 rounded-full ${
+                                      program.passRate >= 70 ? 'bg-green-500' : 
+                                      program.passRate >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${Math.min(program.passRate, 100)}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-secondary-600">{program.score}/10</td>
-                          <td className="py-4 px-4 font-medium text-secondary-800">${program.revenue.toLocaleString()}</td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="py-4 px-4 text-secondary-600">{program.avgScore.toFixed(1)}%</td>
+                            <td className="py-4 px-4 font-medium text-secondary-800">
+                              KSh {program.revenue.toLocaleString()}
+                            </td>
+                          </tr>
+                        ));
+                      })()}
                     </tbody>
                   </table>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-secondary-800 mb-4">Quick Actions & Insights</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-4 border border-primary-100">
+                    <h4 className="font-semibold text-secondary-800 mb-2">Applications Needing Review</h4>
+                    <p className="text-2xl font-bold text-yellow-600 mb-2">
+                      {applications.filter(app => app.status === 'under_review').length}
+                    </p>
+                    <p className="text-sm text-secondary-600">
+                      Waiting for staff review
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-primary-100">
+                    <h4 className="font-semibold text-secondary-800 mb-2">Pending Test Takers</h4>
+                    <p className="text-2xl font-bold text-blue-600 mb-2">
+                      {applications.filter(app => 
+                        app.status === 'approved' && 
+                        !testAttempts.some(t => t.applicantEmail === app.email)
+                      ).length}
+                    </p>
+                    <p className="text-sm text-secondary-600">
+                      Approved but haven't taken tests
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-primary-100">
+                    <h4 className="font-semibold text-secondary-800 mb-2">Ready for Admission</h4>
+                    <p className="text-2xl font-bold text-green-600 mb-2">
+                      {testAttempts.filter(t => t.passed).length}
+                    </p>
+                    <p className="text-sm text-secondary-600">
+                      Passed tests, ready to convert
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <ActionModal
+        isOpen={actionModal.isOpen}
+        onClose={() => setActionModal({ isOpen: false, type: 'approve', applicant: null })}
+        onConfirm={handleApprovalAction}
+        type={actionModal.type}
+        applicant={actionModal.applicant}
+      />
+
+      <FeedbackModal
+        isOpen={feedbackModal.isOpen}
+        onClose={() => setFeedbackModal({ isOpen: false, applicant: null, existingFeedback: null })}
+        onSubmit={submitFeedback}
+        applicant={feedbackModal.applicant}
+        existingFeedback={feedbackModal.existingFeedback}
+      />
+
+      <TestModal
+        isOpen={testModal.isOpen}
+        onClose={() => setTestModal({ isOpen: false, test: null, isEditing: false })}
+        onSave={saveCompetencyTest}
+        test={testModal.test}
+        isEditing={testModal.isEditing}
+      />
+
+      <QuestionModal
+        isOpen={questionModal.isOpen}
+        onClose={() => setQuestionModal({ isOpen: false, question: null, isEditing: false, questionNumber: 1 })}
+        onSave={saveQuestion}
+        question={questionModal.question}
+        isEditing={questionModal.isEditing}
+        questionNumber={questionModal.questionNumber}
+      />
+
+      <ResultDetailModal
+        isOpen={resultDetailModal.isOpen}
+        onClose={() => setResultDetailModal({ isOpen: false, attempt: null, test: null })}
+        attempt={resultDetailModal.attempt}
+        test={resultDetailModal.test}
+      />
+
+      <ViewProfileModal
+        isOpen={viewProfileModal.isOpen}
+        onClose={() => setViewProfileModal({ isOpen: false, applicant: null, testAttempt: null })}
+        applicant={viewProfileModal.applicant}
+        testAttempt={viewProfileModal.testAttempt}
+      />
+
+      <ConvertToCohortModal
+        isOpen={convertToCohortModal.isOpen}
+        onClose={() => setConvertToCohortModal({ isOpen: false, applicant: null, testAttempt: null })}
+        onConfirm={handleConvertToCohort}
+        applicant={convertToCohortModal.applicant}
+        testAttempt={convertToCohortModal.testAttempt}
+      />
     </div>
   );
 };

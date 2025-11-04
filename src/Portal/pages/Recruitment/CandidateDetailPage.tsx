@@ -1,39 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User, Edit, Mail, Phone, Briefcase, FileText, Plus, Trash2, Download, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, User, Edit, Mail, Phone, Briefcase, FileText, Plus, Trash2, Download, ExternalLink, MapPin } from 'lucide-react';
 import { FirestoreService } from '../../../services/firestore';
+import { WorkExperience, Education, BaseUserData } from '../../../types/shared';
 
-interface CandidateData {
-  id?: string;
-  // Personal Information
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
+interface CandidateData extends BaseUserData {
+  // Additional candidate-specific fields
   location: string;
-  dateOfBirth?: string;
-  // Professional Information
   currentPosition?: string;
   currentCompany?: string;
-  experience: string;
   expectedSalary?: number;
   noticePeriod?: string;
-  // Education & Skills
-  education: string;
-  skills: string[];
-  certifications: string[];
-  languages: string[];
-  // Career Information
   careerSummary: string;
-  achievements: string;
-  // Application Information
   appliedJobs: string[];
-  status: 'active' | 'hired' | 'inactive';
   registrationDate: string;
   resumeUrl?: string;
   portfolioUrl?: string;
   linkedinUrl?: string;
-  // Additional
   availability: string;
   willingToRelocate: boolean;
   notes?: string;
@@ -62,18 +45,17 @@ const CandidateDetailPage: React.FC = () => {
     email: '',
     phoneNumber: '',
     location: '',
-    dateOfBirth: '',
-    currentPosition: '',
-    currentCompany: '',
-    experience: '',
-    expectedSalary: 0,
-    noticePeriod: '',
-    education: '',
+    role: 'applicant',
+    workExperience: [],
+    education: [],
     skills: [],
     certifications: [],
     languages: [],
+    currentPosition: '',
+    currentCompany: '',
+    expectedSalary: 0,
+    noticePeriod: '',
     careerSummary: '',
-    achievements: '',
     appliedJobs: [],
     status: 'active',
     registrationDate: new Date().toISOString().split('T')[0],
@@ -91,7 +73,7 @@ const CandidateDetailPage: React.FC = () => {
 
   const tabs = [
     { id: 'personal', label: 'Personal Info', icon: User },
-    { id: 'professional', label: 'Professional', icon: Briefcase },
+    { id: 'work-experience', label: 'Work Experience', icon: Briefcase },
     { id: 'education', label: 'Education & Skills', icon: FileText },
     { id: 'applications', label: 'Applications', icon: Mail },
   ];
@@ -144,7 +126,7 @@ const CandidateDetailPage: React.FC = () => {
 
       if (result.success) {
         if (!id && (result as any).id) {
-          navigate(`/portal/recruitment/candidates/${(result as any).id}`);
+          navigate(`/portal/opportunities/candidates/${(result as any).id}`);
         }
         setIsEditing(false);
       }
@@ -159,6 +141,74 @@ const CandidateDetailPage: React.FC = () => {
     setCandidateData(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const addWorkExperience = () => {
+    const newExperience: WorkExperience = {
+      id: Date.now().toString(),
+      jobTitle: '',
+      company: '',
+      startDate: '',
+      endDate: '',
+      isCurrentJob: false,
+      responsibilities: '',
+      achievements: '',
+      description: ''
+    };
+    setCandidateData(prev => ({
+      ...prev,
+      workExperience: [...prev.workExperience, newExperience]
+    }));
+  };
+
+  const updateWorkExperience = (id: string, field: keyof WorkExperience, value: any) => {
+    setCandidateData(prev => ({
+      ...prev,
+      workExperience: prev.workExperience.map(exp => 
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    }));
+  };
+
+  const removeWorkExperience = (id: string) => {
+    setCandidateData(prev => ({
+      ...prev,
+      workExperience: prev.workExperience.filter(exp => exp.id !== id)
+    }));
+  };
+
+  const addEducation = () => {
+    const newEducation: Education = {
+      id: Date.now().toString(),
+      institution: '',
+      degree: '',
+      fieldOfStudy: '',
+      startDate: '',
+      endDate: '',
+      isCurrentStudy: false,
+      grade: '',
+      achievements: ''
+    };
+    setCandidateData(prev => ({
+      ...prev,
+      education: [...prev.education, newEducation]
+    }));
+  };
+
+  const updateEducation = (id: string, field: keyof Education, value: any) => {
+    setCandidateData(prev => ({
+      ...prev,
+      education: prev.education.map(edu => 
+        edu.id === id ? { ...edu, [field]: value } : edu
+      )
+    }));
+  };
+
+  const removeEducation = (id: string) => {
+    setCandidateData(prev => ({
+      ...prev,
+      education: prev.education.filter(edu => edu.id !== id)
     }));
   };
 
@@ -210,7 +260,7 @@ const CandidateDetailPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/portal/recruitment')}
+              onClick={() => navigate('/portal/opportunities')}
               className="bg-white bg-opacity-20 p-2 rounded-lg hover:bg-opacity-30 transition-colors duration-200"
             >
               <ArrowLeft className="h-6 w-6 text-white" />
@@ -261,7 +311,7 @@ const CandidateDetailPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-primary-100">Status</p>
-                  <p className="text-2xl font-bold text-white">{candidateData.status.toUpperCase()}</p>
+                  <p className="text-2xl font-bold text-white">{(candidateData.status || 'active').toUpperCase()}</p>
                 </div>
                 <div className="bg-white bg-opacity-20 p-3 rounded-lg">
                   <User className="h-6 w-6 text-white" />
@@ -481,177 +531,62 @@ const CandidateDetailPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'professional' && (
+          {activeTab === 'work-experience' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-secondary-800 mb-6">Professional Information</h2>
+              <h2 className="text-2xl font-bold text-secondary-800 mb-6">Work Experience</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Current Position
-                  </label>
-                  <input
-                    type="text"
-                    value={candidateData.currentPosition || ''}
-                    onChange={(e) => handleInputChange('currentPosition', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                    placeholder="e.g., Sales Manager"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Current Company
-                  </label>
-                  <input
-                    type="text"
-                    value={candidateData.currentCompany || ''}
-                    onChange={(e) => handleInputChange('currentCompany', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                    placeholder="Company name"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Years of Experience
-                  </label>
-                  <input
-                    type="text"
-                    value={candidateData.experience}
-                    onChange={(e) => handleInputChange('experience', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                    placeholder="e.g., 5 years"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Expected Salary (KES)
-                  </label>
-                  <input
-                    type="number"
-                    value={candidateData.expectedSalary || ''}
-                    onChange={(e) => handleInputChange('expectedSalary', parseFloat(e.target.value) || 0)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                    placeholder="e.g., 50000"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Career Summary
-                </label>
-                <textarea
-                  rows={6}
-                  value={candidateData.careerSummary}
-                  onChange={(e) => handleInputChange('careerSummary', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50 resize-none"
-                  placeholder="Brief summary of career highlights and experience..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Key Achievements
-                </label>
-                <textarea
-                  rows={5}
-                  value={candidateData.achievements}
-                  onChange={(e) => handleInputChange('achievements', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50 resize-none"
-                  placeholder="Notable achievements, awards, and accomplishments..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Resume URL
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="url"
-                      value={candidateData.resumeUrl || ''}
-                      onChange={(e) => handleInputChange('resumeUrl', e.target.value)}
-                      disabled={!isEditing}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                      placeholder="https://..."
-                    />
-                    {candidateData.resumeUrl && (
-                      <a 
-                        href={candidateData.resumeUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+              {candidateData.workExperience.length === 0 && (
+                <p className="text-secondary-500 text-center py-4">No work experience added yet.</p>
+              )}
+              {candidateData.workExperience.map((experience) => (
+                <div key={experience.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-secondary-800">{experience.jobTitle}</h3>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {experience.isCurrentJob ? 'Current' : `${experience.startDate} - ${experience.endDate}`}
+                    </span>
+                  </div>
+                  <p className="text-secondary-600 mb-2">{experience.company}</p>
+                  <p className="text-secondary-700 mb-4">{experience.description}</p>
+                  <p className="text-secondary-800 font-medium">Achievements:</p>
+                  <ul className="list-disc list-inside text-secondary-700 mb-4">
+                    {experience.achievements.split('\n').map((achievement, index) => (
+                      <li key={index}>{achievement}</li>
+                    ))}
+                  </ul>
+                  <p className="text-secondary-800 font-medium">Responsibilities:</p>
+                  <ul className="list-disc list-inside text-secondary-700">
+                    {experience.responsibilities.split('\n').map((responsibility, index) => (
+                      <li key={index}>{responsibility}</li>
+                    ))}
+                  </ul>
+                  {isEditing && (
+                    <div className="flex justify-end mt-4 space-x-2">
+                      <button
+                        onClick={() => updateWorkExperience(experience.id, 'isCurrentJob', !experience.isCurrentJob)}
+                        className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
                       >
-                        <Download className="h-4 w-4" />
-                      </a>
+                        {experience.isCurrentJob ? 'End Current Job' : 'Mark as Current Job'}
+                      </button>
+                      <button
+                        onClick={() => removeWorkExperience(experience.id)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors duration-200"
+                      >
+                        Remove Experience
+                      </button>
+                    </div>
                     )}
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    Portfolio URL
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="url"
-                      value={candidateData.portfolioUrl || ''}
-                      onChange={(e) => handleInputChange('portfolioUrl', e.target.value)}
-                      disabled={!isEditing}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                      placeholder="https://..."
-                    />
-                    {candidateData.portfolioUrl && (
-                      <a 
-                        href={candidateData.portfolioUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">
-                    LinkedIn URL
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="url"
-                      value={candidateData.linkedinUrl || ''}
-                      onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
-                      disabled={!isEditing}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50"
-                      placeholder="https://linkedin.com/in/..."
-                    />
-                    {candidateData.linkedinUrl && (
-                      <a 
-                        href={candidateData.linkedinUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={addWorkExperience}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Work Experience</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -659,19 +594,53 @@ const CandidateDetailPage: React.FC = () => {
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-secondary-800 mb-6">Education & Skills</h2>
               
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">
-                  Education Background
-                </label>
-                <textarea
-                  rows={4}
-                  value={candidateData.education}
-                  onChange={(e) => handleInputChange('education', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50 resize-none"
-                  placeholder="Education details, degrees, institutions..."
-                />
+              {candidateData.education.length === 0 && (
+                <p className="text-secondary-500 text-center py-4">No education background added yet.</p>
+              )}
+              {candidateData.education.map((education) => (
+                <div key={education.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-secondary-800">{education.degree}</h3>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {education.isCurrentStudy ? 'Current' : `${education.startDate} - ${education.endDate}`}
+                    </span>
               </div>
+                  <p className="text-secondary-600 mb-2">{education.institution}</p>
+                  <p className="text-secondary-700 mb-4">Field of Study: {education.fieldOfStudy}</p>
+                  <p className="text-secondary-800 font-medium">Grade: {education.grade}</p>
+                                     <p className="text-secondary-700 mb-4">Achievements:</p>
+                   <ul className="list-disc list-inside text-secondary-700 mb-4">
+                     {(education.achievements || '').split('\n').map((achievement, index) => (
+                       <li key={index}>{achievement}</li>
+                     ))}
+                   </ul>
+                  {isEditing && (
+                    <div className="flex justify-end mt-4 space-x-2">
+                      <button
+                        onClick={() => updateEducation(education.id, 'isCurrentStudy', !education.isCurrentStudy)}
+                        className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200"
+                      >
+                        {education.isCurrentStudy ? 'End Current Study' : 'Mark as Current Study'}
+                      </button>
+                      <button
+                        onClick={() => removeEducation(education.id)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors duration-200"
+                      >
+                        Remove Education
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={addEducation}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Education</span>
+                </button>
+              )}
 
               {/* Skills */}
               <div>

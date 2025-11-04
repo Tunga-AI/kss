@@ -11,9 +11,17 @@ import {
   where, 
   orderBy, 
   limit,
-  Timestamp 
+  Timestamp,
+  WhereFilterOp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+
+// Interface for query conditions
+interface QueryCondition {
+  field: string;
+  operator: WhereFilterOp;
+  value: any;
+}
 
 // Generic Firestore service functions
 export class FirestoreService {
@@ -83,7 +91,7 @@ export class FirestoreService {
   }
 
   // Get documents with a query
-  static async getWithQuery(collectionName: string, conditions: any[] = [], orderByField?: string, limitCount?: number) {
+  static async getWithQuery(collectionName: string, conditions: QueryCondition[] = [], orderByField?: string, limitCount?: number) {
     try {
       let q = query(collection(db, collectionName));
       
@@ -122,6 +130,28 @@ export class FirestoreService {
         updatedAt: Timestamp.now()
       }, { merge: true });
       return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get available intakes (application deadline hasn't passed)
+  static async getAvailableIntakes(programId?: string) {
+    try {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Set to start of today
+      
+      let conditions: QueryCondition[] = [
+        { field: 'applicationDeadline', operator: '>=' as WhereFilterOp, value: Timestamp.fromDate(currentDate) }
+      ];
+      
+      // Add program filter if specified
+      if (programId) {
+        conditions.push({ field: 'programId', operator: '==' as WhereFilterOp, value: programId });
+      }
+      
+      const result = await this.getWithQuery('intakes', conditions, 'startDate');
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -173,6 +203,24 @@ export class ProgramService extends FirestoreService {
   static async updateProgramStatus(programId: string, status: 'draft' | 'active' | 'archived') {
     return this.update('programs', programId, { status });
   }
+
+  static async getBySlug(slug: string) {
+    const result = await this.getWithQuery('programs', [
+      { field: 'slug', operator: '==', value: slug }
+    ]);
+    
+    if (result.success && result.data && result.data.length > 0) {
+      return {
+        success: true,
+        data: result.data[0]
+      };
+    }
+    
+    return {
+      success: false,
+      error: 'Program not found'
+    };
+  }
 }
 
 export class EventService extends FirestoreService {
@@ -184,5 +232,114 @@ export class EventService extends FirestoreService {
     return this.getWithQuery('events', [
       { field: 'date', operator: '>=', value: Timestamp.now() }
     ], 'date');
+  }
+
+  static async getBySlug(slug: string) {
+    const result = await this.getWithQuery('events', [
+      { field: 'slug', operator: '==', value: slug }
+    ]);
+    
+    if (result.success && result.data && result.data.length > 0) {
+      return {
+        success: true,
+        data: result.data[0]
+      };
+    }
+    
+    return {
+      success: false,
+      error: 'Event not found'
+    };
+  }
+
+  static async getPublicEvents() {
+    return this.getWithQuery('events', [
+      { field: 'isPublic', operator: '==', value: true }
+    ]);
+  }
+}
+
+export class CustomerService extends FirestoreService {
+  static async createCustomer(customerData: any) {
+    return this.create('customers', customerData);
+  }
+
+  static async getCustomersByStatus(status: string) {
+    return this.getWithQuery('customers', [
+      { field: 'status', operator: '==', value: status }
+    ], 'submittedDate');
+  }
+
+  static async getCustomersByPriority(priority: string) {
+    return this.getWithQuery('customers', [
+      { field: 'priority', operator: '==', value: priority }
+    ], 'submittedDate');
+  }
+
+  static async getCustomersByProgram(programId: string) {
+    return this.getWithQuery('customers', [
+      { field: 'programId', operator: '==', value: programId }
+    ], 'submittedDate');
+  }
+
+  static async getCustomersBySource(source: string) {
+    return this.getWithQuery('customers', [
+      { field: 'source', operator: '==', value: source }
+    ], 'submittedDate');
+  }
+
+  static async getCustomersByAssignedTo(assignedTo: string) {
+    return this.getWithQuery('customers', [
+      { field: 'assignedTo', operator: '==', value: assignedTo }
+    ], 'submittedDate');
+  }
+
+  static async getRecentCustomers(limitCount: number = 10) {
+    return this.getWithQuery('customers', [], 'submittedDate', limitCount);
+  }
+
+  static async updateCustomerStatus(customerId: string, status: string) {
+    return this.update('customers', customerId, { 
+      status,
+      lastContactDate: Timestamp.now()
+    });
+  }
+
+  static async updateCustomerPriority(customerId: string, priority: string) {
+    return this.update('customers', customerId, { priority });
+  }
+
+  static async assignCustomer(customerId: string, assignedTo: string, assignedToName: string) {
+    return this.update('customers', customerId, { 
+      assignedTo,
+      assignedToName,
+      lastContactDate: Timestamp.now()
+    });
+  }
+
+  static async addCustomerNote(noteData: any) {
+    return this.create('customerNotes', noteData);
+  }
+
+  static async getCustomerNotes(customerId: string) {
+    return this.getWithQuery('customerNotes', [
+      { field: 'customerId', operator: '==', value: customerId }
+    ], 'createdAt');
+  }
+
+  static async convertToApplication(customerId: string, applicationData: any) {
+    // First create the application
+    const applicationResult = await this.create('applicants', applicationData);
+    
+    if (applicationResult.success) {
+      // Update customer status to converted
+      await this.update('customers', customerId, {
+        status: 'converted',
+        conversionDate: Timestamp.now(),
+        conversionType: 'application'
+      });
+    }
+    
+    return applicationResult;
   }
 }

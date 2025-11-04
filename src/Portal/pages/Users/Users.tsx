@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users as UsersIcon, Search, Filter, Plus, Edit, Trash2, Mail, Phone, Eye, Shield, UserCheck, GraduationCap, UserPlus } from 'lucide-react';
+import { Users as UsersIcon, Search, Filter, Plus, Edit, Trash2, Mail, Phone, Eye, Shield, UserCheck, GraduationCap, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FirestoreService } from '../../../services/firestore';
 
 interface User {
@@ -31,6 +31,8 @@ const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(15);
 
   useEffect(() => {
     loadUsers();
@@ -85,6 +87,7 @@ const Users: React.FC = () => {
     }
 
     setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const deleteUser = async (userId: string) => {
@@ -192,6 +195,28 @@ const Users: React.FC = () => {
       roles[user.role].push(user);
     });
     return roles;
+  };
+
+  // Pagination logic
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  const goToPage = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   if (loading) {
@@ -318,14 +343,13 @@ const Users: React.FC = () => {
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">User</th>
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">Role</th>
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">Organization</th>
-                      <th className="text-left py-3 px-4 font-medium text-secondary-600">Department</th>
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">Status</th>
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">Joined</th>
                       <th className="text-left py-3 px-4 font-medium text-secondary-600">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map((user) => {
+                    {currentUsers.map((user) => {
                       const RoleIcon = getRoleIcon(user.role);
                       return (
                         <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
@@ -349,7 +373,6 @@ const Users: React.FC = () => {
                             </span>
                           </td>
                           <td className="py-4 px-4 text-secondary-600">{user.organization || 'N/A'}</td>
-                          <td className="py-4 px-4 text-secondary-600">{user.department || 'N/A'}</td>
                           <td className="py-4 px-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.isEmailVerified, user.status)}`}>
                               {getStatusText(user.isEmailVerified, user.status)}
@@ -395,6 +418,71 @@ const Users: React.FC = () => {
                     })}
                   </tbody>
                 </table>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-4 border-t border-gray-200">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-secondary-600">
+                        Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} users
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm font-medium text-secondary-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      
+                      {/* Page Numbers */}
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          // Show first page, last page, current page, and pages around current page
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => goToPage(page)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                                  page === currentPage
+                                    ? 'bg-primary-600 text-white'
+                                    : 'text-secondary-600 bg-white border border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          } else if (
+                            page === currentPage - 2 ||
+                            page === currentPage + 2
+                          ) {
+                            return (
+                              <span key={page} className="px-2 py-2 text-secondary-400">
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                      
+                      <button
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm font-medium text-secondary-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {filteredUsers.length === 0 && !loading && (
                   <div className="text-center py-12">

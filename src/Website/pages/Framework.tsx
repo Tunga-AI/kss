@@ -1,291 +1,495 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
   BookOpen,
-  ArrowRight
+  ArrowRight,
+  Target,
+  Users,
+  TrendingUp,
+  Award,
+  Briefcase,
+  Heart,
+  Lightbulb,
+  Star,
+  Zap,
+  CheckCircle
 } from 'lucide-react';
 import Logo from '../../components/Logo';
 
 const Framework: React.FC = () => {
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-
-  useEffect(() => {
-    // Initial page load
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isInitialLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4">
-            <Logo size="2xl" showText={true} textSize="3xl" className="justify-center" />
-          </div>
-          <p className="text-white text-xl">Loading Sales Capability Framework...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-end overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src="/kss11.jpg"
-            alt="Students in learning environment"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-800/80 to-secondary-900/90"></div>
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
+      <section className="relative h-screen bg-white pt-20 pb-8 lg:pb-12">
+        <div className="px-6 sm:px-8 lg:px-12 h-full flex items-center">
+          {/* Background Image Container */}
+          <div className="relative w-full h-[95%] overflow-hidden rounded-md shadow-2xl">
+            <img
+              src="/about.jpg"
+              alt="Students learning together"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30"></div>
+            
+            {/* Content */}
+            <div className="absolute inset-0 flex items-end px-6 sm:px-8 lg:px-12 pb-12">
+              <div className="max-w-2xl">
+                <div className="text-white">
+                  <h1 className="text-3xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                    Your Roadmap to Sales
+                    <span className="block" style={{ color: '#4590AD' }}>
+                      Mastery
+                    </span>
+                  </h1>
+                  
+                  <p className="text-lg text-gray-200 mb-6 leading-relaxed">
+                    Ever wonder what separates good salespeople from great ones? Our proven framework shows you exactly how to get there.
+                  </p>
 
-        {/* Content */}
-        <div className="relative w-full px-6 sm:px-8 lg:px-12 pb-16 lg:pb-20">
-          <div className="w-full">
-            <div className="text-white">
-              <div className="mb-8">
-                <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-[3px] border border-white/20 mb-6">
-                  <BookOpen className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span className="text-white text-sm font-medium">Sales Capability Framework</span>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <a href="#framework" className="w-full sm:w-auto">
+                      <button className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-md transition-colors duration-200 font-semibold">
+                        Explore Framework
+                      </button>
+                    </a>
+                    <Link to="/programs" className="w-full sm:w-auto">
+                      <button className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 py-3 rounded-md transition-colors duration-200 font-semibold">
+                        View Programs
+                      </button>
+                    </Link>
+                  </div>
                 </div>
               </div>
-              
-              <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                Understanding Sales
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                  Excellence
-                </span>
-              </h1>
-              
-              <p className="text-xl lg:text-2xl text-gray-200 mb-12 max-w-5xl leading-relaxed">
-                Discover the structured framework that defines the skills, knowledge, and behaviors required by sales professionals to perform effectively and ethically.
-              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <div className="flex flex-col sm:flex-row gap-6 justify-start">
-                <a href="#framework">
-                  <button className="group bg-gradient-to-r from-primary-600 to-primary-700 text-white px-10 py-4 rounded-[3px] hover:from-primary-700 hover:to-primary-800 transition-all duration-300 flex items-center justify-center space-x-3 text-lg font-semibold shadow-2xl hover:shadow-primary-500/25 transform hover:-translate-y-1">
-                    <span>Explore Framework</span>
-                    <BookOpen className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </a>
-                <Link to="/programs">
-                  <button className="group border-2 border-white text-white px-10 py-4 rounded-[3px] hover:bg-white hover:text-gray-900 transition-all duration-300 flex items-center justify-center space-x-3 text-lg font-semibold backdrop-blur-sm">
-                    <ArrowRight className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                    <span>View Programs</span>
+      {/* Framework Introduction - Split Layout */}
+      <section id="framework" className="py-16 lg:py-24 bg-white relative">
+        <div className="w-full px-6 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
+            {/* Left side - Text Content Card */}
+            <div className="relative overflow-hidden rounded-md shadow-lg min-h-[600px] lg:min-h-[624px]">
+              <img
+                src="/programs.jpg"
+                alt="Sales Framework Overview"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+              
+              {/* Text content in lower left */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12">
+                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-4 lg:mb-6">
+                  Think of This as Your Career GPS
+                </h2>
+                <p className="text-lg lg:text-xl text-gray-200 leading-relaxed">
+                  Our Sales Capability Framework isn't just theory – it's your personal roadmap to success. Real-world skills that actually help you close deals and advance your career.
+                </p>
+              </div>
+            </div>
+
+            {/* Right side - 2x2 Feature Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-primary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-primary-500 p-3 rounded-md shadow-lg">
+                    <Target className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-lg lg:text-xl font-semibold mb-3 text-white">
+                    Structured Progression
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-sm lg:text-base">
+                    Clear pathway from beginner to sales visionary with defined milestones at every level.
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-secondary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-secondary-500 p-3 rounded-md shadow-lg">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-lg lg:text-xl font-semibold mb-3 text-white">
+                    Real-World Application
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-sm lg:text-base">
+                    Forget boring textbooks. Learn skills that actually help you close deals and build relationships.
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-accent-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-accent-500 p-3 rounded-md shadow-lg">
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-lg lg:text-xl font-semibold mb-3 text-white">
+                    Competency Based
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-sm lg:text-base">
+                    Master specific skills and behaviors needed at each stage of your sales journey.
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-neutral-700">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-neutral-600 p-3 rounded-md shadow-lg">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-lg lg:text-xl font-semibold mb-3 text-white">
+                    Career Advancement
+                  </h3>
+                  <p className="text-white/90 leading-relaxed text-sm lg:text-base">
+                    Always know what to work on next to reach your professional goals and dreams.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      {/* Competency Levels */}
+      <section className="py-16 lg:py-24 bg-white relative">
+        <div className="w-full px-6 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-8">
+            {/* First card - Text content */}
+            <div className="bg-white rounded-md shadow-lg p-6 lg:p-8 flex flex-col justify-center h-64 lg:h-72">
+              <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4">
+                Your Journey from Newbie to Sales Superstar
+              </h3>
+              <p className="text-sm lg:text-base text-gray-600 leading-relaxed">
+                Whether you're just starting out or looking to level up, we've got you covered. Here's how you'll progress through your sales career.
+              </p>
+            </div>
+
+            {/* Level 1 - Foundation */}
+            <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-primary-600">
+              <div className="absolute top-6 left-6">
+                <div className="bg-primary-500 p-3 rounded-md shadow-lg">
+                  <Star className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-md w-fit mb-3">
+                  <span className="text-white text-xs font-bold">Level 1</span>
+                </div>
+                <h4 className="text-sm lg:text-base font-semibold text-white mb-2">Getting Started</h4>
+                <p className="text-white/90 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                  Learn the basics that every successful salesperson needs to know. Build confidence for your first sales.
+                </p>
+              </div>
+            </div>
+
+            {/* Level 2 - Professional */}
+            <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-secondary-600">
+              <div className="absolute top-6 left-6">
+                <div className="bg-secondary-500 p-3 rounded-md shadow-lg">
+                  <TrendingUp className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-md w-fit mb-3">
+                  <span className="text-white text-xs font-bold">Level 2</span>
+                </div>
+                <h4 className="text-sm lg:text-base font-semibold text-white mb-2">Hitting Your Stride</h4>
+                <p className="text-white/90 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                  Master advanced techniques, sell value not price, and build pipelines that exceed targets.
+                </p>
+              </div>
+            </div>
+
+            {/* Level 3 - Advanced */}
+            <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-accent-600">
+              <div className="absolute top-6 left-6">
+                <div className="bg-accent-500 p-3 rounded-md shadow-lg">
+                  <Users className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-md w-fit mb-3">
+                  <span className="text-white text-xs font-bold">Level 3</span>
+                </div>
+                <h4 className="text-sm lg:text-base font-semibold text-white mb-2">Leading Others</h4>
+                <p className="text-white/90 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                  Strategic selling, key account management, and leadership skills for sales managers.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {/* Level 4 - Strategic */}
+            <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-neutral-700">
+              <div className="absolute top-6 left-6">
+                <div className="bg-neutral-600 p-3 rounded-md shadow-lg">
+                  <Target className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-md w-fit mb-3">
+                  <span className="text-white text-xs font-bold">Level 4</span>
+                </div>
+                <h4 className="text-sm lg:text-base font-semibold text-white mb-2">The Big Picture</h4>
+                <p className="text-white/90 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                  Shape commercial strategy, manage multiple regions, and influence key stakeholders.
+                </p>
+              </div>
+            </div>
+
+            {/* Level 5 - Expert */}
+            <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-primary-800">
+              <div className="absolute top-6 left-6">
+                <div className="bg-primary-700 p-3 rounded-md shadow-lg">
+                  <Award className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-md w-fit mb-3">
+                  <span className="text-white text-xs font-bold">Level 5</span>
+                </div>
+                <h4 className="text-sm lg:text-base font-semibold text-white mb-2">Sales Visionary</h4>
+                <p className="text-white/90 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                  Design innovative go-to-market strategies and build sales systems that scale.
+                </p>
+              </div>
+            </div>
+
+            {/* CTA Card */}
+            <div className="bg-primary-600 rounded-md shadow-lg p-4 lg:p-6 flex flex-col justify-center h-64 lg:h-72 text-white">
+              <h4 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4">
+                Ready to Start?
+              </h4>
+              <p className="text-sm lg:text-base text-primary-100 leading-relaxed mb-4">
+                Begin your journey with our structured programs designed to take you from where you are to where you want to be.
+              </p>
+              <Link to="/programs">
+                <button className="bg-white text-primary-600 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-1">
+                  <span>View Programs</span>
+                  <ArrowRight size={14} />
+                </button>
+              </Link>
+            </div>
+
+            {/* Learn More About Us Card */}
+            <div className="bg-neutral-700 rounded-md shadow-lg p-4 lg:p-6 flex flex-col justify-center h-64 lg:h-72 text-white hover:shadow-xl transition-all duration-500">
+              <div className="absolute top-6 left-6">
+                <div className="bg-neutral-600 p-3 rounded-md shadow-lg">
+                  <BookOpen className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                </div>
+              </div>
+              <div className="flex flex-col justify-center h-full">
+                <h4 className="text-sm lg:text-base font-semibold mb-2 lg:mb-3 text-white">
+                  Learn More About Us
+                </h4>
+                <p className="text-white/90 leading-relaxed text-xs lg:text-sm mb-4">
+                  Discover our proven framework and methodology that transforms sales professionals.
+                </p>
+                <Link to="/about">
+                  <button className="bg-white text-neutral-700 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors duration-200 flex items-center space-x-1">
+                    <span>About KSS</span>
+                    <ArrowRight size={14} />
                   </button>
                 </Link>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
-          </div>
-        </div>
       </section>
 
-      {/* Sales Capability Framework */}
-      <section id="framework" className="py-16 lg:py-24 bg-white">
+      {/* Four Pillars - Split Layout */}
+      <section className="py-16 lg:py-24 bg-white relative">
         <div className="w-full px-6 sm:px-8 lg:px-12">
-          <div className="text-center mb-12 lg:mb-16">
-            <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-6 lg:mb-8">
-              Understanding the Sales Capability Framework
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <p className="text-lg lg:text-xl text-gray-600 mb-6 leading-relaxed">
-                The Sales Capability Framework is a structured guide that defines the skills, knowledge, behaviors, and tools required by sales professionals to perform effectively and ethically. It supports personal growth, career advancement, and stronger business performance.
-              </p>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Unlike academic qualifications, which focus on theory and certification, this framework focuses on competence—the ability to apply knowledge and skills effectively in real-world sales situations.
-              </p>
-            </div>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
+            {/* Left side - 2x2 Feature Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
 
-          {/* Competency Levels Table */}
-          <div className="mb-16 lg:mb-20">
-            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-8 text-center">
-              Competency Levels: What They Mean
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
-                <thead className="bg-primary-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Level</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Competency</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Description</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Learner Profile</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary-600">Level 1</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Basic</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Foundational skills for new salespeople—following instructions, understanding the sales process, and basic product knowledge.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">New entrants, graduates, solopreneurs (0–1 years' sales experience).</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary-600">Level 2</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Intermediate</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Confidence handling sales independently, communicating value, managing pipeline, adapting to different customer types.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Early-career reps (1–5 years e.g., Telesales, retail, field sales).</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary-600">Level 3</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Advanced</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Leading teams, strategic selling, building long-term accounts, influencing decisions, mentoring others.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Experienced account & relationship managers, BD leads (5–10 years).</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary-600">Level 4</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Strategic</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Leading multi-regional teams, driving commercial strategy, stakeholder engagement, and advanced decision making.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Sales managers, regional leads (10–15 years).</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary-600">Level 5</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Expert</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Designing sales systems, innovation in go-to-market strategies.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Commercial directors, senior executives (15+ years).</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+              {/* Core Skills */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-primary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-primary-500 p-3 rounded-md shadow-lg">
+                    <Target className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">The Art of Selling</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed mb-2">
+                    Master core skills that turn conversations into sales.
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Prospecting', 'Presentation'].map((skill, index) => (
+                      <span key={index} className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-white">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-          {/* Four Quadrants */}
-          <div className="mb-16 lg:mb-20">
-            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-8 text-center">
-              Four Quadrants of Sales Capability
-            </h3>
-            <p className="text-lg text-gray-600 text-center mb-10 max-w-3xl mx-auto">
-              Each level is built across four capability areas:
-            </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="p-6 text-center hover:shadow-lg transition-shadow bg-white rounded-sm border border-gray-200">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-6 w-6 text-primary-600" />
+              {/* Business Acumen */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-secondary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-secondary-500 p-3 rounded-md shadow-lg">
+                    <Briefcase className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Core</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Selling skills, techniques, planning, execution, strategic problem-solving, consultative selling.
-                </p>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">Business Savvy</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed mb-2">
+                    Understand how businesses work and speak your clients' language.
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Market Analysis', 'Strategy'].map((skill, index) => (
+                      <span key={index} className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-white">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="p-6 text-center hover:shadow-lg transition-shadow bg-white rounded-sm border border-gray-200">
-                <div className="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-6 w-6 text-secondary-600" />
+
+              {/* Leadership */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-accent-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-accent-500 p-3 rounded-md shadow-lg">
+                    <Users className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Business</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Understanding markets, products, customers, commercial operations, financial acumen, data-driven strategies.
-                </p>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">People Power</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed mb-2">
+                    Build influence and communication skills that make others follow you.
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Team Building', 'Coaching'].map((skill, index) => (
+                      <span key={index} className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-white">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="p-6 text-center hover:shadow-lg transition-shadow bg-white rounded-sm border border-gray-200">
-                <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-6 w-6 text-accent-600" />
+
+              {/* Personal Development */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-neutral-700">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-neutral-600 p-3 rounded-md shadow-lg">
+                    <Heart className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Leadership</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Leading oneself and others, collaboration, team dynamics, leading teams, matrix management, change leadership.
-                </p>
-              </div>
-              <div className="p-6 text-center hover:shadow-lg transition-shadow bg-white rounded-sm border border-gray-200">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="h-6 w-6 text-primary-600" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">Personal Excellence</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed mb-2">
+                    Develop mindset, resilience, and emotional intelligence for lasting success.
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {['Mindset', 'Resilience'].map((skill, index) => (
+                      <span key={index} className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-white">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">Self</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Mindset, values, development, ethics, and resilience.
-                </p>
               </div>
             </div>
-            <p className="text-center text-gray-600 mt-8 max-w-4xl mx-auto">
-              Each of these is broken down into capabilities, which in turn contain competencies specific to the role and level.
-            </p>
-          </div>
 
-          {/* Program Overview */}
-          <div className="mb-16 lg:mb-20">
-            <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-8 text-center">
-              Overview: Industry-Agnostic Sales Training Programs
-            </h3>
-            <p className="text-lg text-gray-600 text-center mb-10 max-w-4xl mx-auto leading-relaxed">
-              Kenya School of Sales offers industry-agnostic, competency-based training programs, each mapped to ISP-recognized standards. These programs are tailored for various levels of sales professionals, from foundational entrants to seasoned experts, facilitators and coaches. Each program delivers a blend of immersive learning experiences with structured outcomes for behavioral change, aligned with the four sales capability quadrants: Core, Business, Leadership, and Self.
-            </p>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
-                <thead className="bg-primary-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Program Feature</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">What It Entails</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Why It Matters</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Collaborative, Task-Based Learning</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Learners work together on real-life or simulated sales tasks such as prospecting, pitching, or pipeline planning.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Encourages peer learning, builds teamwork skills, and simulates real-world selling environments where collaboration is key.</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Strong Facilitation from Experienced Sales Professionals</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Industry-savvy trainers guide discussions, share personal stories, give contextual insights, and coach learners.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Learners benefit from relatable, experience-based advice—bridging the gap between theory and practice.</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">Virtual, Physical, and Self-Paced Components</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">A blended learning model where learners join physical workshops, access recorded sessions, and complete assignments online.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Provides flexibility for different schedules and learning styles, while ensuring rich, interactive in-person engagement.</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">A Capstone Project that Demonstrates Practical Business Impact</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Final team or individual project applying all learned concepts to solve a business problem or simulate a sales process.</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">Consolidates learning, reinforces practical application, and builds a portfolio piece that demonstrates real-world readiness.</td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* Right side - Text Content Card */}
+            <div className="relative overflow-hidden rounded-md shadow-lg min-h-[600px] lg:min-h-[624px]">
+              <img
+                src="/events.jpeg"
+                alt="Four Pillars of Excellence"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
+              
+              {/* Text content in lower left */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12">
+                <h3 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-4 lg:mb-6">
+                  The Four Things Every Great Salesperson Masters
+                </h3>
+                <p className="text-lg lg:text-xl text-gray-200 leading-relaxed">
+                  Success in sales isn't just about one thing – it's about excelling in these four key areas. Build strength in each to become truly exceptional.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-r from-primary-600 to-secondary-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative w-full text-center px-6 sm:px-8 lg:px-12">
-          <div>
-            <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-4 lg:mb-6">
-              Ready to Apply This Framework?
-            </h2>
-            <p className="text-lg lg:text-xl text-gray-100 mb-8 lg:mb-10 max-w-3xl mx-auto">
-              Explore our programs designed around this comprehensive sales capability framework.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 justify-center">
-              <Link to="/programs">
-                <button className="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-4 rounded-sm shadow-xl transition-colors duration-200">
-                  View Programs
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
-              </Link>
-              <Link to="/about">
-                <button className="inline-flex items-center border border-white text-white hover:bg-white hover:text-primary-600 px-8 py-4 rounded-sm shadow-lg transition-colors duration-200">
-                  Learn About Us
-                </button>
-              </Link>
+      {/* Learning Methods */}
+      <section className="py-16 lg:py-24 bg-white relative">
+        <div className="w-full px-6 sm:px-8 lg:px-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {/* First card - Text content */}
+            <div className="bg-white rounded-md shadow-lg p-6 lg:p-8 flex flex-col justify-center h-64 lg:h-72">
+              <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4">
+                How We Make Learning Actually Work
+              </h3>
+              <p className="text-sm lg:text-base text-gray-600 leading-relaxed">
+                Forget boring lectures and endless PowerPoints. We use proven methods that actually stick and change how you think and act.
+              </p>
             </div>
+
+              {/* Collaborative Learning */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-primary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-primary-500 p-3 rounded-md shadow-lg">
+                    <Users className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">Learn With Your Peers</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                    Practice with real people on actual sales challenges with classmates who understand your journey.
+                  </p>
+                </div>
+              </div>
+
+              {/* Expert Facilitation */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-secondary-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-secondary-500 p-3 rounded-md shadow-lg">
+                    <Star className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">Learn from the Pros</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                    Battle-tested sales veterans who've been where you want to go share real solutions that work.
+                  </p>
+                </div>
+              </div>
+
+              {/* Blended Learning */}
+              <div className="relative overflow-hidden h-64 lg:h-72 hover:shadow-xl transition-all duration-500 rounded-md bg-accent-600">
+                <div className="absolute top-6 left-6">
+                  <div className="bg-accent-500 p-3 rounded-md shadow-lg">
+                    <Zap className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h4 className="text-sm lg:text-base font-semibold text-white mb-2 lg:mb-3">Learn Your Way</h4>
+                  <p className="text-white/80 text-xs lg:text-sm leading-relaxed line-clamp-3">
+                    Online when busy, in-person for connection. Study at your pace, on your schedule.
+                  </p>
+                </div>
+              </div>
           </div>
         </div>
       </section>
+
     </div>
   );
 };

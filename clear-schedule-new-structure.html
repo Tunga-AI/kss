@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Old Schedule Data</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0zPzaidQLDpNyrh7ReaiRyNhp8HOAPfc",
+            authDomain: "msommii.firebaseapp.com",
+            projectId: "msommii",
+            storageBucket: "msommii.firebasestorage.app",
+            messagingSenderId: "610946556395",
+            appId: "1:610946556395:web:facd538c2cbada7b88b9ae",
+            measurementId: "G-S60Y2Q9EXF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function clearAllScheduleItems() {
+            try {
+                console.log('Clearing ALL scheduleItems from the old collection structure...');
+                
+                const snapshot = await getDocs(collection(db, 'scheduleItems'));
+                
+                console.log(`Found ${snapshot.size} schedule items to delete`);
+                
+                if (snapshot.size === 0) {
+                    console.log('No schedule items found to delete');
+                    alert('No old schedule items found to delete');
+                    return;
+                }
+                
+                const deletePromises = [];
+                snapshot.forEach((docSnapshot) => {
+                    console.log(`Deleting schedule item: ${docSnapshot.id}`);
+                    deletePromises.push(deleteDoc(doc(db, 'scheduleItems', docSnapshot.id)));
+                });
+                
+                await Promise.all(deletePromises);
+                console.log(`Successfully deleted ${snapshot.size} old schedule items`);
+                alert(`Successfully deleted ${snapshot.size} old schedule items. The new structure uses 'schedules' collection organized by intake.`);
+                
+            } catch (error) {
+                console.error('Error clearing schedule items:', error);
+                alert(`Error clearing schedule items: ${error.message}`);
+            }
+        }
+
+        // Expose function globally
+        window.clearAllScheduleItems = clearAllScheduleItems;
+        
+        window.addEventListener('load', () => {
+            console.log('Ready to clear old schedule data. Click the button or run: clearAllScheduleItems()');
+            console.log('Note: This will clear ALL old scheduleItems and allow the new structure to work properly.');
+        });
+    </script>
+</head>
+<body>
+    <h1>Clear Old Schedule Data Structure</h1>
+    <p>This will clear all old 'scheduleItems' collection data.</p>
+    <p>The new structure uses 'schedules' collection organized by intake ID.</p>
+    <p><strong>Open browser console to see logs</strong></p>
+    
+    <button onclick="clearAllScheduleItems()" style="background: #dc2626; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+        Clear ALL Old Schedule Items
+    </button>
+    
+    <div style="margin-top: 20px; padding: 16px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;">
+        <strong>Note:</strong> This action will:
+        <ul>
+            <li>Delete all documents from the old 'scheduleItems' collection</li>
+            <li>Allow the new 'schedules' collection structure to work properly</li>
+            <li>Each intake will now have its own schedule document</li>
+        </ul>
+    </div>
+</body>
+</html>

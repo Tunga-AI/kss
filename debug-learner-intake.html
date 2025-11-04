@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Learner-Intake Relationships</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0zPzaidQLDpNyrh7ReaiRyNhp8HOAPfc",
+            authDomain: "msommii.firebaseapp.com",
+            projectId: "msommii",
+            storageBucket: "msommii.firebasestorage.app",
+            messagingSenderId: "610946556395",
+            appId: "1:610946556395:web:facd538c2cbada7b88b9ae",
+            measurementId: "G-S60Y2Q9EXF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function debugLearnerIntakeRelationships() {
+            try {
+                console.log('=== DEBUGGING LEARNER-INTAKE RELATIONSHIPS ===');
+                
+                // Get all intakes
+                const intakesSnapshot = await getDocs(collection(db, 'intakes'));
+                const intakes = [];
+                intakesSnapshot.forEach(doc => {
+                    intakes.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`Found ${intakes.length} intakes:`, intakes);
+                
+                // Get all learners
+                const learnersSnapshot = await getDocs(collection(db, 'learners'));
+                const learners = [];
+                learnersSnapshot.forEach(doc => {
+                    learners.push({ id: doc.id, ...doc.data() });
+                });
+                
+                console.log(`Found ${learners.length} learners:`, learners);
+                
+                // Check relationships
+                const report = [];
+                for (const intake of intakes) {
+                    const intakeLearners = learners.filter(learner => 
+                        learner.intakeId === intake.id
+                    );
+                    
+                    report.push({
+                        intakeId: intake.id,
+                        intakeName: intake.name,
+                        status: intake.status,
+                        startDate: intake.startDate,
+                        learnerCount: intakeLearners.length,
+                        learners: intakeLearners.map(l => ({
+                            id: l.id,
+                            name: `${l.firstName} ${l.lastName}`,
+                            email: l.email,
+                            intakeId: l.intakeId,
+                            academicStatus: l.academicStatus
+                        }))
+                    });
+                }
+                
+                console.log('=== INTAKE-LEARNER REPORT ===');
+                report.forEach(intake => {
+                    console.log(`\n📚 ${intake.intakeName} (${intake.status})`);
+                    console.log(`   Start Date: ${intake.startDate}`);
+                    console.log(`   Learners: ${intake.learnerCount}`);
+                    if (intake.learners.length > 0) {
+                        intake.learners.forEach(learner => {
+                            console.log(`   - ${learner.name} (${learner.email}) - ${learner.academicStatus}`);
+                        });
+                    } else {
+                        console.log('   - No learners assigned');
+                    }
+                });
+                
+                // Check for orphaned learners
+                const orphanedLearners = learners.filter(learner => {
+                    const hasIntake = intakes.some(intake => intake.id === learner.intakeId);
+                    return learner.intakeId && !hasIntake;
+                });
+                
+                if (orphanedLearners.length > 0) {
+                    console.log('\n⚠️ ORPHANED LEARNERS (have intakeId but intake doesn\'t exist):');
+                    orphanedLearners.forEach(learner => {
+                        console.log(`- ${learner.firstName} ${learner.lastName}: intakeId=${learner.intakeId}`);
+                    });
+                }
+                
+                // Check for learners without intake assignment
+                const unassignedLearners = learners.filter(learner => !learner.intakeId);
+                if (unassignedLearners.length > 0) {
+                    console.log('\n📝 UNASSIGNED LEARNERS (no intakeId):');
+                    unassignedLearners.forEach(learner => {
+                        console.log(`- ${learner.firstName} ${learner.lastName} (${learner.email})`);
+                    });
+                }
+                
+                document.getElementById('results').innerHTML = `
+                    <div style="font-family: monospace; white-space: pre-wrap; background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                        <strong>Total Intakes:</strong> ${intakes.length}
+                        <strong>Total Learners:</strong> ${learners.length}
+                        <strong>Orphaned Learners:</strong> ${orphanedLearners.length}
+                        <strong>Unassigned Learners:</strong> ${unassignedLearners.length}
+                        
+                        ${report.map(intake => `
+<strong>${intake.intakeName}</strong> (${intake.status})
+  Start: ${intake.startDate}
+  Learners: ${intake.learnerCount}
+${intake.learners.map(l => `  - ${l.name} (${l.academicStatus})`).join('\n')}
+                        `).join('\n')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error debugging relationships:', error);
+                document.getElementById('results').innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        window.debugLearnerIntakeRelationships = debugLearnerIntakeRelationships;
+        
+        window.addEventListener('load', () => {
+            console.log('Debug tool loaded. Check the browser console for detailed logs.');
+        });
+    </script>
+</head>
+<body>
+    <h1>Debug Learner-Intake Relationships</h1>
+    <p>This tool helps debug the relationship between learners and intakes.</p>
+    <p><strong>Open browser console to see detailed logs</strong></p>
+    
+    <button onclick="debugLearnerIntakeRelationships()" style="background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 20px;">
+        Debug Relationships
+    </button>
+    
+    <div id="results" style="margin-top: 20px;"></div>
+</body>
+</html>

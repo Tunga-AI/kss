@@ -1,265 +1,618 @@
 import React, { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, AlertCircle, Home } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, RefreshCw, LogIn, ArrowRight } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { FirestoreService } from '../services/firestore';
+import { fetchSignInMethodsForEmail } from 'firebase/auth';
+import { auth } from '../config/firebase';
 import Logo from '../components/Logo';
+import Navbar from '../Website/components/Navbar';
 
 const AuthPage: React.FC = () => {
-  const { user, signIn, signUp, loading } = useAuthContext();
-  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResendingReset, setIsResendingReset] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [needsPasswordReset, setNeedsPasswordReset] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  
+  // Multi-step auth states
+  const [authStep, setAuthStep] = useState<'email' | 'password' | 'setup-password'>('email');
+  const [userRecord, setUserRecord] = useState<any>(null);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isCreatingAuth, setIsCreatingAuth] = useState(false);
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
-    organization: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
-  // Redirect if already authenticated
-  if (user && !loading) {
-    return <Navigate to="/portal" replace />;
-  }
+  const { signIn, signUp, resendPasswordReset } = useAuthContext();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    // Clear error when user starts typing
-    if (error) setError('');
-  };
+  // Check for messages from navigation state
+  React.useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      if (location.state.type === 'success') {
+        setError('');
+      }
+    }
+    
+    // Pre-fill email from URL params if present
+    const urlParams = new URLSearchParams(location.search);
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+      setFormData(prev => ({ ...prev, email: emailParam }));
+    }
+  }, [location.state, location.search]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const checkEmailInUsersCollection = async (email: string) => {
+    console.log('🔍 [AuthPage] Checking email in users collection:', email);
+    setIsCheckingEmail(true);
     setError('');
+    setMessage('');
 
     try {
-      let result;
-      
-      if (isLogin) {
-        result = await signIn(formData.email, formData.password);
-      } else {
-        result = await signUp(formData.email, formData.password, formData.name, formData.organization);
-      }
+      const result = await FirestoreService.getWithQuery('users', [
+        { field: 'email', operator: '==', value: email.toLowerCase() }
+      ]);
 
-      if (!result.success) {
-        setError(result.error || 'An error occurred');
+      if (result.success && result.data && result.data.length > 0) {
+        const user = result.data[0];
+        console.log('✅ [AuthPage] User found in collection:', user.firstName, user.lastName);
+        setUserRecord(user);
+        
+        // Now check if this user has Firebase Authentication set up
+        setMessage(`Hi ${user.firstName}! Checking your account setup...`);
+        await checkIfUserHasFirebaseAuth(email, user);
+        return true;
+      } else {
+        console.log('❌ [AuthPage] User not found in users collection');
+        setError('Email not found. Please contact an administrator to get access or check your email address.');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ [AuthPage] Error checking email:', error);
+      setError('Unable to verify email. Please try again.');
+      return false;
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  const checkIfUserHasFirebaseAuth = async (email: string, user: any) => {
+    console.log('🔐 [AuthPage] DEBUG: Checking Firebase Auth for:', email);
+    console.log('🔐 [AuthPage] DEBUG: Auth object:', auth);
+    console.log('🔐 [AuthPage] DEBUG: Auth app:', auth.app);
+    
+    // Method 1: Try fetchSignInMethodsForEmail with full debugging
+    try {
+      console.log('🔍 [AuthPage] DEBUG: Calling fetchSignInMethodsForEmail...');
+      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      
+      console.log('🔍 [AuthPage] DEBUG: Raw result:', signInMethods);
+      console.log('🔍 [AuthPage] DEBUG: Result type:', typeof signInMethods);
+      console.log('🔍 [AuthPage] DEBUG: Result length:', signInMethods?.length);
+      console.log('🔍 [AuthPage] DEBUG: Result array:', Array.isArray(signInMethods));
+      
+      if (signInMethods && signInMethods.length > 0) {
+        console.log('✅ [AuthPage] USER EXISTS in Firebase Auth → Ask for password');
+        setAuthStep('password');
+        setMessage(`Welcome back, ${user.firstName}! Please enter your password.`);
+        setError('');
+        return;
+      }
+      
+      console.log('🆕 [AuthPage] fetchSignInMethodsForEmail returned empty - trying password test...');
+      
+    } catch (fetchError: any) {
+      console.error('❌ [AuthPage] fetchSignInMethodsForEmail failed:', fetchError);
+      console.log('🔄 [AuthPage] Falling back to password test method...');
+    }
+    
+    // Method 2: Try a password test as backup
+    try {
+      console.log('🔍 [AuthPage] DEBUG: Testing with dummy password...');
+      await signIn(email, 'absolutely-wrong-password-test-123456789');
+      
+      // If we get here, user somehow signed in (shouldn't happen)
+      console.log('✅ [AuthPage] Unexpected successful login - user exists');
+      setAuthStep('password');
+      setMessage(`Welcome back, ${user.firstName}! Please enter your password.`);
+      setError('');
+      
+    } catch (passwordError: any) {
+      console.log('🔍 [AuthPage] DEBUG: Password test error:', passwordError);
+      console.log('🔍 [AuthPage] DEBUG: Error type:', typeof passwordError);
+      console.log('🔍 [AuthPage] DEBUG: Error string:', String(passwordError));
+      
+      const errorString = String(passwordError).toLowerCase();
+      
+      if (errorString.includes('user-not-found') || errorString.includes('invalid-email')) {
+        console.log('🆕 [AuthPage] USER NOT FOUND → Create password');
+        setAuthStep('setup-password');
+        setMessage(`Welcome, ${user.firstName}! Please create your password.`);
+        setError('');
+      } else {
+        console.log('✅ [AuthPage] USER FOUND (wrong password error) → Enter password');
+        setAuthStep('password');
+        setMessage(`Welcome back, ${user.firstName}! Please enter your password.`);
+        setError('');
+      }
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('📧 [AuthPage] Email step submitted:', formData.email);
+    
+    if (!formData.email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    const emailFound = await checkEmailInUsersCollection(formData.email.trim());
+    if (!emailFound) {
+      // Reset step if email not found
+      setAuthStep('email');
+      setUserRecord(null);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('🔐 [AuthPage] Password step submitted');
+    
+    if (!formData.password.trim()) {
+      setError('Please enter your password');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      console.log('🔐 [AuthPage] Attempting login with Firebase...');
+      const result = await signIn(formData.email, formData.password);
+      console.log('🔐 [AuthPage] Firebase login result:', result);
+      
+      if (result.success) {
+        console.log('✅ [AuthPage] Login successful, user should be redirected');
+        // Mark that user just authenticated to trigger portal redirect
+        sessionStorage.setItem('justAuthenticated', 'true');
+      } else {
+        // Check if user doesn't exist in Firebase Auth (first-time user)
+        if (result.error && (
+          result.error.includes('user-not-found') || 
+          result.error.includes('invalid-credential') ||
+          result.error.includes('wrong-password')
+        )) {
+          console.log('🆕 [AuthPage] User may not have Firebase auth account, offering password setup');
+          setAuthStep('setup-password');
+          setMessage('Welcome! It looks like this is your first time logging in. Please set up your password.');
+          setError('');
+        } else if (result.needsPasswordReset) {
+          console.log('🔑 [AuthPage] User needs password reset');
+          setNeedsPasswordReset(true);
+          setUserEmail(result.email || formData.email);
+          setError('Please set your password first. Click below to receive a password reset email.');
+        } else {
+          console.log('❌ [AuthPage] Login failed:', result.error);
+          setError(result.error || 'Login failed. Please check your password and try again.');
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
+      console.error('❌ [AuthPage] Unexpected error during password authentication:', err);
+      // If it's a Firebase auth error suggesting user doesn't exist, offer password setup
+      if (err.message && (err.message.includes('user-not-found') || err.message.includes('invalid-credential'))) {
+        console.log('🆕 [AuthPage] Firebase auth error suggests new user, offering password setup');
+        setAuthStep('setup-password');
+        setMessage('Welcome! It looks like this is your first time logging in. Please set up your password.');
+        setError('');
+      } else {
+        setError(err.message || 'An unexpected error occurred');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handlePasswordSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('🆕 [AuthPage] Password setup submitted');
+
+    // Validation
+    if (!formData.newPassword.trim()) {
+      setError('Please enter a new password');
+      return;
+    }
+
+    if (formData.newPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsCreatingAuth(true);
+    setError('');
+    setMessage('');
+
+    try {
+      console.log('🆕 [AuthPage] Creating Firebase auth account...');
+      
+      // Create Firebase auth account with the user's email and new password
+      const result = await signUp(
+        formData.email, 
+        formData.newPassword, 
+        `${userRecord.firstName} ${userRecord.lastName}`.trim(),
+        userRecord.organization || 'N/A'
+      );
+      
+      console.log('🆕 [AuthPage] Firebase auth creation result:', result);
+      
+      if (result.success) {
+        console.log('✅ [AuthPage] Firebase auth account created, attempting auto-login...');
+        
+        // Update the users collection to mark that Firebase auth has been created
+        try {
+          await FirestoreService.update('users', userRecord.id, {
+            hasFirebaseAuth: true,
+            firebaseAuthCreatedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+          console.log('✅ [AuthPage] Updated user record with hasFirebaseAuth flag');
+        } catch (updateError) {
+          console.warn('⚠️ [AuthPage] Could not update user record:', updateError);
+        }
+        
+        // Try to sign in automatically with the new credentials (skip email verification)
+        const loginResult = await signIn(formData.email, formData.newPassword);
+        
+        if (loginResult.success) {
+          console.log('✅ [AuthPage] Auto-login successful after account creation - user authenticated!');
+          // Mark that user just authenticated to trigger portal redirect
+          sessionStorage.setItem('justAuthenticated', 'true');
+          // User will be redirected automatically by AuthContext
+        } else {
+          console.log('ℹ️ [AuthPage] Auto-login failed but account created - user can now login manually');
+          setMessage('Password set successfully! You can now sign in.');
+          setAuthStep('password');
+          setFormData(prev => ({ ...prev, password: formData.newPassword, newPassword: '', confirmPassword: '' }));
+        }
+      } else {
+        console.log('❌ [AuthPage] Firebase auth creation failed:', result.error);
+        setError(result.error || 'Failed to set your password. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('❌ [AuthPage] Unexpected error during password setup:', err);
+      setError(err.message || 'An unexpected error occurred while setting up your password');
+    } finally {
+      setIsCreatingAuth(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    // Route to appropriate handler based on authentication step
+    if (authStep === 'email') {
+      await handleEmailSubmit(e);
+    } else if (authStep === 'setup-password') {
+      await handlePasswordSetup(e);
+    } else {
+      await handlePasswordSubmit(e);
+    }
+  };
+
+  const handleBackToEmail = () => {
+    console.log('🔙 [AuthPage] Going back to email step');
+    setAuthStep('email');
+    setUserRecord(null);
+    setError('');
+    setMessage('');
+    setFormData(prev => ({ ...prev, password: '', newPassword: '', confirmPassword: '' }));
+  };
+
+
+  const handleResendPasswordReset = async () => {
+    console.log('🔄 [AuthPage] Resending password reset for:', userEmail);
+    setIsResendingReset(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const result = await resendPasswordReset(userEmail);
+      console.log('🔄 [AuthPage] Password reset result:', result);
+      
+      if (result.success) {
+        console.log('✅ [AuthPage] Password reset email sent successfully');
+        setMessage(result.message || 'Password reset email sent! Check your inbox.');
+        setNeedsPasswordReset(false);
+      } else {
+        console.log('❌ [AuthPage] Password reset failed:', result.error);
+        setError(result.error || 'Failed to send password reset email');
+      }
+    } catch (err: any) {
+      console.error('❌ [AuthPage] Unexpected error during password reset:', err);
+      setError(err.message || 'An unexpected error occurred');
+    } finally {
+      setIsResendingReset(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <Navbar />
+      
       {/* Hero Section with Auth Form */}
-      <section className="relative h-screen flex items-end overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img
-            src="/kss3.jpg"
-            alt="Learning environment"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-800/80 to-secondary-900/90"></div>
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
-
-        {/* Content */}
-        <div className="relative w-full px-6 sm:px-8 lg:px-12 pb-24">
-          <div className="w-full grid lg:grid-cols-2 gap-12 items-end">
+      <section className="relative h-screen bg-white pt-20 pb-8 lg:pb-12">
+        <div className="px-6 sm:px-8 lg:px-12 h-full flex items-center">
+          {/* Background Image Container */}
+          <div className="relative w-full h-[95%] overflow-hidden rounded-md shadow-2xl">
+            <img
+              src="/home.jpg"
+              alt="Students learning together"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30"></div>
             
-            {/* Left Side - Hero Content */}
-            <div className="text-white">
-              {/* Back to Home */}
-              <Link to="/" className="inline-flex items-center space-x-2 text-white/80 hover:text-white mb-8 transition-colors duration-200">
-                <Home className="h-5 w-5" />
-                <span>Back to Home</span>
-              </Link>
-
-              <div className="mb-8">
-                <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-[3px] border border-white/20 mb-6">
-                  <Logo size="sm" showText={false} className="text-yellow-400 mr-2" />
-                  <span className="text-white text-sm font-medium">
-                    {isLogin ? 'Welcome Back to Your Portal' : 'Join Africa\'s Premier Sales School'}
-                  </span>
+            
+            {/* Content */}
+            <div className="absolute inset-0 px-6 sm:px-8 lg:px-12">
+              {/* Auth Form - Bottom Left */}
+              <div className="absolute bottom-12 left-6 sm:left-8 lg:left-12 max-w-md w-full">
+                <div className="mb-6">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                    {authStep === 'email' 
+                      ? 'Welcome Back' 
+                      : authStep === 'setup-password'
+                        ? `Welcome, ${userRecord?.firstName || 'User'}!`
+                        : `Welcome, ${userRecord?.firstName || 'User'}!`
+                    }
+                  </h2>
+                  <p className="text-lg text-gray-200">
+                    {authStep === 'email' 
+                      ? 'Enter your email to continue' 
+                      : authStep === 'setup-password'
+                        ? 'Set up your password to get started'
+                        : 'Please enter your password'
+                    }
+                  </p>
                 </div>
-              </div>
-              
-              <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                {isLogin ? (
-                  <>
-                    Access Your
-                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                      Learning Portal
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Start Your
-                    <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                      Learning Journey
-                    </span>
-                  </>
-                )}
-              </h1>
-              
-              <p className="text-xl lg:text-2xl text-gray-200 mb-12 max-w-5xl leading-relaxed">
-                {isLogin 
-                  ? 'Continue your professional development with expert-led programs and personalized learning paths.'
-                  : 'Join Africa\'s premier sales education platform and transform your career with industry-recognized qualifications.'
-                }
-              </p>
-            </div>
 
-            {/* Right Side - Auth Form */}
-            <div className="bg-white/40 backdrop-blur-sm rounded-2xl shadow-2xl p-8 max-w-md mx-auto w-full">
-              <div className="mb-6">
-                <h2 className="text-3xl font-bold text-secondary-800 mb-2">
-                  {isLogin ? 'Sign In' : 'Create Account'}
-                </h2>
-                <p className="text-secondary-600">
-                  {isLogin ? 'Access your institution portal' : 'Get started with your free account'}
-                </p>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                  <span className="text-red-700 text-sm">{error}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {!isLogin && (
-                  <>
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-secondary-700 mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        required
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white/90"
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="organization" className="block text-sm font-medium text-secondary-700 mb-2">
-                        Organization
-                      </label>
-                      <input
-                        type="text"
-                        id="organization"
-                        name="organization"
-                        required
-                        value={formData.organization}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white/90"
-                        placeholder="Enter your institution name"
-                      />
-                    </div>
-                  </>
+                {/* Messages */}
+                {message && (
+                  <div className="mb-4 p-3 bg-white/90 backdrop-blur-sm border border-accent-200 rounded-md">
+                    <p className="text-sm text-accent-700">{message}</p>
+                  </div>
                 )}
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-secondary-700 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white/90"
-                    placeholder="Enter your email"
-                  />
-                </div>
+                {error && (
+                  <div className="mb-4 p-3 bg-white/90 backdrop-blur-sm border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-secondary-700 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      name="password"
-                      required
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white/90"
-                      placeholder="Enter your password"
-                    />
+                {/* Password Reset Needed */}
+                {needsPasswordReset && (
+                  <div className="mb-4 p-3 bg-white/90 backdrop-blur-sm border border-primary-200 rounded-md">
+                    <p className="text-sm text-primary-700 mb-2">
+                      Please set your password first.
+                    </p>
                     <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600 transition-colors duration-200"
+                      onClick={handleResendPasswordReset}
+                      disabled={isResendingReset}
+                      className="w-full bg-primary-600 text-white py-2 px-3 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center space-x-2"
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {isResendingReset ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Send Reset Email</span>
+                        </>
+                      )}
                     </button>
                   </div>
-                </div>
+                )}
 
-                {isLogin && (
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                      <span className="ml-2 text-sm text-secondary-600">Remember me</span>
-                    </label>
-                    <a href="#" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Email - Show during email step */}
+                  {authStep === 'email' && (
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
+                        Email Address *
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type="email"
+                          id="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                          placeholder="Enter your email"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Email display for password and setup-password steps */}
+                  {(authStep === 'password' || authStep === 'setup-password') && (
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-1">
+                        Email Address
+                      </label>
+                      <div className="flex items-center space-x-3 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md p-2.5">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-700">{formData.email}</span>
+                        <button
+                          type="button"
+                          onClick={handleBackToEmail}
+                          className="text-primary-600 text-sm hover:text-primary-700 underline ml-auto"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Password - Show during password step */}
+                  {authStep === 'password' && (
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-white mb-1">
+                        Password *
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          id="password"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          className="w-full pl-10 pr-12 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                          placeholder="Enter your password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Password Setup Fields - Show during setup-password step */}
+                  {authStep === 'setup-password' && (
+                    <>
+                      <div>
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-white mb-1">
+                          New Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            id="newPassword"
+                            value={formData.newPassword}
+                            onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                            className="w-full pl-10 pr-12 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Create a new password"
+                            required
+                            minLength={6}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        <p className="text-white/60 text-xs mt-1">Password must be at least 6 characters long</p>
+                      </div>
+
+                      <div>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1">
+                          Confirm Password *
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            className="w-full pl-10 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-white/20 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Confirm your new password"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || isCheckingEmail || isCreatingAuth}
+                    className="w-full bg-primary-600 text-white py-2.5 px-4 rounded-md font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2"
+                  >
+                    {(isSubmitting || isCheckingEmail || isCreatingAuth) ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>
+                          {isCheckingEmail ? 'Checking...' : 
+                           isCreatingAuth ? 'Creating Account...' :
+                           authStep === 'email' ? 'Checking...' : 
+                           authStep === 'setup-password' ? 'Creating Account...' : 
+                           'Signing In...'}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        {authStep === 'email' ? (
+                          <>
+                            <ArrowRight className="h-4 w-4" />
+                            <span>Continue</span>
+                          </>
+                        ) : authStep === 'setup-password' ? (
+                          <>
+                            <Lock className="h-4 w-4" />
+                            <span>Create Password</span>
+                          </>
+                        ) : (
+                          <>
+                            <LogIn className="h-4 w-4" />
+                            <span>Sign In</span>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </button>
+                </form>
+
+
+
+                {/* Forgot Password - Only show during password step */}
+                {authStep === 'password' && (
+                  <div className="mt-3">
+                    <button
+                      onClick={() => {
+                        handleResendPasswordReset();
+                        setUserEmail(formData.email);
+                      }}
+                      className="text-white/80 hover:text-white text-sm underline"
+                    >
                       Forgot password?
-                    </a>
+                    </button>
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-primary-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center space-x-2"
-                >
-                  {isSubmitting ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  ) : (
-                    <>
-                      <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
-                      <ArrowRight className="h-5 w-5" />
-                    </>
-                  )}
-                </button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-secondary-600">
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}
-                  <button
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="ml-1 text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    {isLogin ? 'Sign up' : 'Sign in'}
-                  </button>
-                </p>
+                {/* Help Text */}
+                <div className="mt-4 text-center">
+                  <p className="text-white/60 text-xs">
+                    Don't have access? Contact your administrator.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
           </div>
         </div>
       </section>

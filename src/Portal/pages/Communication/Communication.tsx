@@ -1,424 +1,448 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Send, Users, Bell, Mail, Phone, Plus, Search, Edit, Trash2, Eye, X, Save, Calendar, Filter } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  MessageSquare, 
+  Send, 
+  Users, 
+  Bell, 
+  Mail, 
+  Plus, 
+  Search, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  X, 
+  Calendar, 
+  Filter,
+  UserPlus,
+  CheckCircle,
+  Circle,
+  Clock,
+  Star,
+  Archive,
+  Reply,
+  Forward,
+  MoreHorizontal,
+  Paperclip,
+  Smile,
+  AlertCircle,
+  Info,
+  CheckSquare,
+  UserCircle,
+  Phone,
+  Video,
+  Settings
+} from 'lucide-react';
 import { FirestoreService } from '../../../services/firestore';
 import { useAuthContext } from '../../../contexts/AuthContext';
 
+interface User {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  photoURL?: string;
+  isOnline?: boolean;
+  lastSeen?: string;
+}
+
 interface Message {
   id: string;
-  from: string;
+  fromId: string;
+  fromName: string;
   fromEmail: string;
-  to: string;
-  toEmails: string[];
+  toIds: string[];
+  toNames: string[];
   subject: string;
   content: string;
   timestamp: string;
-  status: 'draft' | 'sent' | 'scheduled' | 'failed';
-  type: 'message' | 'announcement' | 'notification';
-  recipients: number;
-  scheduledFor?: string;
-  createdBy: string;
-  updatedAt?: string;
+  status: 'draft' | 'sent' | 'delivered' | 'read' | 'failed';
+  type: 'direct' | 'announcement' | 'notification' | 'broadcast';
   priority: 'low' | 'normal' | 'high' | 'urgent';
+  attachments?: string[];
+  readBy?: { userId: string; readAt: string }[];
+  replyTo?: string;
+  isStarred?: boolean;
+  isArchived?: boolean;
   tags?: string[];
-  readBy?: string[];
+  scheduledFor?: string;
+  conversationId?: string;
 }
 
-interface Template {
+interface Conversation {
   id: string;
-  name: string;
-  subject: string;
-  content: string;
-  type: 'email' | 'sms' | 'notification';
+  participants: string[];
+  participantNames: string[];
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  isGroup: boolean;
+  groupName?: string;
   createdBy: string;
   createdAt: string;
-  usageCount: number;
 }
 
-interface MessageModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (messageData: Partial<Message>) => void;
-  message?: Message | null;
-  type: 'message' | 'announcement' | 'notification';
-}
-
-const MessageModal: React.FC<MessageModalProps> = ({ isOpen, onClose, onSave, message, type }) => {
-  const { userProfile } = useAuthContext();
-  const [formData, setFormData] = useState<Partial<Message>>({
-    from: userProfile?.displayName || '',
-    fromEmail: userProfile?.email || '',
-    to: '',
-    toEmails: [],
-    subject: '',
-    content: '',
-    type,
-    priority: 'normal',
-    status: 'draft'
-  });
-
-  useEffect(() => {
-    if (message) {
-      setFormData(message);
-    } else {
-      setFormData({
-        from: userProfile?.displayName || '',
-        fromEmail: userProfile?.email || '',
-        to: '',
-        toEmails: [],
-        subject: '',
-        content: '',
-        type,
-        priority: 'normal',
-        status: 'draft'
-      });
-    }
-  }, [message, userProfile, type]);
-
-  const handleSubmit = async (isDraft: boolean = true) => {
-    // Validate required fields
-    if (!formData.subject?.trim()) {
-      alert('Please enter a subject');
-      return;
-    }
-    
-    if (!formData.content?.trim()) {
-      alert('Please enter message content');
-      return;
-    }
-    
-    if (!formData.to?.trim()) {
-      alert('Please enter recipients');
-      return;
-    }
-
-    const messageData = {
-      ...formData,
-      status: (isDraft ? 'draft' : 'sent') as 'draft' | 'sent',
-      timestamp: new Date().toISOString(),
-      createdBy: userProfile?.uid || '',
-      recipients: formData.to?.split(',').length || 1, // Count recipients based on comma-separated list
-      updatedAt: new Date().toISOString()
-    };
-
-    console.log('Submitting message data:', messageData);
-    onSave(messageData);
+interface NotificationSettings {
+  email: boolean;
+  push: boolean;
+  sms: boolean;
+  inApp: boolean;
+  messageTypes: {
+    direct: boolean;
+    announcement: boolean;
+    notification: boolean;
+    broadcast: boolean;
   };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-secondary-800">
-              {message ? 'Edit' : 'Create'} {type.charAt(0).toUpperCase() + type.slice(1)}
-            </h3>
-            <button onClick={onClose} className="p-1 text-secondary-400 hover:text-secondary-600">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">From</label>
-                <input
-                  type="text"
-                  value={formData.from || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, from: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Sender name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">Priority</label>
-                <select
-                  value={formData.priority || 'normal'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="low">Low</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-2">To (Recipients)</label>
-              <input
-                type="text"
-                value={formData.to || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, to: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="e.g., All Students, Computer Science Students, Staff"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-2">Subject</label>
-              <input
-                type="text"
-                value={formData.subject || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Enter subject"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-secondary-700 mb-2">Message Content</label>
-              <textarea
-                value={formData.content || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                rows={8}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="Enter your message content..."
-              />
-            </div>
-
-            {type === 'notification' && (
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">Schedule For (Optional)</label>
-                <input
-                  type="datetime-local"
-                  value={formData.scheduledFor || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, scheduledFor: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-end space-x-3 mt-6">
-            <button
-              onClick={onClose}
-              className="bg-gray-100 text-secondary-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              className="bg-secondary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary-700 transition-colors duration-200 flex items-center space-x-2"
-            >
-              <Save className="h-4 w-4" />
-              <span>Save Draft</span>
-            </button>
-            <button
-              onClick={() => handleSubmit(false)}
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
-            >
-              <Send className="h-4 w-4" />
-              <span>Send {type}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+}
 
 const Communication: React.FC = () => {
   const { userProfile } = useAuthContext();
-  const [activeTab, setActiveTab] = useState('messages');
+  const [activeTab, setActiveTab] = useState('conversations');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [messageModal, setMessageModal] = useState({
-    isOpen: false,
-    message: null as Message | null,
-    type: 'message' as 'message' | 'announcement' | 'notification'
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [isComposing, setIsComposing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  
+  const [composeForm, setComposeForm] = useState({
+    recipients: [] as User[],
+    subject: '',
+    content: '',
+    type: 'direct' as 'direct' | 'announcement' | 'notification' | 'broadcast',
+    priority: 'normal' as 'low' | 'normal' | 'high' | 'urgent',
+    scheduledFor: '',
+    replyTo: ''
   });
+
+  const [recipientSearch, setRecipientSearch] = useState('');
+  const [showRecipientDropdown, setShowRecipientDropdown] = useState(false);
+
+  const tabs = [
+    { id: 'conversations', label: 'Conversations', icon: MessageSquare },
+    { id: 'sent', label: 'Sent', icon: Send },
+    { id: 'starred', label: 'Starred', icon: Star },
+    { id: 'archived', label: 'Archived', icon: Archive },
+    { id: 'inbox', label: 'Inbox', icon: Mail },
+    { id: 'announcements', label: 'Announcements', icon: Bell },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
 
   useEffect(() => {
     loadData();
+    // Set up real-time listeners
+    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
   }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('Loading communication data...');
-      
-      const [messagesResult, templatesResult] = await Promise.all([
-        FirestoreService.getAll('communications'),
-        FirestoreService.getAll('message_templates')
+      await Promise.all([
+        loadMessages(),
+        loadConversations(),
+        loadUsers()
       ]);
-
-      console.log('Messages result:', messagesResult);
-      console.log('Templates result:', templatesResult);
-
-      if (messagesResult.success && messagesResult.data) {
-        setMessages(messagesResult.data as Message[]);
-        console.log(`Loaded ${messagesResult.data.length} messages`);
-      } else {
-        console.warn('Failed to load messages:', messagesResult.error);
-        setMessages([]);
-      }
-
-      if (templatesResult.success && templatesResult.data) {
-        setTemplates(templatesResult.data as Template[]);
-        console.log(`Loaded ${templatesResult.data.length} templates`);
-      } else {
-        console.warn('Failed to load templates:', templatesResult.error);
-        setTemplates([]);
-      }
     } catch (error) {
       console.error('Error loading communication data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSaveMessage = async (messageData: Partial<Message>) => {
+  const loadMessages = async () => {
     try {
-      console.log('Attempting to save message:', messageData);
-      
-      let result;
-      if (messageModal.message) {
-        console.log('Updating existing message:', messageModal.message.id);
-        result = await FirestoreService.update('communications', messageModal.message.id, messageData);
-      } else {
-        console.log('Creating new message');
-        result = await FirestoreService.create('communications', messageData);
-      }
-
-      console.log('Save result:', result);
-
-      if (result.success) {
-        console.log('Message saved successfully');
-        alert(`✅ ${messageModal.message ? 'Message updated' : 'Message created'} successfully!`);
-        await loadData(); // Reload data
-        setMessageModal({ isOpen: false, message: null, type: 'message' });
-      } else {
-        console.error('Failed to save message:', result.error);
-        alert(`❌ Failed to save message: ${result.error || 'Unknown error'}`);
+      const result = await FirestoreService.getAll('messages');
+      if (result.success && result.data) {
+        setMessages(result.data as Message[]);
       }
     } catch (error) {
-      console.error('Error saving message:', error);
-      alert(`❌ Error saving message: ${error}`);
+      console.error('Error loading messages:', error);
     }
   };
 
-  const handleDeleteMessage = async (id: string) => {
+  const loadConversations = async () => {
+    try {
+      const result = await FirestoreService.getAll('conversations');
+      if (result.success && result.data) {
+        setConversations(result.data as Conversation[]);
+      }
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const result = await FirestoreService.getAll('users');
+      if (result.success && result.data) {
+        const usersData = result.data as User[];
+        // Simulate online status
+        const usersWithStatus = usersData.map(user => ({
+          ...user,
+          isOnline: Math.random() > 0.7,
+          lastSeen: new Date(Date.now() - Math.random() * 3600000).toISOString()
+        }));
+        setUsers(usersWithStatus);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!composeForm.subject || !composeForm.content || composeForm.recipients.length === 0) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const messageData = {
+        fromId: userProfile?.uid || '',
+        fromName: userProfile?.displayName || '',
+        fromEmail: userProfile?.email || '',
+        toIds: composeForm.recipients.map(r => r.id),
+        toNames: composeForm.recipients.map(r => r.displayName),
+        subject: composeForm.subject,
+        content: composeForm.content,
+        timestamp: new Date().toISOString(),
+        status: 'sent',
+        type: composeForm.type,
+        priority: composeForm.priority,
+        replyTo: composeForm.replyTo,
+        isStarred: false,
+        isArchived: false,
+        readBy: []
+      };
+
+      const result = await FirestoreService.create('messages', messageData);
+      if (result.success) {
+        await loadMessages();
+        resetCompose();
+        setIsComposing(false);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Error sending message. Please try again.');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const resetCompose = () => {
+    setComposeForm({
+      recipients: [],
+      subject: '',
+      content: '',
+      type: 'direct',
+      priority: 'normal',
+      scheduledFor: '',
+      replyTo: ''
+    });
+    setRecipientSearch('');
+    setShowRecipientDropdown(false);
+  };
+
+  const addRecipient = (user: User) => {
+    if (!composeForm.recipients.find(r => r.id === user.id)) {
+      setComposeForm(prev => ({
+        ...prev,
+        recipients: [...prev.recipients, user]
+      }));
+    }
+    setRecipientSearch('');
+    setShowRecipientDropdown(false);
+  };
+
+  const removeRecipient = (userId: string) => {
+    setComposeForm(prev => ({
+      ...prev,
+      recipients: prev.recipients.filter(r => r.id !== userId)
+    }));
+  };
+
+  const markAsRead = async (messageId: string) => {
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        const updatedReadBy = message.readBy || [];
+        if (!updatedReadBy.find(r => r.userId === userProfile?.uid)) {
+          updatedReadBy.push({
+            userId: userProfile?.uid || '',
+            readAt: new Date().toISOString()
+          });
+          
+          await FirestoreService.update('messages', messageId, {
+            readBy: updatedReadBy
+          });
+          
+          await loadMessages();
+        }
+      }
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+    }
+  };
+
+  const toggleStar = async (messageId: string) => {
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (message) {
+        await FirestoreService.update('messages', messageId, {
+          isStarred: !message.isStarred
+        });
+        await loadMessages();
+      }
+    } catch (error) {
+      console.error('Error toggling star:', error);
+    }
+  };
+
+  const archiveMessage = async (messageId: string) => {
+    try {
+      await FirestoreService.update('messages', messageId, {
+        isArchived: true
+      });
+      await loadMessages();
+    } catch (error) {
+      console.error('Error archiving message:', error);
+    }
+  };
+
+  const deleteMessage = async (messageId: string) => {
     if (window.confirm('Are you sure you want to delete this message?')) {
       try {
-        const result = await FirestoreService.delete('communications', id);
-        if (result.success) {
-          await loadData();
-        }
+        await FirestoreService.delete('messages', messageId);
+        await loadMessages();
       } catch (error) {
         console.error('Error deleting message:', error);
       }
     }
   };
 
-  const openMessageModal = (type: 'message' | 'announcement' | 'notification', message?: Message) => {
-    setMessageModal({
-      isOpen: true,
-      message: message || null,
-      type
+  const replyToMessage = (message: Message) => {
+    setComposeForm({
+      recipients: [{ id: message.fromId, displayName: message.fromName, email: message.fromEmail, role: '' }],
+      subject: message.subject.startsWith('Re:') ? message.subject : `Re: ${message.subject}`,
+      content: `\n\n--- Reply to message from ${message.fromName} ---\n${message.content}`,
+      type: 'direct',
+      priority: 'normal',
+      scheduledFor: '',
+      replyTo: message.id
     });
+    setIsComposing(true);
   };
 
   const getFilteredMessages = () => {
     let filtered = messages;
 
-    // Filter by active tab
-    if (activeTab === 'messages') {
-      filtered = filtered.filter(msg => msg.type === 'message');
-    } else if (activeTab === 'announcements') {
-      filtered = filtered.filter(msg => msg.type === 'announcement');
-    } else if (activeTab === 'notifications') {
-      filtered = filtered.filter(msg => msg.type === 'notification');
+    switch (activeTab) {
+      case 'inbox':
+        filtered = messages.filter(m => 
+          m.toIds.includes(userProfile?.uid || '') && 
+          !m.isArchived
+        );
+        break;
+      case 'sent':
+        filtered = messages.filter(m => m.fromId === userProfile?.uid);
+        break;
+      case 'starred':
+        filtered = messages.filter(m => m.isStarred);
+        break;
+      case 'archived':
+        filtered = messages.filter(m => m.isArchived);
+        break;
+      case 'announcements':
+        filtered = messages.filter(m => m.type === 'announcement');
+        break;
+      default:
+        filtered = messages;
     }
 
-    // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(msg =>
-        msg.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        msg.from.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(m =>
+        (m.subject?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (m.content?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (m.fromName?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       );
-    }
-
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(msg => msg.status === statusFilter);
     }
 
     return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   };
 
-  const getStats = () => {
-    const totalMessages = messages.filter(m => m.type === 'message').length;
-    const totalAnnouncements = messages.filter(m => m.type === 'announcement').length;
-    const totalNotifications = messages.filter(m => m.type === 'notification').length;
-    const thisWeekMessages = messages.filter(m => {
-      const msgDate = new Date(m.timestamp);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return msgDate > weekAgo;
-    }).length;
-
-    return [
-      { title: 'Messages', value: totalMessages.toString(), change: `+${thisWeekMessages}`, icon: MessageSquare, color: 'primary' },
-      { title: 'Announcements', value: totalAnnouncements.toString(), change: `+${Math.floor(totalAnnouncements * 0.1)}`, icon: Bell, color: 'accent' },
-      { title: 'Notifications', value: totalNotifications.toString(), change: `+${Math.floor(totalNotifications * 0.15)}`, icon: Mail, color: 'secondary' },
-    ];
-  };
-
-  const tabs = [
-    { id: 'messages', label: 'Messages' },
-    { id: 'announcements', label: 'Announcements' },
-    { id: 'notifications', label: 'Notifications' },
-    { id: 'templates', label: 'Templates' },
-  ];
-
-  const getStatusColor = (status: string) => {
+  const getMessageStatusColor = (status: string) => {
     switch (status) {
-      case 'sent': return 'bg-accent-100 text-accent-800';
-      case 'draft': return 'bg-yellow-100 text-yellow-800';
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'sent': return 'text-green-600';
+      case 'delivered': return 'text-blue-600';
+      case 'read': return 'text-gray-600';
+      case 'failed': return 'text-red-600';
+      default: return 'text-gray-600';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'normal': return 'bg-blue-100 text-blue-800';
-      case 'low': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent': return 'text-xs bg-red-100 text-red-800';
+      case 'high': return 'text-xs bg-orange-100 text-orange-800';
+      case 'low': return 'text-xs bg-gray-100 text-gray-800';
+      default: return 'text-xs bg-blue-100 text-blue-800';
     }
   };
 
-  const stats = getStats();
+  const getFilteredUsers = () => {
+    return users.filter(u => 
+      u.id !== userProfile?.uid &&
+      ((u.displayName?.toLowerCase() || '').includes(recipientSearch.toLowerCase()) ||
+       (u.email?.toLowerCase() || '').includes(recipientSearch.toLowerCase()))
+    );
+  };
+
+  const isMessageRead = (message: Message) => {
+    return message.readBy?.some(r => r.userId === userProfile?.uid) || false;
+  };
+
+  const getUnreadCount = () => {
+    return messages.filter(m => 
+      m.toIds.includes(userProfile?.uid || '') && 
+      !isMessageRead(m) && 
+      !m.isArchived
+    ).length;
+  };
+
+  const getTabStats = () => {
+    const inbox = messages.filter(m => m.toIds.includes(userProfile?.uid || '') && !m.isArchived).length;
+    const sent = messages.filter(m => m.fromId === userProfile?.uid).length;
+    const starred = messages.filter(m => m.isStarred).length;
+    const archived = messages.filter(m => m.isArchived).length;
+    const unread = getUnreadCount();
+    const announcements = messages.filter(m => m.type === 'announcement').length;
+    
+    return { inbox, sent, starred, archived, unread, announcements };
+  };
+
   const filteredMessages = getFilteredMessages();
+  const filteredUsers = getFilteredUsers();
+  const stats = getTabStats();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Message Modal */}
-      <MessageModal
-        isOpen={messageModal.isOpen}
-        onClose={() => setMessageModal({ isOpen: false, message: null, type: 'message' })}
-        onSave={handleSaveMessage}
-        message={messageModal.message}
-        type={messageModal.type}
-      />
-
       {/* Hero Section */}
       <div className="bg-primary-600 text-white rounded-2xl shadow-lg p-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">Communication</h1>
             <p className="text-lg text-primary-100">
-              Send messages, announcements, and manage institutional communication.
+              Connect with users, send messages, and manage communications effectively.
             </p>
           </div>
           <div className="bg-white bg-opacity-20 p-4 rounded-xl">
@@ -427,26 +451,66 @@ const Communication: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <div key={index} className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-xl border border-white border-opacity-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-xl border border-white border-opacity-20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary-100">Inbox</p>
+                <p className="text-2xl font-bold text-white">{stats.inbox}</p>
+                <p className="text-sm font-medium text-primary-200">
+                  {stats.unread} unread
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                <Mail className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-xl border border-white border-opacity-20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary-100">Sent</p>
+                <p className="text-2xl font-bold text-white">{stats.sent}</p>
+                <p className="text-sm font-medium text-primary-200">
+                  Messages sent
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                <Send className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-xl border border-white border-opacity-20">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-primary-100">{stat.title}</p>
-                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-sm font-medium text-primary-100">Starred</p>
+                <p className="text-2xl font-bold text-white">{stats.starred}</p>
                     <p className="text-sm font-medium text-primary-200">
-                      {stat.change} this week
+                  Important messages
                     </p>
                   </div>
                   <div className="bg-white bg-opacity-20 p-3 rounded-lg">
-                    <Icon className="h-6 w-6 text-white" />
+                <Star className="h-6 w-6 text-white" />
+              </div>
                   </div>
                 </div>
+
+          <div className="bg-white bg-opacity-10 backdrop-blur-sm p-6 rounded-xl border border-white border-opacity-20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary-100">Announcements</p>
+                <p className="text-2xl font-bold text-white">{stats.announcements}</p>
+                <p className="text-sm font-medium text-primary-200">
+                  System updates
+                </p>
               </div>
-            );
-          })}
+              <div className="bg-white bg-opacity-20 p-3 rounded-lg">
+                <Bell className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -455,179 +519,488 @@ const Communication: React.FC = () => {
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-8 pt-6">
-            {tabs.map((tab) => (
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                  className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2 ${
                   activeTab === tab.id
                     ? 'border-primary-600 text-primary-600'
                     : 'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-gray-300'
                 }`}
               >
-                {tab.label}
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
               </button>
-            ))}
+              );
+            })}
           </nav>
         </div>
 
         {/* Tab Content */}
         <div className="p-8">
-          {(activeTab === 'messages' || activeTab === 'announcements' || activeTab === 'notifications') && (
-            <div>
-              {/* Actions Bar */}
+          {/* Action Bar */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-secondary-400" />
                     <input
                       type="text"
-                      placeholder={`Search ${activeTab}...`}
+                  placeholder="Search messages..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-64"
                     />
                   </div>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="sent">Sent</option>
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="failed">Failed</option>
-                  </select>
                 </div>
                 <button 
-                  onClick={() => openMessageModal(activeTab as any)}
+              onClick={() => setIsComposing(true)}
                   className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>New {activeTab.slice(0, -1).charAt(0).toUpperCase() + activeTab.slice(0, -1).slice(1)}</span>
+              <span>New Message</span>
                 </button>
               </div>
 
               {/* Messages List */}
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          {activeTab !== 'settings' && (
+            <div className="space-y-4">
+              {filteredMessages.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-secondary-800 mb-2">No messages found</h3>
+                  <p className="text-secondary-600">
+                    {searchTerm ? 'No messages match your search criteria.' : 'Start by sending your first message.'}
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filteredMessages.map((message) => (
-                    <div key={message.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-start space-x-4">
-                          <div className="bg-primary-100 p-3 rounded-lg">
-                            {message.type === 'announcement' ? (
-                              <Bell className="h-6 w-6 text-primary-600" />
-                            ) : message.type === 'notification' ? (
-                              <Mail className="h-6 w-6 text-primary-600" />
-                            ) : (
-                              <MessageSquare className="h-6 w-6 text-primary-600" />
-                            )}
+                filteredMessages.map((message) => {
+                  const isRead = isMessageRead(message);
+                  return (
+                    <div
+                      key={message.id}
+                      className={`border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                        !isRead ? 'bg-blue-50 border-blue-200' : ''
+                      }`}
+                      onClick={() => {
+                        setSelectedMessage(message);
+                        if (!isRead) {
+                          markAsRead(message.id);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                            <UserCircle className="h-6 w-6 text-primary-600" />
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-2">
-                              <h3 className="text-lg font-semibold text-secondary-800">{message.subject}</h3>
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(message.status)}`}>
-                                {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
-                              </span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(message.priority)}`}>
-                                {message.priority.charAt(0).toUpperCase() + message.priority.slice(1)}
-                              </span>
-                            </div>
-                            <div className="text-sm text-secondary-600 mb-2">
-                              <span className="font-medium">From:</span> {message.from} • 
-                              <span className="font-medium"> To:</span> {message.to}
-                            </div>
-                            <p className="text-secondary-600 line-clamp-2">{message.content}</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm text-secondary-500">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1">
-                            <Users className="h-4 w-4" />
-                            <span>{message.recipients} recipients</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(message.timestamp).toLocaleDateString()} {new Date(message.timestamp).toLocaleTimeString()}</span>
+                          <div>
+                            <p className={`font-medium ${!isRead ? 'text-primary-800' : 'text-secondary-800'}`}>
+                              {activeTab === 'sent' ? message.toNames.join(', ') : message.fromName}
+                            </p>
+                            <p className="text-sm text-secondary-500">{message.fromEmail}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => openMessageModal(message.type, message)}
-                            className="text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1"
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStar(message.id);
+                            }}
+                            className="p-1 text-secondary-400 hover:text-yellow-600 transition-colors"
                           >
-                            <Eye className="h-4 w-4" />
-                            <span>View</span>
+                            <Star className={`h-4 w-4 ${message.isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
                           </button>
-                          {(message.status === 'draft' || userProfile?.role === 'admin') && (
-                            <button 
-                              onClick={() => openMessageModal(message.type, message)}
-                              className="text-accent-600 hover:text-accent-700 font-medium flex items-center space-x-1"
-                            >
-                              <Edit className="h-4 w-4" />
-                              <span>Edit</span>
-                            </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveMessage(message.id);
+                            }}
+                            className="p-1 text-secondary-400 hover:text-primary-600 transition-colors"
+                          >
+                            <Archive className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteMessage(message.id);
+                            }}
+                            className="p-1 text-secondary-400 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className={`text-lg ${!isRead ? 'font-semibold' : 'font-medium'} text-secondary-800`}>
+                            {message.subject}
+                          </h3>
+                          <div className="flex items-center space-x-2 text-sm text-secondary-500">
+                            {message.type === 'announcement' && (
+                              <Bell className="h-4 w-4" />
+                            )}
+                            <span className={`px-2 py-0.5 rounded-full ${getPriorityColor(message.priority)}`}>
+                              {message.priority}
+                            </span>
+                            <span>{new Date(message.timestamp).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <p className="text-secondary-600 text-sm line-clamp-2">
+                          {message.content}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-secondary-500">
+                          <span className="capitalize">{message.type}</span>
+                          {message.toIds.length > 1 && (
+                            <>
+                              <span>•</span>
+                              <span>{message.toIds.length} recipients</span>
+                            </>
                           )}
-                          {userProfile?.role === 'admin' && (
-                            <button 
-                              onClick={() => handleDeleteMessage(message.id)}
-                              className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span>Delete</span>
-                            </button>
-                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs ${getMessageStatusColor(message.status)}`}>
+                            {message.status}
+                          </span>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              replyToMessage(message);
+                            }}
+                            className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                          >
+                            Reply
+                          </button>
                         </div>
                       </div>
                     </div>
-                  ))}
-
-                  {filteredMessages.length === 0 && !loading && (
-                    <div className="text-center py-12">
-                      {activeTab === 'messages' ? (
-                        <MessageSquare className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      ) : activeTab === 'announcements' ? (
-                        <Bell className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      ) : (
-                        <Mail className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-                      )}
-                      <h3 className="text-xl font-semibold text-secondary-800 mb-2">No {activeTab} found</h3>
-                      <p className="text-secondary-600 mb-6">Create your first {activeTab.slice(0, -1)} to get started.</p>
-                      <button 
-                        onClick={() => openMessageModal(activeTab as any)}
-                        className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2 mx-auto"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span>Create {activeTab.slice(0, -1).charAt(0).toUpperCase() + activeTab.slice(0, -1).slice(1)}</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  );
+                })
               )}
             </div>
           )}
 
-          {activeTab === 'templates' && (
-            <div className="text-center py-12">
-              <MessageSquare className="h-16 w-16 text-secondary-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-secondary-800 mb-2">Message Templates</h3>
-              <p className="text-secondary-600 mb-6">Create and manage reusable message templates here.</p>
-              <button className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2 mx-auto">
-                <Plus className="h-4 w-4" />
-                <span>Create Template</span>
-              </button>
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-secondary-800 mb-4">Notification Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-secondary-800">Email Notifications</p>
+                        <p className="text-sm text-secondary-600">Receive notifications via email</p>
+                      </div>
+                      <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm">
+                        Enabled
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-secondary-800">Push Notifications</p>
+                        <p className="text-sm text-secondary-600">Receive browser notifications</p>
+                      </div>
+                      <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm">
+                        Disabled
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-secondary-800">Direct Messages</p>
+                        <p className="text-sm text-secondary-600">Personal messages from users</p>
+                      </div>
+                      <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm">
+                        Enabled
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-secondary-800">Announcements</p>
+                        <p className="text-sm text-secondary-600">System announcements and updates</p>
+                      </div>
+                      <button className="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm">
+                        Enabled
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-secondary-800 mb-4">Online Users</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {users.filter(u => u.isOnline && u.id !== userProfile?.uid).map((user) => (
+                    <div key={user.id} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                          <UserCircle className="h-6 w-6 text-primary-600" />
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-secondary-800 truncate">{user.displayName}</p>
+                        <p className="text-sm text-secondary-600 truncate">{user.role}</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          addRecipient(user);
+                          setIsComposing(true);
+                        }}
+                        className="p-2 text-primary-600 hover:bg-primary-100 rounded-lg transition-colors"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Compose Modal */}
+      {isComposing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-secondary-800">New Message</h3>
+              <button
+                onClick={() => {
+                  setIsComposing(false);
+                  resetCompose();
+                }}
+                className="text-secondary-400 hover:text-secondary-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Recipients</label>
+                <div className="border border-gray-300 rounded-lg p-3">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {composeForm.recipients.map((recipient) => (
+                      <span key={recipient.id} className="bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-sm flex items-center space-x-1">
+                        <span>{recipient.displayName}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeRecipient(recipient.id)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      value={recipientSearch}
+                      onChange={(e) => {
+                        setRecipientSearch(e.target.value);
+                        setShowRecipientDropdown(true);
+                      }}
+                      onFocus={() => setShowRecipientDropdown(true)}
+                      className="w-full px-3 py-2 border-none focus:ring-0 focus:outline-none"
+                    />
+                    {showRecipientDropdown && recipientSearch && (
+                      <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto z-10">
+                        {filteredUsers.slice(0, 10).map((user) => (
+                          <button
+                            key={user.id}
+                            type="button"
+                            onClick={() => addRecipient(user)}
+                            className="w-full flex items-center space-x-3 px-3 py-2 hover:bg-gray-100 text-left"
+                          >
+                            <UserCircle className="h-5 w-5 text-primary-600" />
+                            <div>
+                              <p className="font-medium text-secondary-800">{user.displayName}</p>
+                              <p className="text-sm text-secondary-600">{user.email}</p>
+                            </div>
+                          </button>
+                        ))}
+            </div>
+          )}
+        </div>
+      </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Type</label>
+                  <select
+                    value={composeForm.type}
+                    onChange={(e) => setComposeForm(prev => ({ ...prev, type: e.target.value as any }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="direct">Direct Message</option>
+                    <option value="announcement">Announcement</option>
+                    <option value="notification">Notification</option>
+                    <option value="broadcast">Broadcast</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-2">Priority</label>
+                  <select
+                    value={composeForm.priority}
+                    onChange={(e) => setComposeForm(prev => ({ ...prev, priority: e.target.value as any }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="low">Low</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={composeForm.subject}
+                  onChange={(e) => setComposeForm(prev => ({ ...prev, subject: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter subject..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Message</label>
+                <textarea
+                  value={composeForm.content}
+                  onChange={(e) => setComposeForm(prev => ({ ...prev, content: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  rows={6}
+                  placeholder="Enter your message..."
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsComposing(false);
+                    resetCompose();
+                  }}
+                  className="px-4 py-2 text-secondary-600 hover:text-secondary-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                >
+                  {isSending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      <span>Send Message</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Message Detail Modal */}
+      {selectedMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-secondary-800">Message Details</h3>
+              <button
+                onClick={() => setSelectedMessage(null)}
+                className="text-secondary-400 hover:text-secondary-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-b border-gray-200 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                      <UserCircle className="h-6 w-6 text-primary-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-secondary-800">{selectedMessage.fromName}</p>
+                      <p className="text-sm text-secondary-600">{selectedMessage.fromEmail}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className={`px-2 py-1 rounded-full ${getPriorityColor(selectedMessage.priority)}`}>
+                      {selectedMessage.priority}
+                    </span>
+                    <span className="text-sm text-secondary-600">
+                      {new Date(selectedMessage.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold text-secondary-800 mb-2">{selectedMessage.subject}</h2>
+                <div className="flex items-center space-x-4 text-sm text-secondary-600">
+                  <span>To: {selectedMessage.toNames.join(', ')}</span>
+                  <span>Type: {selectedMessage.type}</span>
+                  <span>Status: {selectedMessage.status}</span>
+                </div>
+              </div>
+
+              <div className="prose max-w-none">
+                <div className="whitespace-pre-wrap text-secondary-700">
+                  {selectedMessage.content}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => replyToMessage(selectedMessage)}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+                >
+                  <Reply className="h-4 w-4" />
+                  <span>Reply</span>
+                </button>
+                <button
+                  onClick={() => toggleStar(selectedMessage.id)}
+                  className="bg-gray-100 text-secondary-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
+                >
+                  <Star className={`h-4 w-4 ${selectedMessage.isStarred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                  <span>{selectedMessage.isStarred ? 'Unstar' : 'Star'}</span>
+                </button>
+                <button
+                  onClick={() => archiveMessage(selectedMessage.id)}
+                  className="bg-gray-100 text-secondary-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2"
+                >
+                  <Archive className="h-4 w-4" />
+                  <span>Archive</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
