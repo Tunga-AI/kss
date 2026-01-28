@@ -25,14 +25,14 @@ export function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="uppercase transition-colors hover:text-primary"
+                className="transition-colors hover:text-primary"
               >
                 {link.label}
               </Link>
             ))}
             <Link
               href="/login"
-              className="uppercase font-bold text-primary transition-colors hover:text-primary/80"
+              className="font-bold text-primary transition-colors hover:text-primary/80"
             >
               Portal
             </Link>
