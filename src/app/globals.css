@@ -10,24 +10,24 @@
     --card-foreground: 246 47% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 246 47% 15%;
-    --primary: 246 47% 22%;
+    --primary: 249 53% 22%; /* dark indigo */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 246 47% 15%;
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
-    --accent: 206 62% 60%;
+    --accent: 206 62% 58%; /* Azure */
     --accent-foreground: 0 0% 100%;
-    --destructive: 2 63% 45%;
+    --destructive: 2 63% 45%; /* Red */
     --destructive-foreground: 0 0% 98%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 206 62% 60%;
-    --radius: 0.5rem;
+    --radius: 0rem;
     
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47.4% 11.2%;
-    --sidebar-primary: 246 47% 22%;
+    --sidebar-primary: 249 53% 22%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 96%;
     --sidebar-accent-foreground: 246 47% 15%;
@@ -42,13 +42,13 @@
     --card-foreground: 0 0% 98%;
     --popover: 246 47% 11%;
     --popover-foreground: 0 0% 98%;
-    --primary: 206 62% 60%;
+    --primary: 206 62% 58%; /* Azure */
     --primary-foreground: 246 47% 11%;
     --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 4% 16%;
     --muted-foreground: 240 4% 65%;
-    --accent: 206 62% 60%;
+    --accent: 206 62% 58%;
     --accent-foreground: 246 47% 11%;
     --destructive: 2 63% 45%;
     --destructive-foreground: 0 0% 98%;
@@ -58,7 +58,7 @@
 
     --sidebar-background: 246 47% 11%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 206 62% 60%;
+    --sidebar-primary: 206 62% 58%;
     --sidebar-primary-foreground: 246 47% 11%;
     --sidebar-accent: 240 4% 16%;
     --sidebar-accent-foreground: 0 0% 98%;
