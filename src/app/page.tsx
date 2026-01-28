@@ -2,13 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, BrainCircuit, Users, Award } from "lucide-react";
+import { ArrowRight, CheckCircle, BrainCircuit, Users, Award, Calendar, MapPin } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { courses } from "@/lib/courses-data";
+import { moocCourses } from "@/lib/mooc-data";
+import { events } from "@/lib/events-data";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 const testimonials = [
   {
@@ -35,6 +38,12 @@ const testimonials = [
 export default function Home() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-sales-training');
   const aiFeatureImage = PlaceHolderImages.find(p => p.id === 'ai-recommendation-feature');
+  const galleryImages = [
+      PlaceHolderImages.find(p => p.id === 'event-workshop-calling'),
+      PlaceHolderImages.find(p => p.id === 'event-conference-summit'),
+      PlaceHolderImages.find(p => p.id === 'framework-hero'),
+      PlaceHolderImages.find(p => p.id === 'success-hero')
+  ].filter(Boolean);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -89,7 +98,7 @@ export default function Home() {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">
-                    <Card className="relative overflow-hidden h-full min-h-[36rem] lg:min-h-[50rem] border-0 shadow-lg">
+                    <Card className="relative overflow-hidden h-full min-h-[36rem] lg:min-h-[42rem] border-0 shadow-lg">
                       {courseImage && (
                         <Image
                           src={courseImage.imageUrl}
@@ -116,7 +125,7 @@ export default function Home() {
                   const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                   return (
                     <Link href={`/courses/${course.id}`} key={course.id} className="block group">
-                      <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
+                      <Card className="relative overflow-hidden h-full border-0 shadow-lg">
                         {courseImage && (
                           <Image
                             src={courseImage.imageUrl}
@@ -236,6 +245,104 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Upcoming Events Section */}
+        <section className="bg-muted py-16 sm:py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Upcoming Events</h2>
+              <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
+                Join our webinars, workshops, and conferences to learn from industry experts and network with peers.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {events.slice(0, 3).map((event) => {
+                const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
+                return (
+                  <Link href={`/events/${event.id}`} key={event.id} className="block group">
+                    <Card className="overflow-hidden shadow-lg">
+                      {eventImage && (
+                        <div className="relative h-48">
+                          <Image
+                            src={eventImage.imageUrl}
+                            alt={event.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            data-ai-hint={eventImage.imageHint}
+                          />
+                        </div>
+                      )}
+                      <CardContent className="p-6">
+                        <h3 className="font-headline text-xl font-bold">{event.title}</h3>
+                        <div className="flex items-center gap-2 text-sm mt-2 text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm mt-4 font-medium">
+                           <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span>{event.location}</span>
+                          </div>
+                          <Badge variant={event.price === 'Free' ? 'secondary' : 'default'}>{event.price}</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="text-center mt-12">
+              <Button asChild>
+                <Link href="/events">View All Events</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured E-learning Section */}
+        <section id="e-learning" className="py-16 sm:py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Free E-Learning Courses</h2>
+              <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
+                Start learning at your own pace with our collection of free online courses.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              {moocCourses.slice(0, 4).map((course) => {
+                const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
+                return (
+                  <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">
+                    <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
+                      {courseImage && (
+                        <Image
+                          src={courseImage.imageUrl}
+                          alt={course.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          data-ai-hint={courseImage.imageHint}
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+                        <h3 className="font-headline text-xl font-bold">{course.title}</h3>
+                         <div className="flex justify-between items-center text-sm mt-4 font-medium">
+                          <Badge variant="secondary">{course.level}</Badge>
+                          <span className="font-bold text-lg">{course.price}</span>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="text-center mt-12">
+              <Button asChild variant="secondary">
+                <Link href="/e-learning">Explore All Free Courses</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
         
         {/* Testimonials Section */}
         <section className="bg-primary/5 py-16 sm:py-20">
@@ -273,15 +380,45 @@ export default function Home() {
             </div>
         </section>
 
-        {/* Contact CTA Section */}
+        {/* Gallery Preview Section */}
         <section className="py-16 sm:py-20">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-12">
+                    <h2 className="font-headline text-3xl sm:text-4xl font-bold">Glimpses of Our Community</h2>
+                    <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
+                        See our students and instructors in action during workshops and events.
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {galleryImages.map((image, index) => (
+                        image && <div key={index} className="relative h-64 rounded-lg overflow-hidden shadow-lg">
+                            <Image
+                                src={image.imageUrl}
+                                alt={image.description}
+                                fill
+                                className="object-cover"
+                                data-ai-hint={image.imageHint}
+                            />
+                        </div>
+                    ))}
+                </div>
+                 <div className="text-center mt-12">
+                    <Button asChild variant="secondary">
+                        <Link href="/gallery">View Full Gallery</Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+
+        {/* Contact CTA Section */}
+        <section className="bg-muted py-16 sm:py-20">
             <div className="container mx-auto px-4 text-center">
                 <h2 className="font-headline text-3xl sm:text-4xl font-bold">Ready to Elevate Your Career?</h2>
                 <p className="mt-4 max-w-xl mx-auto text-base sm:text-lg text-muted-foreground">
                     Get in touch with our admissions team to find the perfect program for you or your team.
                 </p>
-                <Button size="lg" className="mt-8">
-                    <Link href="/contact">Contact Us</Link>
+                <Button size="lg" className="mt-8" asChild>
+                    <Link href="/contact">Contact</Link>
                 </Button>
             </div>
         </section>

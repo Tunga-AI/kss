@@ -32,8 +32,21 @@ const testimonials = [
   },
 ];
 
+const galleryAlbumImages = [
+    'event-workshop-calling', 
+    'event-conference-summit', 
+    'framework-hero', 
+    'hero-sales-training', 
+    'ai-recommendation-feature', 
+    'login-page-background', 
+    'event-webinar-psychology', 
+    'success-hero'
+];
+
 export default function GalleryPage() {
   const successImage = PlaceHolderImages.find(p => p.id === 'success-hero');
+  const albumImages = galleryAlbumImages.map(id => PlaceHolderImages.find(p => p.id === id)).filter(Boolean);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -56,7 +69,7 @@ export default function GalleryPage() {
                     Gallery
                   </h1>
                   <p className="mt-4 text-lg sm:text-xl text-white/90">
-                    See the impact of our training through the stories of our graduates.
+                    See the impact of our training through the stories of our graduates and moments from our events.
                   </p>
                 </div>
               </div>
@@ -64,6 +77,12 @@ export default function GalleryPage() {
           </section>
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
+             <div className="text-center mb-12">
+                <h2 className="font-headline text-3xl sm:text-4xl font-bold">Success Stories</h2>
+                <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
+                    Hear directly from our graduates about how KSS transformed their careers.
+                </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {testimonials.map((testimonial) => {
                 const avatarImage = PlaceHolderImages.find(p => p.id === testimonial.avatarId);
@@ -89,6 +108,31 @@ export default function GalleryPage() {
                   </Card>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 sm:py-20 bg-muted">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Photo Album</h2>
+              <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
+                A collection of moments from our courses, workshops, and events.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {albumImages.map((image, index) => (
+                    image && <div key={index} className="relative h-64 rounded-lg overflow-hidden shadow-lg group">
+                        <Image
+                            src={image.imageUrl}
+                            alt={image.description}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            data-ai-hint={image.imageHint}
+                        />
+                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                    </div>
+                ))}
             </div>
           </div>
         </section>
