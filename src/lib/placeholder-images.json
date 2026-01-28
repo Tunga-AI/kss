@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-sales-training",
+      "description": "Dynamic image of a sales team in a modern office, collaborating.",
+      "imageUrl": "https://images.unsplash.com/photo-1758691736548-073bc97cdff4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzYWxlcyUyMHRlYW0lMjBjb2xsYWJvcmF0aW9ufGVufDB8fHx8MTc2OTYzNjE3MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sales team collaboration"
+    },
+    {
+      "id": "course-sales-101",
+      "description": "An image representing foundational sales concepts.",
+      "imageUrl": "https://images.unsplash.com/photo-1545535408-2b4d520cbd88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzYWxlcyUyMGJhc2ljc3xlbnwwfHx8fDE3Njk2MzYxNjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sales basics"
+    },
+    {
+      "id": "course-advanced-negotiation",
+      "description": "Two people shaking hands, sealing a deal.",
+      "imageUrl": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YnVzaW5lc3MlMjBoYW5kc2hha2V8ZW58MHx8fHwxNzY5NjM2MTY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "business handshake"
+    },
+    {
+      "id": "course-crm-mastery",
+      "description": "A person working on a laptop showing a CRM dashboard.",
+      "imageUrl": "https://picsum.photos/seed/13/600/400",
+      "imageHint": "crm dashboard"
+    },
+    {
+      "id": "course-digital-prospecting",
+      "description": "Image showing digital prospecting tools on a screen.",
+      "imageUrl": "https://images.unsplash.com/photo-1571677246347-5040036b95cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxkaWdpdGFsJTIwbWFya2V0aW5nfGVufDB8fHx8MTc2OTUzNTg4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital marketing"
+    },
+    {
+      "id": "ai-recommendation-feature",
+      "description": "Abstract image representing artificial intelligence and learning paths.",
+      "imageUrl": "https://images.unsplash.com/photo-1738641928061-e68c5e8e2f2b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhaSUyMGxlYXJuaW5nfGVufDB8fHx8MTc2OTYzNjE2OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ai learning"
+    },
+    {
+      "id": "login-page-background",
+      "description": "A professional and modern office building exterior.",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-4b46a572b786?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtb2Rlcm4lMjBvZmZpY2V8ZW58MHx8fHwxNzY5NTUxNDUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "modern office"
+    }
+  ]
 }
