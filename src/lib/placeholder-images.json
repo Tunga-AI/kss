@@ -41,6 +41,30 @@
       "description": "A professional and modern office building exterior.",
       "imageUrl": "https://images.unsplash.com/photo-1556761175-4b46a572b786?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtb2Rlcm4lMjBvZmZpY2V8ZW58MHx8fHwxNzY5NTUxNDUzfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "modern office"
+    },
+    {
+      "id": "event-webinar-psychology",
+      "description": "An abstract image representing psychology and thought.",
+      "imageUrl": "https://images.unsplash.com/photo-1762329386486-f38ef2077a06?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3ZWJpbmFyJTIwc2NyZWVufGVufDB8fHx8MTc2OTYzNzE3OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "webinar screen"
+    },
+    {
+      "id": "event-workshop-calling",
+      "description": "A group of people collaborating in a workshop.",
+      "imageUrl": "https://images.unsplash.com/photo-1649252504109-686f70fa38af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b3Jrc2hvcCUyMGNvbGxhYm9yYXRpb258ZW58MHx8fHwxNzY5NjAxMDk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "workshop collaboration"
+    },
+    {
+      "id": "event-conference-summit",
+      "description": "A large audience at a conference.",
+      "imageUrl": "https://images.unsplash.com/photo-1762968269894-1d7e1ce8894e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjb25mZXJlbmNlJTIwc3RhZ2V8ZW58MHx8fHwxNzY5NTgzMzEzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "conference stage"
+    },
+    {
+      "id": "event-webinar-social",
+      "description": "Social media icons on a digital background.",
+      "imageUrl": "https://images.unsplash.com/photo-1683721003111-070bcc053d8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzb2NpYWwlMjBtZWRpYXxlbnwwfHx8fDE3Njk2MjE2Njl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "social media"
     }
   ]
 }

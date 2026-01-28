@@ -5,6 +5,7 @@ export type Course = {
   imageId: string;
   duration: string;
   level: 'Beginner' | 'Intermediate' | 'Advanced';
+  takeaways: string[];
 };
 
 export const courses: Course[] = [
@@ -15,6 +16,12 @@ export const courses: Course[] = [
     imageId: 'course-sales-101',
     duration: '4 weeks',
     level: 'Beginner',
+    takeaways: [
+      'Understand the full sales cycle from start to finish.',
+      'Develop effective prospecting and lead qualification skills.',
+      'Master the art of the sales pitch and product demonstration.',
+      'Learn key closing techniques to seal the deal.',
+    ],
   },
   {
     id: 'advanced-negotiation',
@@ -23,6 +30,12 @@ export const courses: Course[] = [
     imageId: 'course-advanced-negotiation',
     duration: '6 weeks',
     level: 'Advanced',
+    takeaways: [
+      'Apply advanced psychological principles in negotiation.',
+      'Master multi-party and high-stakes negotiation strategies.',
+      'Learn to counter common negotiation tactics.',
+      'Develop skills for creating win-win outcomes.',
+    ],
   },
   {
     id: 'crm-mastery',
@@ -31,6 +44,12 @@ export const courses: Course[] = [
     imageId: 'course-crm-mastery',
     duration: '3 weeks',
     level: 'Intermediate',
+    takeaways: [
+      'Automate sales tasks and workflows within your CRM.',
+      'Build and manage a clean and effective sales pipeline.',
+      'Utilize CRM data to generate insightful sales reports.',
+      'Integrate your CRM with other sales and marketing tools.',
+    ],
   },
   {
     id: 'digital-prospecting',
@@ -39,5 +58,11 @@ export const courses: Course[] = [
     imageId: 'course-digital-prospecting',
     duration: '5 weeks',
     level: 'Intermediate',
+    takeaways: [
+      'Master social selling techniques on platforms like LinkedIn.',
+      'Build effective email outreach campaigns that get responses.',
+      'Leverage sales intelligence tools to find qualified leads.',
+      'Create a repeatable system for digital lead generation.',
+    ],
   },
 ];

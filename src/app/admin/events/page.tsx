@@ -1,25 +1,26 @@
 import Link from "next/link";
-import { courses } from "@/lib/courses-data";
+import { events } from "@/lib/events-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
 
-export default function AdminCoursesPage() {
+export default function AdminEventsPage() {
     return (
         <div className="grid gap-6">
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <CardTitle className="font-headline text-xl sm:text-2xl">Manage Courses</CardTitle>
-                            <CardDescription>View, edit, or add new courses.</CardDescription>
+                            <CardTitle className="font-headline text-xl sm:text-2xl">Manage Events</CardTitle>
+                            <CardDescription>View, edit, or add new events.</CardDescription>
                         </div>
                         <Button>
                             <PlusCircle className="mr-2"/>
-                            Create Course
+                            Create Event
                         </Button>
                     </div>
                 </CardHeader>
@@ -28,21 +29,23 @@ export default function AdminCoursesPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Title</TableHead>
-                                <TableHead>Level</TableHead>
-                                <TableHead className="hidden md:table-cell">Duration</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead className="hidden md:table-cell">Location</TableHead>
+                                <TableHead>Price</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {courses.map((course) => (
-                                <TableRow key={course.id}>
-                                    <TableCell className="font-medium">{course.title}</TableCell>
+                            {events.map((event) => (
+                                <TableRow key={event.id}>
+                                    <TableCell className="font-medium">{event.title}</TableCell>
+                                    <TableCell>{format(new Date(event.date), 'MMM d, yyyy')}</TableCell>
+                                    <TableCell className="hidden md:table-cell">{event.location}</TableCell>
                                     <TableCell>
-                                        <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Intermediate' ? 'default' : 'destructive'}>{course.level}</Badge>
+                                        <Badge variant={event.price === 'Free' ? 'secondary' : 'default'}>{event.price}</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden md:table-cell">{course.duration}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -54,7 +57,7 @@ export default function AdminCoursesPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem className="p-0">
-                                                    <Link href={`/admin/courses/${course.id}`} className="w-full h-full block px-2 py-1.5">
+                                                    <Link href={`/admin/events/${event.id}`} className="w-full h-full block px-2 py-1.5">
                                                         Edit
                                                     </Link>
                                                 </DropdownMenuItem>

@@ -14,13 +14,14 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Shield, LayoutDashboard, BookOpen, Users, LogOut } from 'lucide-react';
+import { Shield, LayoutDashboard, BookOpen, Users, LogOut, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const menuItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/courses', label: 'Manage Courses', icon: BookOpen },
+  { href: '/admin/events', label: 'Manage Events', icon: Calendar },
   { href: '/admin/users', label: 'Manage Users', icon: Users },
 ];
 

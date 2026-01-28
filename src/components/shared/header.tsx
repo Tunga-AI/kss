@@ -8,6 +8,7 @@ import { Menu, GraduationCap } from "lucide-react";
 
 const navLinks = [
   { href: "/courses", label: "Courses" },
+  { href: "/events", label: "Events" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
