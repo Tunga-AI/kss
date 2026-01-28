@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
-        <Sidebar>
+        <Sidebar collapsible="icon">
           <SidebarHeader>
             <Link href="/admin" className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-primary" />
@@ -45,6 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))}
+                    tooltip={item.label}
                   >
                     <Link href={item.href}>
                       <item.icon />
@@ -58,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarFooter>
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild tooltip="Logout">
                         <Link href="/">
                             <LogOut />
                             <span>Logout</span>
@@ -70,8 +71,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger />
-            <div className="flex items-center gap-4">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex items-center gap-4 ml-auto">
               <Avatar>
                 <AvatarImage src="https://picsum.photos/seed/admin/40/40" alt="Admin" data-ai-hint="person portrait" />
                 <AvatarFallback>A</AvatarFallback>
@@ -86,5 +87,3 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </SidebarProvider>
   );
 }
-
-    

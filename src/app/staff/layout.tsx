@@ -27,9 +27,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
-        <Sidebar>
+        <Sidebar collapsible="icon">
           <SidebarHeader>
             <Link href="/staff" className="flex items-center gap-2">
               <Briefcase className="h-8 w-8 text-primary" />
@@ -43,6 +43,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href || (item.href !== '/staff' && pathname.startsWith(item.href))}
+                    tooltip={item.label}
                   >
                     <Link href={item.href}>
                       <item.icon />
@@ -56,7 +57,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
           <SidebarFooter>
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild tooltip="Logout">
                         <Link href="/">
                             <LogOut />
                             <span>Logout</span>
@@ -68,8 +69,8 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger />
-            <div className="flex items-center gap-4">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex items-center gap-4 ml-auto">
               <Avatar>
                 <AvatarImage src="https://picsum.photos/seed/staff/40/40" alt="Staff" data-ai-hint="person portrait" />
                 <AvatarFallback>S</AvatarFallback>

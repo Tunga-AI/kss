@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
-        <Sidebar>
+        <Sidebar collapsible="icon">
           <SidebarHeader>
             <Link href="/dashboard" className="flex items-center gap-2">
               <GraduationCap className="h-8 w-8 text-primary" />
@@ -45,6 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                    tooltip={item.label}
                   >
                     <Link href={item.href}>
                       <item.icon />
@@ -58,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SidebarFooter>
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild tooltip="Logout">
                         <Link href="/">
                             <LogOut />
                             <span>Logout</span>
@@ -70,8 +71,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger />
-            <div className="flex items-center gap-4">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex items-center gap-4 ml-auto">
               <Avatar>
                 <AvatarImage src="https://picsum.photos/seed/user/40/40" alt="User" data-ai-hint="person portrait" />
                 <AvatarFallback>U</AvatarFallback>
@@ -86,5 +87,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </SidebarProvider>
   );
 }
-
-    
