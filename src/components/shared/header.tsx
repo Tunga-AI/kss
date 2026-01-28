@@ -66,7 +66,7 @@ export function Header() {
                       <span className="sr-only">Toggle Menu</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left">
+                  <SheetContent side="right">
                     <Link href="/" className="flex items-center space-x-2 mb-8">
                       <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
                     </Link>
