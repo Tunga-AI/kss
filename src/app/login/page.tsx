@@ -1,67 +1,22 @@
-import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { LoginForm } from '@/components/auth/login-form';
 
 export default function LoginPage() {
   const loginImage = PlaceHolderImages.find(p => p.id === 'login-page-background');
   
   return (
-    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="flex items-center justify-center p-4 sm:p-12">
-        <div className="mx-auto grid w-full max-w-md gap-6">
-          <div className="grid gap-2 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold font-headline">Welcome to KSS</h1>
-            <p className="text-balance text-muted-foreground">
-              Please select your portal to continue
-            </p>
-          </div>
-          <div className="grid gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-headline">Learner Portal</CardTitle>
-                <CardDescription>Access your courses, materials, and grades.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link href="/dashboard">Login as Learner</Link>
-                </Button>
-              </CardContent>
-            </Card>
-             <Card>
-              <CardHeader>
-                <CardTitle className="font-headline">Staff Portal</CardTitle>
-                <CardDescription>Manage classes, schedules, and student progress.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/staff">Login as Staff</Link>
-                </Button>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-headline">Admin Portal</CardTitle>
-                <CardDescription>Manage courses, users, and content.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="secondary" className="w-full">
-                  <Link href="/admin">Login as Admin</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-      <div className="hidden bg-muted lg:block relative">
-        {loginImage && <Image
-          src={loginImage.imageUrl}
-          alt={loginImage.description}
-          data-ai-hint={loginImage.imageHint}
-          fill
-          className="object-cover"
-        />}
+    <div className="relative w-full min-h-screen">
+      {loginImage && <Image
+        src={loginImage.imageUrl}
+        alt={loginImage.description}
+        data-ai-hint={loginImage.imageHint}
+        fill
+        className="object-cover"
+      />}
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="relative z-10 flex items-end justify-end p-4 sm:p-12 h-full">
+        <LoginForm />
       </div>
     </div>
   );
