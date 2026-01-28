@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -14,12 +13,12 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Briefcase, LayoutDashboard, BookOpen, Calendar, LogOut } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, LogOut } from 'lucide-react';
 
 const menuItems = [
-  { href: '/staff', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/staff/classes', label: 'Classes', icon: BookOpen },
-  { href: '/staff/schedule', label: 'Schedule', icon: Calendar },
+  { href: '/staff', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/staff/classes', label: 'CLASSES', icon: BookOpen },
+  { href: '/staff/schedule', label: 'SCHEDULE', icon: Calendar },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
@@ -29,13 +28,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <Link href="/staff" className="flex items-center gap-2 text-sidebar-primary">
-              <Briefcase className="h-8 w-8" />
-              <span className="font-headline text-xl font-bold">KSS Staff</span>
-            </Link>
-          </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="pt-8">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>

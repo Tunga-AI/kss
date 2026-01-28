@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -14,12 +13,12 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { GraduationCap, LayoutDashboard, BookOpen, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, Sparkles, LogOut } from 'lucide-react';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/courses', label: 'Courses', icon: BookOpen },
-  { href: '/dashboard/progress', label: 'Progress', icon: TrendingUp },
+  { href: '/dashboard', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/dashboard/courses', label: 'COURSES', icon: BookOpen },
+  { href: '/dashboard/progress', label: 'PROGRESS', icon: TrendingUp },
   { href: '/dashboard/recommendations', label: 'AI', icon: Sparkles },
 ];
 
@@ -30,13 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-primary">
-              <GraduationCap className="h-8 w-8" />
-              <span className="font-headline text-xl font-bold">KSS Learner</span>
-            </Link>
-          </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="pt-8">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>

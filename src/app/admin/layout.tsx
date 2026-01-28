@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -14,13 +13,13 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Shield, LayoutDashboard, BookOpen, Users, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, LogOut, Calendar } from 'lucide-react';
 
 const menuItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/courses', label: 'Courses', icon: BookOpen },
-  { href: '/admin/events', label: 'Events', icon: Calendar },
-  { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/admin/courses', label: 'COURSES', icon: BookOpen },
+  { href: '/admin/events', label: 'EVENTS', icon: Calendar },
+  { href: '/admin/users', label: 'USERS', icon: Users },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -30,13 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
-          <SidebarHeader>
-            <Link href="/admin" className="flex items-center gap-2 text-sidebar-primary">
-              <Shield className="h-8 w-8" />
-              <span className="font-headline text-xl font-bold">KSS Admin</span>
-            </Link>
-          </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="pt-8">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
