@@ -17,16 +17,16 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-primary/5 py-20 md:py-32">
+        <section className="relative bg-primary/5 py-16 sm:py-20 md:py-32">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-4xl md:text-6xl font-bold text-primary">
+            <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">
               Unlock Your Sales Potential
             </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg text-foreground/80">
+            <p className="mt-4 max-w-3xl mx-auto text-base sm:text-lg text-foreground/80">
               KSS Institute provides world-class training programs designed to
               transform sales professionals into industry leaders.
             </p>
-            <div className="mt-8 flex justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
               <Button asChild size="lg">
                 <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
@@ -49,21 +49,21 @@ export default function Home() {
         </section>
 
         {/* Featured Courses Section */}
-        <section id="courses" className="py-20">
+        <section id="courses" className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="font-headline text-3xl md:text-4xl font-bold">Featured Courses</h2>
-              <p className="mt-2 text-muted-foreground max-w-xl mx-auto">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Featured Courses</h2>
+              <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
                 Handpicked courses to kickstart your journey to sales excellence.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {courses.map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Card key={course.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     {courseImage && (
-                      <div className="relative h-48 w-full">
+                      <div className="relative h-40 sm:h-48 w-full">
                         <Image
                           src={courseImage.imageUrl}
                           alt={courseImage.description}
@@ -74,7 +74,7 @@ export default function Home() {
                       </div>
                     )}
                     <CardHeader>
-                      <CardTitle className="font-headline text-xl">{course.title}</CardTitle>
+                      <CardTitle className="font-headline text-lg sm:text-xl">{course.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow">
                       <p className="text-muted-foreground text-sm">{course.description}</p>
@@ -96,14 +96,14 @@ export default function Home() {
         </section>
 
         {/* AI Feature Section */}
-        <section className="bg-primary/5 py-20">
+        <section className="bg-primary/5 py-16 sm:py-20">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-              <div>
-                <h2 className="font-headline text-3xl md:text-4xl font-bold">
+              <div className="order-2 md:order-1">
+                <h2 className="font-headline text-3xl sm:text-4xl font-bold">
                   Find Your Perfect Learning Path
                 </h2>
-                <p className="mt-4 text-lg text-foreground/80">
+                <p className="mt-4 text-base sm:text-lg text-foreground/80">
                   Our new AI-powered recommendation engine analyzes your profile and learning history to suggest courses that will accelerate your career. Stop guessing what to learn next.
                 </p>
                 <ul className="mt-6 space-y-4">
@@ -127,7 +127,7 @@ export default function Home() {
                   </Link>
                 </Button>
               </div>
-              <div className="relative h-80 rounded-lg overflow-hidden shadow-lg">
+              <div className="relative h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden shadow-lg order-1 md:order-2">
                 {aiFeatureImage && (
                   <Image
                     src={aiFeatureImage.imageUrl}

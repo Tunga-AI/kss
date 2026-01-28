@@ -11,9 +11,9 @@ export default function AdminCoursesPage() {
         <div className="grid gap-6">
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <CardTitle className="font-headline text-2xl">Manage Courses</CardTitle>
+                            <CardTitle className="font-headline text-xl sm:text-2xl">Manage Courses</CardTitle>
                             <CardDescription>View, edit, or add new courses.</CardDescription>
                         </div>
                         <Button>
@@ -28,7 +28,7 @@ export default function AdminCoursesPage() {
                             <TableRow>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Level</TableHead>
-                                <TableHead>Duration</TableHead>
+                                <TableHead className="hidden md:table-cell">Duration</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
@@ -41,7 +41,7 @@ export default function AdminCoursesPage() {
                                     <TableCell>
                                         <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Intermediate' ? 'default' : 'destructive'}>{course.level}</Badge>
                                     </TableCell>
-                                    <TableCell>{course.duration}</TableCell>
+                                    <TableCell className="hidden md:table-cell">{course.duration}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>

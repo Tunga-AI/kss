@@ -9,10 +9,10 @@ export default function LoginPage() {
   
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="flex items-center justify-center py-12">
-        <div className="mx-auto grid w-[350px] gap-6">
+      <div className="flex items-center justify-center p-4 sm:p-12">
+        <div className="mx-auto grid w-full max-w-md gap-6">
           <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold font-headline">Welcome to KSS</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold font-headline">Welcome to KSS</h1>
             <p className="text-balance text-muted-foreground">
               Please select your portal to continue
             </p>

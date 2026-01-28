@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
             <SidebarTrigger />
             <div className="flex items-center gap-4">
               <Avatar>
@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Avatar>
             </div>
           </header>
-          <main className="p-4 md:p-6">
+          <main className="p-4 sm:p-6">
             {children}
           </main>
         </SidebarInset>

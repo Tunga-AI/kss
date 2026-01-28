@@ -49,9 +49,9 @@ export default function AdminUsersPage() {
         <div className="grid gap-6">
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <CardTitle className="font-headline text-2xl">Manage Users</CardTitle>
+                            <CardTitle className="font-headline text-xl sm:text-2xl">Manage Users</CardTitle>
                             <CardDescription>View, edit, or add new users to the system.</CardDescription>
                         </div>
                         <Button>
@@ -66,7 +66,7 @@ export default function AdminUsersPage() {
                             <TableRow>
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
-                                <TableHead>Date Joined</TableHead>
+                                <TableHead className="hidden sm:table-cell">Date Joined</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
@@ -83,14 +83,14 @@ export default function AdminUsersPage() {
                                             </Avatar>
                                             <div>
                                                 <p className="font-medium">{user.name}</p>
-                                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                                                <p className="text-xs sm:text-sm text-muted-foreground">{user.email}</p>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={user.role === 'Admin' ? 'destructive' : user.role === 'Staff' ? 'default' : 'secondary'}>{user.role}</Badge>
                                     </TableCell>
-                                    <TableCell>{user.joined}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{user.joined}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>

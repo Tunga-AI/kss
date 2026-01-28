@@ -7,7 +7,7 @@ export default function RecommendationsPage() {
     <div>
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">AI Course Recommendations</CardTitle>
+          <CardTitle className="font-headline text-xl sm:text-2xl">AI Course Recommendations</CardTitle>
           <CardDescription>
             Tell us about your background and what you've learned so far. Our AI will suggest the next best courses for your career growth.
           </CardDescription>

@@ -8,26 +8,26 @@ export default function DashboardPage() {
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Welcome Back, Learner!</CardTitle>
+          <CardTitle className="font-headline text-xl sm:text-2xl">Welcome Back, Learner!</CardTitle>
           <CardDescription>Here's a quick overview of your learning journey. Keep up the great work!</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline text-3xl">3</CardTitle>
+                <CardTitle className="font-headline text-2xl sm:text-3xl">3</CardTitle>
                 <CardDescription>Courses in Progress</CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline text-3xl">88%</CardTitle>
+                <CardTitle className="font-headline text-2xl sm:text-3xl">88%</CardTitle>
                 <CardDescription>Average Score</CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline text-3xl">5</CardTitle>
+                <CardTitle className="font-headline text-2xl sm:text-3xl">5</CardTitle>
                 <CardDescription>Completed Courses</CardDescription>
               </CardHeader>
             </Card>
