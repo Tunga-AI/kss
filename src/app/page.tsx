@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, BrainCircuit, Users, BookOpen, Star, Award } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { courses } from "@/lib/courses-data";
@@ -125,7 +125,7 @@ export default function Home() {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">
-                    <Card className="relative overflow-hidden h-full min-h-[34rem] lg:min-h-[42rem] border-0 shadow-lg">
+                    <Card className="relative overflow-hidden h-full min-h-[36rem] lg:min-h-[50rem] border-0 shadow-lg">
                       {courseImage && (
                         <Image
                           src={courseImage.imageUrl}
@@ -152,7 +152,7 @@ export default function Home() {
                   const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                   return (
                     <Link href={`/courses/${course.id}`} key={course.id} className="block group">
-                      <Card className="relative overflow-hidden h-80 border-0 shadow-lg">
+                      <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
                         {courseImage && (
                           <Image
                             src={courseImage.imageUrl}
@@ -290,7 +290,7 @@ export default function Home() {
                                 <CardContent className="pt-6 flex-grow">
                                     <p className="text-muted-foreground text-sm sm:text-base">"{testimonial.testimonial}"</p>
                                 </CardContent>
-                                <CardFooter className="flex items-center gap-4">
+                                <CardHeader>
                                      {avatarImage && (
                                         <Avatar>
                                             <AvatarImage src={avatarImage.imageUrl} alt={testimonial.name} data-ai-hint={avatarImage.imageHint} />
@@ -301,7 +301,7 @@ export default function Home() {
                                         <p className="font-semibold text-base sm:text-lg">{testimonial.name}</p>
                                         <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                                     </div>
-                                </CardFooter>
+                                </CardHeader>
                             </Card>
                         )
                     })}
