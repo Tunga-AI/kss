@@ -10,16 +10,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 export default function StaffClassesPage() {
     return (
         <div className="grid gap-6">
-            <Card>
+            <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <CardTitle className="font-headline text-xl sm:text-2xl">My Classes</CardTitle>
-                            <CardDescription>Manage your assigned courses and interact with your learners.</CardDescription>
+                            <CardDescription className="text-primary-foreground/80">Manage your assigned courses and interact with your learners.</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
+            </Card>
+            <Card>
+                <CardContent className="pt-6">
                     <Table>
                         <TableHeader>
                             <TableRow>

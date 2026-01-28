@@ -29,43 +29,47 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 export default function StaffSchedulePage() {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-xl sm:text-2xl">My Weekly Schedule</CardTitle>
-                <CardDescription>An overview of your teaching and administrative commitments for the week.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="border rounded-lg overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">Time</TableHead>
-                            {days.map(day => <TableHead key={day}>{day}</TableHead>)}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {timeSlots.map(time => (
-                            <TableRow key={time}>
-                                <TableCell className="font-medium text-muted-foreground">{time}</TableCell>
-                                {days.map(day => {
-                                    const event = scheduleData[day as keyof typeof scheduleData]?.find(e => e.time === time);
-                                    return (
-                                        <TableCell key={day} className="h-24 align-top">
-                                            {event && (
-                                                <div className="p-2 rounded-lg bg-primary/5 border border-primary/20 h-full">
-                                                    <p className="font-semibold text-primary text-sm">{event.course}</p>
-                                                    <p className="text-xs text-muted-foreground">{event.type}</p>
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                    )
-                                })}
+        <div className="grid gap-6">
+            <Card className="bg-primary text-primary-foreground">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl sm:text-2xl">My Weekly Schedule</CardTitle>
+                    <CardDescription className="text-primary-foreground/80">An overview of your teaching and administrative commitments for the week.</CardDescription>
+                </CardHeader>
+            </Card>
+            <Card>
+                <CardContent className="pt-6">
+                    <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">Time</TableHead>
+                                {days.map(day => <TableHead key={day}>{day}</TableHead>)}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                </div>
-            </CardContent>
-        </Card>
+                        </TableHeader>
+                        <TableBody>
+                            {timeSlots.map(time => (
+                                <TableRow key={time}>
+                                    <TableCell className="font-medium text-muted-foreground">{time}</TableCell>
+                                    {days.map(day => {
+                                        const event = scheduleData[day as keyof typeof scheduleData]?.find(e => e.time === time);
+                                        return (
+                                            <TableCell key={day} className="h-24 align-top p-1 sm:p-2">
+                                                {event && (
+                                                    <div className="p-2 rounded-lg bg-primary/5 border border-primary/20 h-full text-xs sm:text-sm">
+                                                        <p className="font-semibold text-primary">{event.course}</p>
+                                                        <p className="text-muted-foreground">{event.type}</p>
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                        )
+                                    })}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

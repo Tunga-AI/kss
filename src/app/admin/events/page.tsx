@@ -11,20 +11,22 @@ import { format } from "date-fns";
 export default function AdminEventsPage() {
     return (
         <div className="grid gap-6">
-            <Card>
+            <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <CardTitle className="font-headline text-xl sm:text-2xl">Manage Events</CardTitle>
-                            <CardDescription>View, edit, or add new events.</CardDescription>
+                            <CardDescription className="text-primary-foreground/80">View, edit, or add new events.</CardDescription>
                         </div>
-                        <Button>
+                        <Button variant="secondary">
                             <PlusCircle className="mr-2"/>
                             Create Event
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent>
+            </Card>
+            <Card>
+                <CardContent className="pt-6">
                     <Table>
                         <TableHeader>
                             <TableRow>

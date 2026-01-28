@@ -15,50 +15,54 @@ export default function AdminCourseEditPage({ params }: { params: { id: string }
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-xl sm:text-2xl">Edit Course</CardTitle>
-                <CardDescription>Make changes to the course details below.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <form className="grid gap-6">
-                    <div className="grid gap-3">
-                        <Label htmlFor="title">Title</Label>
-                        <Input id="title" type="text" defaultValue={course.title} />
-                    </div>
-                    <div className="grid gap-3">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea id="description" defaultValue={course.description} rows={5} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid gap-6">
+            <Card className="bg-primary text-primary-foreground">
+                 <CardHeader>
+                    <CardTitle className="font-headline text-xl sm:text-2xl">Edit Course</CardTitle>
+                    <CardDescription className="text-primary-foreground/80">Make changes to the &quot;{course.title}&quot; course details below.</CardDescription>
+                </CardHeader>
+            </Card>
+            <Card>
+                <CardContent className="pt-6">
+                    <form className="grid gap-6">
                         <div className="grid gap-3">
-                            <Label htmlFor="level">Level</Label>
-                            <Select defaultValue={course.level}>
-                                <SelectTrigger id="level">
-                                    <SelectValue placeholder="Select level" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Beginner">Beginner</SelectItem>
-                                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                    <SelectItem value="Advanced">Advanced</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="title">Title</Label>
+                            <Input id="title" type="text" defaultValue={course.title} />
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="duration">Duration</Label>
-                            <Input id="duration" type="text" defaultValue={course.duration} />
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea id="description" defaultValue={course.description} rows={5} />
                         </div>
-                    </div>
-                     <div className="grid gap-3">
-                        <Label htmlFor="takeaways">Key Takeaways (one per line)</Label>
-                        <Textarea id="takeaways" defaultValue={course.takeaways.join('\n')} rows={5} />
-                    </div>
-                    <div className="flex gap-4">
-                        <Button type="submit">Save Changes</Button>
-                        <Button type="button" variant="outline">Cancel</Button>
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="grid gap-3">
+                                <Label htmlFor="level">Level</Label>
+                                <Select defaultValue={course.level}>
+                                    <SelectTrigger id="level">
+                                        <SelectValue placeholder="Select level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Beginner">Beginner</SelectItem>
+                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                        <SelectItem value="Advanced">Advanced</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="duration">Duration</Label>
+                                <Input id="duration" type="text" defaultValue={course.duration} />
+                            </div>
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="takeaways">Key Takeaways (one per line)</Label>
+                            <Textarea id="takeaways" defaultValue={course.takeaways.join('\n')} rows={5} />
+                        </div>
+                        <div className="flex gap-4">
+                            <Button type="submit">Save Changes</Button>
+                            <Button type="button" variant="outline">Cancel</Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

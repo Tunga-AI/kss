@@ -4,11 +4,11 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 
 export default function RecommendationsPage() {
   return (
-    <div>
-      <Card className="mb-6">
+    <div className="grid gap-6">
+      <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="font-headline text-xl sm:text-2xl">AI Course Recommendations</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-primary-foreground/80">
             Tell us about your background and what you've learned so far. Our AI will suggest the next best courses for your career growth.
           </CardDescription>
         </CardHeader>
