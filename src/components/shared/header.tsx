@@ -4,25 +4,15 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
+  { href: "/courses", label: "Courses" },
+  { href: "/e-learning", label: "E-Learning" },
   { href: "/events", label: "Events" },
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
@@ -67,20 +57,9 @@ export function Header() {
                     {link.label}
                 </Link>
                 ))}
-                 <DropdownMenu>
-                  <DropdownMenuTrigger className={cn("flex items-center gap-1 text-sm font-bold uppercase transition-colors outline-none", scrolled ? "text-foreground hover:text-primary" : "text-white hover:text-primary")}>
-                    Get Started
-                    <ChevronDown className="h-4 w-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                      <Link href="/courses">Courses</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/e-learning">E-Learning</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button asChild size="sm" className={cn(scrolled ? 'bg-primary' : 'bg-white text-primary hover:bg-white/90')}>
+                    <Link href="/login">Portal</Link>
+                </Button>
             </nav>
             <div className="md:hidden">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -105,31 +84,9 @@ export function Header() {
                           {link.label}
                         </Link>
                       ))}
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="get-started" className="border-b-0">
-                            <AccordionTrigger className="text-lg font-bold uppercase py-2 hover:no-underline">
-                                Get Started
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <div className="flex flex-col gap-4 pl-4 pt-2">
-                                    <Link
-                                        href="/courses"
-                                        onClick={() => setIsOpen(false)}
-                                        className="text-lg font-bold uppercase"
-                                    >
-                                        Courses
-                                    </Link>
-                                    <Link
-                                        href="/e-learning"
-                                        onClick={() => setIsOpen(false)}
-                                        className="text-lg font-bold uppercase"
-                                    >
-                                        E-Learning
-                                    </Link>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                       <Button asChild className="mt-4">
+                         <Link href="/login">Portal</Link>
+                       </Button>
                     </div>
                   </SheetContent>
                 </Sheet>

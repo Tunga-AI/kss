@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, BrainCircuit, Users, Award, Calendar, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle, BrainCircuit, Users, Award, Calendar, MapPin, ChevronDown } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { courses } from "@/lib/courses-data";
 import { moocCourses } from "@/lib/mooc-data";
@@ -12,6 +12,7 @@ import { Footer } from "@/components/shared/footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const testimonials = [
   {
@@ -71,9 +72,21 @@ export default function Home() {
                             World-class training programs designed to transform you into an industry leader.
                         </p>
                         <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
-                            <Button asChild size="lg">
-                                <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                            </Button>
+                             <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="lg">
+                                  Get Started <ChevronDown className="ml-2 h-5 w-5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem asChild>
+                                  <Link href="/courses">Courses</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href="/e-learning">E-Learning</Link>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                 </div>
