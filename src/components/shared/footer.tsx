@@ -34,7 +34,7 @@ export function Footer() {
               href="/login"
               className="font-bold text-primary transition-colors hover:text-primary/80"
             >
-              Enroll
+              Portal
             </Link>
         </nav>
         <p className="text-center text-sm leading-loose text-muted-foreground md:text-right">
