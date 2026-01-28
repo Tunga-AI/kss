@@ -40,59 +40,8 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-primary/5 py-16 sm:py-20 md:py-24">
-          <div className="container mx-auto px-4 z-10 relative">
-            <div className="text-center">
-              <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">
-                Unlock Your Sales Potential
-              </h1>
-              <p className="mt-4 max-w-3xl mx-auto text-base sm:text-lg text-foreground/80">
-                KSS Institute provides world-class training programs designed to
-                transform sales professionals into industry leaders.
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <Button asChild size="lg">
-                  <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link href="/login">Learner Portal</Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-                <Card className="bg-background/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <Award className="h-8 w-8 mx-auto text-accent"/>
-                        <p className="text-4xl font-bold font-headline">10+</p>
-                        <CardDescription>Years of Experience</CardDescription>
-                    </CardHeader>
-                </Card>
-                 <Card className="bg-background/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <BookOpen className="h-8 w-8 mx-auto text-accent"/>
-                        <p className="text-4xl font-bold font-headline">50+</p>
-                        <CardDescription>Expert-Led Courses</CardDescription>
-                    </CardHeader>
-                </Card>
-                 <Card className="bg-background/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <Users className="h-8 w-8 mx-auto text-accent"/>
-                        <p className="text-4xl font-bold font-headline">10k+</p>
-                        <CardDescription>Successful Graduates</CardDescription>
-                    </CardHeader>
-                </Card>
-                 <Card className="bg-background/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <Star className="h-8 w-8 mx-auto text-accent"/>
-                        <p className="text-4xl font-bold font-headline">4.9/5</p>
-                        <CardDescription>Average Rating</CardDescription>
-                    </CardHeader>
-                </Card>
-            </div>
-          </div>
-          {heroImage && (
-             <div className="absolute inset-0 -z-10 opacity-5">
+        <section className="relative min-h-screen w-full flex items-end">
+            {heroImage && (
                 <Image
                     src={heroImage.imageUrl}
                     alt={heroImage.description}
@@ -100,8 +49,65 @@ export default function Home() {
                     className="object-cover"
                     data-ai-hint={heroImage.imageHint}
                 />
-             </div>
-          )}
+            )}
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 w-full">
+                <div className="container mx-auto px-4 py-24 sm:py-32">
+                    <div className="max-w-3xl text-white">
+                        <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold">
+                            Unlock Your Sales Potential
+                        </h1>
+                        <p className="mt-4 text-lg sm:text-xl text-white/90">
+                            KSS Institute provides world-class training programs designed to
+                            transform sales professionals into industry leaders.
+                        </p>
+                        <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
+                            <Button asChild size="lg">
+                                <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                            </Button>
+                            <Button asChild size="lg" variant="secondary">
+                                <Link href="/login">Learner Portal</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 sm:py-20 bg-muted">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                    <Card>
+                        <CardHeader>
+                            <Award className="h-8 w-8 mx-auto text-accent"/>
+                            <p className="text-4xl font-bold font-headline">10+</p>
+                            <CardDescription>Years of Experience</CardDescription>
+                        </CardHeader>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <BookOpen className="h-8 w-8 mx-auto text-accent"/>
+                            <p className="text-4xl font-bold font-headline">50+</p>
+                            <CardDescription>Expert-Led Courses</CardDescription>
+                        </CardHeader>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <Users className="h-8 w-8 mx-auto text-accent"/>
+                            <p className="text-4xl font-bold font-headline">10k+</p>
+                            <CardDescription>Successful Graduates</CardDescription>
+                        </CardHeader>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <Star className="h-8 w-8 mx-auto text-accent"/>
+                            <p className="text-4xl font-bold font-headline">4.9/5</p>
+                            <CardDescription>Average Rating</CardDescription>
+                        </CardHeader>
+                    </Card>
+                </div>
+            </div>
         </section>
 
         {/* Featured Courses Section */}
