@@ -1,47 +1,44 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 
+const navLinks = [
+  { href: "/about", label: "About" },
+  { href: "/framework", label: "Framework" },
+  { href: "/courses", label: "Our Programs" },
+  { href: "/success-stories", label: "Success Stories" },
+  { href: "/contact", label: "Contact Us" },
+];
+
 export function Footer() {
   return (
     <footer className="border-t bg-background">
-      <div className="container py-8">
-        <div className="grid md:grid-cols-3 gap-8">
-            <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                    <GraduationCap className="h-6 w-6 text-primary" />
-                    <span className="font-headline font-bold text-lg">KSS Institute</span>
-                </div>
-                <p className="text-sm text-muted-foreground">Empowering Africa's sales professionals with world-class education and industry-recognized qualifications.</p>
-            </div>
-            <div>
-                <h4 className="font-headline font-semibold mb-2">Quick Links</h4>
-                 <nav className="flex flex-col gap-2 text-sm text-muted-foreground">
-                    <Link href="/" className="hover:text-primary">Home</Link>
-                    <Link href="/about" className="hover:text-primary">About</Link>
-                    <Link href="/framework" className="hover:text-primary">Framework</Link>
-                    <Link href="/courses" className="hover:text-primary">Programs</Link>
-                    <Link href="/events" className="hover:text-primary">Events</Link>
-                    <Link href="/login" className="hover:text-primary">Portal</Link>
-                </nav>
-            </div>
-            <div>
-                <h4 className="font-headline font-semibold mb-2">Contact Info</h4>
-                 <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>kss@cca.co.ke</p>
-                    <p>+254 722 257 323</p>
-                    <p>Westlands, Nairobi, Kenya</p>
-                </div>
-            </div>
+      <div className="container flex flex-col items-center justify-between gap-6 py-10 md:h-24 md:flex-row">
+        <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+          <Link href="/" className="flex items-center space-x-2">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="font-bold inline-block font-headline">KSS Institute</span>
+          </Link>
         </div>
-
-        <div className="mt-8 border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Kenya School of Sales. All rights reserved.</p>
-             <div className="flex gap-4">
-                <Link href="/privacy" className="hover:text-primary">Media & Data Consent</Link>
-                <Link href="/privacy" className="hover:text-primary">Media & Privacy Notice</Link>
-             </div>
-            <p>Powered by Commercial Club of Africa and Yusudi</p>
-        </div>
+        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-muted-foreground">
+           {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="transition-colors hover:text-primary"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link
+              href="/login"
+              className="font-bold text-primary transition-colors hover:text-primary/80"
+            >
+              Enroll
+            </Link>
+        </nav>
+        <p className="text-center text-sm leading-loose text-muted-foreground md:text-right">
+          &copy; {new Date().getFullYear()} Kenya School of Sales.
+        </p>
       </div>
     </footer>
   );
