@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 
 const navLinks = [
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
-  { href: "/courses", label: "Our Programs" },
+  { href: "/courses", label: "E-Learning" },
+  { href: "/events", label: "Events" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/contact", label: "Contact Us" },
 ];
@@ -15,8 +15,7 @@ export function Footer() {
       <div className="container flex flex-col items-center justify-between gap-6 py-10 md:h-24 md:flex-row">
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
           <Link href="/" className="flex items-center space-x-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="font-bold inline-block font-headline">KSS Institute</span>
+            <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
           </Link>
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-muted-foreground">

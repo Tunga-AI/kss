@@ -30,10 +30,10 @@ export default function CoursesPage() {
             <div className="container mx-auto px-4 py-16">
               <div className="max-w-3xl text-white">
                 <h1 className="font-headline text-4xl sm:text-5xl font-bold">
-                  Our Courses
+                  E-Learning
                 </h1>
                 <p className="mt-4 text-lg sm:text-xl text-white/90">
-                  Browse our comprehensive catalog of sales training programs. Find the perfect course to advance your skills and career.
+                  Explore our Massive Open Online Courses (MOOC) designed for sales professionals. Find the perfect course to advance your skills and career.
                 </p>
               </div>
             </div>
@@ -84,5 +84,3 @@ export default function CoursesPage() {
     </div>
   );
 }
-
-    

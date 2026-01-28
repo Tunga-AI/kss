@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, GraduationCap } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
-  { href: "/courses", label: "Our Programs" },
+  { href: "/courses", label: "E-Learning" },
+  { href: "/events", label: "Events" },
   { href: "/success-stories", label: "Success Stories" },
   { href: "/contact", label: "Contact Us" },
 ];
@@ -37,8 +38,7 @@ export function Header() {
             "flex items-center space-x-2 transition-colors",
             scrolled ? "text-primary" : "text-white hover:text-white/90"
         )}>
-          <GraduationCap className="h-6 w-6" />
-          <span className="font-bold inline-block font-headline">KSS Institute</span>
+          <span className="font-bold inline-block font-headline text-2xl">KSS</span>
         </Link>
         
         <div className="flex items-center gap-4">
@@ -66,8 +66,7 @@ export function Header() {
                   </SheetTrigger>
                   <SheetContent side="left">
                     <Link href="/" className="flex items-center space-x-2 mb-8">
-                      <GraduationCap className="h-6 w-6 text-primary" />
-                      <span className="font-bold inline-block font-headline">KSS Institute</span>
+                      <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
                     </Link>
                     <div className="flex flex-col gap-4">
                       {navLinks.map((link) => (

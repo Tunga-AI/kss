@@ -50,7 +50,7 @@ export default function FrameworkPage() {
                            Ever wonder what separates good salespeople from great ones? Our proven framework shows you exactly how to get there.
                         </p>
                         <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                            <Button asChild size="lg"><Link href="/courses">View Programs</Link></Button>
+                            <Button asChild size="lg"><Link href="/courses">View E-Learning</Link></Button>
                         </div>
                     </div>
                 </div>
@@ -188,5 +188,3 @@ export default function FrameworkPage() {
     </div>
   );
 }
-
-    

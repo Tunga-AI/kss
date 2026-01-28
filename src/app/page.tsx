@@ -63,7 +63,7 @@ export default function Home() {
                         </p>
                         <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
                             <Button asChild size="lg">
-                                <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                                <Link href="/courses">Explore E-Learning <ArrowRight className="ml-2 h-5 w-5" /></Link>
                             </Button>
                             <Button asChild size="lg" variant="secondary">
                                 <Link href="/login">Learner Portal</Link>
@@ -114,7 +114,7 @@ export default function Home() {
         <section id="courses" className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Featured Courses</h2>
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Featured E-Learning</h2>
               <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
                 Handpicked courses to kickstart your journey to sales excellence.
               </p>
@@ -156,7 +156,7 @@ export default function Home() {
             </div>
             <div className="text-center mt-12">
               <Button asChild variant="secondary">
-                <Link href="/courses">View All Courses</Link>
+                <Link href="/courses">View All E-Learning</Link>
               </Button>
             </div>
           </div>
