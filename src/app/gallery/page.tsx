@@ -70,7 +70,7 @@ export default function GalleryPage() {
                 return (
                   <Card key={testimonial.name}>
                     <CardContent className="pt-6">
-                      <p className="text-lg text-muted-foreground italic">"{testimonial.testimonial}"</p>
+                      <p className="text-base sm:text-lg text-muted-foreground italic">"{testimonial.testimonial}"</p>
                     </CardContent>
                     <CardHeader>
                        <div className="flex items-center gap-4">
@@ -81,7 +81,7 @@ export default function GalleryPage() {
                             </Avatar>
                          )}
                         <div>
-                            <p className="font-semibold text-lg">{testimonial.name}</p>
+                            <p className="font-semibold text-base sm:text-lg">{testimonial.name}</p>
                             <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                         </div>
                     </div>

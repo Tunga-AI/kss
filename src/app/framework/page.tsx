@@ -69,30 +69,30 @@ export default function FrameworkPage() {
                     <Card className="text-center">
                         <CardHeader>
                             <TrendingUp className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Structured Progression</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Structured Progression</CardTitle>
                         </CardHeader>
-                        <CardContent>Clear pathway from beginner to sales visionary with defined milestones at every level.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Clear pathway from beginner to sales visionary with defined milestones at every level.</CardContent>
                     </Card>
                      <Card className="text-center">
                         <CardHeader>
                             <Cpu className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Real-World Application</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Real-World Application</CardTitle>
                         </CardHeader>
-                        <CardContent>Forget boring textbooks. Learn skills that actually help you close deals and build relationships.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Forget boring textbooks. Learn skills that actually help you close deals and build relationships.</CardContent>
                     </Card>
                      <Card className="text-center">
                         <CardHeader>
                             <Brain className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Competency Based</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Competency Based</CardTitle>
                         </CardHeader>
-                        <CardContent>Master specific skills and behaviors needed at each stage of your sales journey.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Master specific skills and behaviors needed at each stage of your sales journey.</CardContent>
                     </Card>
                      <Card className="text-center">
                         <CardHeader>
                             <Shield className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Career Advancement</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Career Advancement</CardTitle>
                         </CardHeader>
-                        <CardContent>Always know what to work on next to reach your professional goals and dreams.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Always know what to work on next to reach your professional goals and dreams.</CardContent>
                     </Card>
                 </div>
             </div>
@@ -112,10 +112,10 @@ export default function FrameworkPage() {
                             <CardHeader>
                                 <div className="flex items-center gap-4">
                                     <span className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground font-headline text-2xl font-bold">{level.level}</span>
-                                    <CardTitle className="font-headline">{level.title}</CardTitle>
+                                    <CardTitle className="font-headline text-lg sm:text-xl">{level.title}</CardTitle>
                                 </div>
                             </CardHeader>
-                            <CardContent>{level.description}</CardContent>
+                            <CardContent className="text-sm sm:text-base">{level.description}</CardContent>
                         </Card>
                     ))}
                 </div>
@@ -140,9 +140,9 @@ export default function FrameworkPage() {
                         <Card key={pillar.title} className="text-center">
                             <CardHeader>
                                 <pillar.icon className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                                <CardTitle className="font-headline">{pillar.title}</CardTitle>
+                                <CardTitle className="font-headline text-lg sm:text-xl">{pillar.title}</CardTitle>
                             </CardHeader>
-                            <CardContent>{pillar.description}</CardContent>
+                            <CardContent className="text-sm sm:text-base">{pillar.description}</CardContent>
                         </Card>
                     ))}
                 </div>
@@ -161,23 +161,23 @@ export default function FrameworkPage() {
                     <Card className="bg-transparent border-0 shadow-none">
                         <CardHeader>
                              <Group className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Learn With Your Peers</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Learn With Your Peers</CardTitle>
                         </CardHeader>
-                        <CardContent>Practice with real people on actual sales challenges with classmates who understand your journey.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Practice with real people on actual sales challenges with classmates who understand your journey.</CardContent>
                     </Card>
                      <Card className="bg-transparent border-0 shadow-none">
                         <CardHeader>
                             <Users className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Learn from the Pros</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Learn from the Pros</CardTitle>
                         </CardHeader>
-                        <CardContent>Battle-tested sales veterans who've been where you want to go share real solutions that work.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Battle-tested sales veterans who've been where you want to go share real solutions that work.</CardContent>
                     </Card>
                      <Card className="bg-transparent border-0 shadow-none">
                         <CardHeader>
                             <Lightbulb className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline">Learn Your Way</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Learn Your Way</CardTitle>
                         </CardHeader>
-                        <CardContent>Online when busy, in-person for connection. Study at your pace, on your schedule.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Online when busy, in-person for connection. Study at your pace, on your schedule.</CardContent>
                     </Card>
                 </div>
             </div>

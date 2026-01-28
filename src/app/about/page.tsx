@@ -73,27 +73,27 @@ export default function AboutPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline"><Check /> Structured Learning, Finally</CardTitle>
+                  <CardTitle className="flex items-center gap-2 font-headline text-lg sm:text-xl"><Check /> Structured Learning, Finally</CardTitle>
                 </CardHeader>
-                <CardContent>First-of-its-kind structured sales education in Kenya with international standards.</CardContent>
+                <CardContent className="text-sm sm:text-base">First-of-its-kind structured sales education in Kenya with international standards.</CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline"><Handshake /> Globally Benchmarked</CardTitle>
+                  <CardTitle className="flex items-center gap-2 font-headline text-lg sm:text-xl"><Handshake /> Globally Benchmarked</CardTitle>
                 </CardHeader>
-                <CardContent>Built on UK Institute of Sales Professionals framework, recognized worldwide.</CardContent>
+                <CardContent className="text-sm sm:text-base">Built on UK Institute of Sales Professionals framework, recognized worldwide.</CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline"><TrendingUp /> Certified Excellence</CardTitle>
+                  <CardTitle className="flex items-center gap-2 font-headline text-lg sm:text-xl"><TrendingUp /> Certified Excellence</CardTitle>
                 </CardHeader>
-                <CardContent>Vocational qualifications aligned to UK Ofqual standards with CPD certification.</CardContent>
+                <CardContent className="text-sm sm:text-base">Vocational qualifications aligned to UK Ofqual standards with CPD certification.</CardContent>
               </Card>
                <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 font-headline"><Lightbulb /> African Context</CardTitle>
+                  <CardTitle className="flex items-center gap-2 font-headline text-lg sm:text-xl"><Lightbulb /> African Context</CardTitle>
                 </CardHeader>
-                <CardContent>Global best practices adapted for real-world African sales environments.</CardContent>
+                <CardContent className="text-sm sm:text-base">Global best practices adapted for real-world African sales environments.</CardContent>
               </Card>
             </div>
           </div>
@@ -111,30 +111,30 @@ export default function AboutPage() {
                     <Card>
                         <CardHeader>
                             <Users className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline text-xl">Collaborative Learning</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Collaborative Learning</CardTitle>
                         </CardHeader>
-                        <CardContent>Work together on real-world sales challenges and simulations.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Work together on real-world sales challenges and simulations.</CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
                             <Lightbulb className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline text-xl">Expert Facilitation</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Expert Facilitation</CardTitle>
                         </CardHeader>
-                        <CardContent>Learn from experienced sales professionals with industry insights.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Learn from experienced sales professionals with industry insights.</CardContent>
                     </Card>
                      <Card>
                         <CardHeader>
                             <Check className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline text-xl">Blended Approach</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Blended Approach</CardTitle>
                         </CardHeader>
-                        <CardContent>Virtual sessions, physical workshops, and self-paced learning.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Virtual sessions, physical workshops, and self-paced learning.</CardContent>
                     </Card>
                      <Card>
                         <CardHeader>
                             <TrendingUp className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                            <CardTitle className="font-headline text-xl">Capstone Project</CardTitle>
+                            <CardTitle className="font-headline text-lg sm:text-xl">Capstone Project</CardTitle>
                         </CardHeader>
-                        <CardContent>Apply all concepts to solve real business problems.</CardContent>
+                        <CardContent className="text-sm sm:text-base">Apply all concepts to solve real business problems.</CardContent>
                     </Card>
                 </div>
             </div>
@@ -156,7 +156,7 @@ export default function AboutPage() {
                         <CardContent className="pt-6 flex flex-col items-center text-center">
                             {logo && <Image src={logo.imageUrl} alt={`${partner.name} logo`} width={150} height={60} data-ai-hint={logo.imageHint} className="mb-4"/>}
                             <p className="font-bold">Founded {partner.founded}</p>
-                            <p className="mt-2 text-muted-foreground">{partner.description}</p>
+                            <p className="mt-2 text-muted-foreground text-sm sm:text-base">{partner.description}</p>
                         </CardContent>
                     </Card>
                 )
@@ -197,9 +197,6 @@ export default function AboutPage() {
                 <p className="mt-4 max-w-xl mx-auto text-base sm:text-lg text-muted-foreground">
                    Be part of Africa's leading sales professional network and transform your career.
                 </p>
-                <Button size="lg" className="mt-8">
-                    Get Started
-                </Button>
             </div>
         </section>
 

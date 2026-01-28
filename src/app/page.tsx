@@ -82,28 +82,28 @@ export default function Home() {
                     <Card>
                         <CardHeader>
                             <Award className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="text-4xl font-bold font-headline">10+</p>
+                            <p className="font-headline text-3xl sm:text-4xl font-bold">10+</p>
                             <CardDescription>Years of Experience</CardDescription>
                         </CardHeader>
                     </Card>
                      <Card>
                         <CardHeader>
                             <BookOpen className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="text-4xl font-bold font-headline">50+</p>
+                            <p className="font-headline text-3xl sm:text-4xl font-bold">50+</p>
                             <CardDescription>Expert-Led Courses</CardDescription>
                         </CardHeader>
                     </Card>
                      <Card>
                         <CardHeader>
                             <Users className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="text-4xl font-bold font-headline">10k+</p>
+                            <p className="font-headline text-3xl sm:text-4xl font-bold">10k+</p>
                             <CardDescription>Successful Graduates</CardDescription>
                         </CardHeader>
                     </Card>
                      <Card>
                         <CardHeader>
                             <Star className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="text-4xl font-bold font-headline">4.9/5</p>
+                            <p className="font-headline text-3xl sm:text-4xl font-bold">4.9/5</p>
                             <CardDescription>Average Rating</CardDescription>
                         </CardHeader>
                     </Card>
@@ -120,12 +120,12 @@ export default function Home() {
                 Handpicked courses to kickstart your journey to sales excellence.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              {courses.slice(0, 4).map((course) => {
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+              {courses.slice(0, 1).map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">
-                    <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
+                    <Card className="relative overflow-hidden h-full min-h-[34rem] lg:min-h-[42rem] border-0 shadow-lg">
                       {courseImage && (
                         <Image
                           src={courseImage.imageUrl}
@@ -147,6 +147,34 @@ export default function Home() {
                   </Link>
                 );
               })}
+              <div className="grid grid-rows-2 gap-6 md:gap-8">
+                {courses.slice(1, 3).map((course) => {
+                  const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
+                  return (
+                    <Link href={`/courses/${course.id}`} key={course.id} className="block group">
+                      <Card className="relative overflow-hidden h-80 border-0 shadow-lg">
+                        {courseImage && (
+                          <Image
+                            src={courseImage.imageUrl}
+                            alt={course.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            data-ai-hint={courseImage.imageHint}
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                        <div className="relative h-full flex flex-col justify-end p-6 text-white">
+                          <h3 className="font-headline text-2xl font-bold">{course.title}</h3>
+                          <div className="flex justify-between items-center text-sm mt-4 font-medium">
+                            <Badge variant="secondary">{course.level}</Badge>
+                            <span className="font-bold text-lg">{course.price}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
             <div className="text-center mt-12">
               <Button asChild variant="secondary">
@@ -169,28 +197,28 @@ export default function Home() {
               <Card className="border-0 bg-transparent shadow-none">
                 <CardHeader>
                     <Award className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                    <CardTitle className="font-headline text-xl">Expert Instructors</CardTitle>
+                    <CardTitle className="font-headline text-lg sm:text-xl">Expert Instructors</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Learn from the best. Our instructors are seasoned sales leaders and industry veterans with a passion for teaching.</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">Learn from the best. Our instructors are seasoned sales leaders and industry veterans with a passion for teaching.</p>
                 </CardContent>
               </Card>
                <Card className="border-0 bg-transparent shadow-none">
                 <CardHeader>
                     <CheckCircle className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                    <CardTitle className="font-headline text-xl">Practical Curriculum</CardTitle>
+                    <CardTitle className="font-headline text-lg sm:text-xl">Practical Curriculum</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Our courses are designed for the real world. You'll learn practical skills and strategies you can apply immediately.</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">Our courses are designed for the real world. You'll learn practical skills and strategies you can apply immediately.</p>
                 </CardContent>
               </Card>
                <Card className="border-0 bg-transparent shadow-none">
                 <CardHeader>
                     <Users className="h-10 w-10 mx-auto text-primary p-2 bg-primary/10 rounded-full" />
-                    <CardTitle className="font-headline text-xl">Career Support</CardTitle>
+                    <CardTitle className="font-headline text-lg sm:text-xl">Career Support</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Your success is our success. We provide career guidance and networking opportunities to help you advance.</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">Your success is our success. We provide career guidance and networking opportunities to help you advance.</p>
                 </CardContent>
               </Card>
             </div>
@@ -260,7 +288,7 @@ export default function Home() {
                         return (
                              <Card key={testimonial.name} className="flex flex-col">
                                 <CardContent className="pt-6 flex-grow">
-                                    <p className="text-muted-foreground">"{testimonial.testimonial}"</p>
+                                    <p className="text-muted-foreground text-sm sm:text-base">"{testimonial.testimonial}"</p>
                                 </CardContent>
                                 <CardFooter className="flex items-center gap-4">
                                      {avatarImage && (
@@ -270,7 +298,7 @@ export default function Home() {
                                         </Avatar>
                                      )}
                                     <div>
-                                        <p className="font-semibold">{testimonial.name}</p>
+                                        <p className="font-semibold text-base sm:text-lg">{testimonial.name}</p>
                                         <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                                     </div>
                                 </CardFooter>
