@@ -74,9 +74,6 @@ export default function Home() {
                             <Button asChild size="lg">
                                 <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
                             </Button>
-                            <Button asChild size="lg" variant="secondary">
-                                <Link href="/login">Learner Portal</Link>
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -259,32 +256,31 @@ export default function Home() {
                 const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
                   <Link href={`/events/${event.id}`} key={event.id} className="block group">
-                    <Card className="overflow-hidden shadow-lg">
+                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
                       {eventImage && (
-                        <div className="relative h-48">
-                          <Image
-                            src={eventImage.imageUrl}
-                            alt={event.title}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            data-ai-hint={eventImage.imageHint}
-                          />
-                        </div>
+                        <Image
+                          src={eventImage.imageUrl}
+                          alt={event.title}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          data-ai-hint={eventImage.imageHint}
+                        />
                       )}
-                      <CardContent className="p-6">
-                        <h3 className="font-headline text-xl font-bold">{event.title}</h3>
-                        <div className="flex items-center gap-2 text-sm mt-2 text-muted-foreground">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+                        <h3 className="font-headline text-2xl font-bold">{event.title}</h3>
+                        <div className="flex items-center gap-2 text-sm mt-2">
                           <Calendar className="h-4 w-4" />
                           <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm mt-4 font-medium">
-                           <div className="flex items-center gap-2 text-muted-foreground">
+                          <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
                             <span>{event.location}</span>
                           </div>
                           <Badge variant={event.price === 'Free' ? 'secondary' : 'default'}>{event.price}</Badge>
                         </div>
-                      </CardContent>
+                      </div>
                     </Card>
                   </Link>
                 );

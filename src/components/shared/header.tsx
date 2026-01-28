@@ -45,7 +45,7 @@ export function Header() {
         "fixed top-0 z-50 w-full transition-all duration-300",
         scrolled ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" : "bg-transparent border-transparent"
     )}>
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className={cn(
             "flex items-center space-x-2 transition-colors",
             scrolled ? "text-primary" : "text-white hover:text-white/90"
