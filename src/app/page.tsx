@@ -68,8 +68,7 @@ export default function Home() {
                             Unlock Your Sales Potential
                         </h1>
                         <p className="mt-4 text-lg sm:text-xl text-white/90">
-                            KSS Institute provides world-class training programs designed to
-                            transform sales professionals into industry leaders.
+                            World-class training programs designed to transform you into an industry leader. Elevate your skills, accelerate your career, and close with confidence.
                         </p>
                         <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
                             <Button asChild size="lg">
