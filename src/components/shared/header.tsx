@@ -7,10 +7,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, GraduationCap } from "lucide-react";
 
 const navLinks = [
-  { href: "/courses", label: "Courses" },
-  { href: "/events", label: "Events" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/framework", label: "Framework" },
+  { href: "/courses", label: "Our Programs" },
+  { href: "/success-stories", label: "Success Stories" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 export function Header() {
@@ -40,7 +41,7 @@ export function Header() {
         <div className="flex items-center gap-4">
             <div className="hidden md:flex">
                 <Button asChild>
-                  <Link href="/login">Login / Sign Up</Link>
+                  <Link href="/login">Enroll</Link>
                 </Button>
             </div>
             <div className="md:hidden">
@@ -68,7 +69,7 @@ export function Header() {
                         </Link>
                       ))}
                       <Button asChild className="mt-4" onClick={() => setIsOpen(false)}>
-                        <Link href="/login">Login / Sign Up</Link>
+                        <Link href="/login">Enroll</Link>
                       </Button>
                     </div>
                   </SheetContent>
