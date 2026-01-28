@@ -29,14 +29,25 @@ export default function LoginPage() {
                 </Button>
               </CardContent>
             </Card>
+             <Card>
+              <CardHeader>
+                <CardTitle className="font-headline">Staff Portal</CardTitle>
+                <CardDescription>Manage classes, schedules, and student progress.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/staff">Login as Staff</Link>
+                </Button>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Staff & Admin Portal</CardTitle>
+                <CardTitle className="font-headline">Admin Portal</CardTitle>
                 <CardDescription>Manage courses, users, and content.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button asChild variant="secondary" className="w-full">
-                  <Link href="/admin">Login as Staff</Link>
+                  <Link href="/admin">Login as Admin</Link>
                 </Button>
               </CardContent>
             </Card>
