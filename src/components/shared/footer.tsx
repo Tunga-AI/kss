@@ -3,9 +3,9 @@ import Link from "next/link";
 const navLinks = [
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
-  { href: "/courses", label: "E-Learning" },
+  { href: "/courses", label: "Courses" },
   { href: "/events", label: "Events" },
-  { href: "/success-stories", label: "Success Stories" },
+  { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact Us" },
 ];
 

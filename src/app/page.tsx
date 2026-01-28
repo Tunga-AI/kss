@@ -8,6 +8,7 @@ import { courses } from "@/lib/courses-data";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const testimonials = [
   {
@@ -63,7 +64,7 @@ export default function Home() {
                         </p>
                         <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
                             <Button asChild size="lg">
-                                <Link href="/courses">Explore E-Learning <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                                <Link href="/courses">Explore Courses <ArrowRight className="ml-2 h-5 w-5" /></Link>
                             </Button>
                             <Button asChild size="lg" variant="secondary">
                                 <Link href="/login">Learner Portal</Link>
@@ -114,7 +115,7 @@ export default function Home() {
         <section id="courses" className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Featured E-Learning</h2>
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Featured Courses</h2>
               <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
                 Handpicked courses to kickstart your journey to sales excellence.
               </p>
@@ -123,40 +124,33 @@ export default function Home() {
               {courses.slice(0, 4).map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
-                  <Card key={course.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    {courseImage && (
-                      <div className="relative h-40 sm:h-48 w-full">
+                  <Link href={`/courses/${course.id}`} key={course.id} className="block group">
+                    <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
+                      {courseImage && (
                         <Image
                           src={courseImage.imageUrl}
-                          alt={courseImage.description}
+                          alt={course.title}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                           data-ai-hint={courseImage.imageHint}
                         />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+                        <h3 className="font-headline text-2xl font-bold">{course.title}</h3>
+                        <div className="flex justify-between items-center text-sm mt-4 font-medium">
+                          <Badge variant="secondary">{course.level}</Badge>
+                          <span className="font-bold text-lg">{course.price}</span>
+                        </div>
                       </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="font-headline text-lg sm:text-xl">{course.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <p className="text-muted-foreground text-sm line-clamp-3">{course.description}</p>
-                    </CardContent>
-                    <CardContent className="flex justify-between items-center text-sm font-semibold">
-                      <span className="text-primary text-lg">{course.price}</span>
-                      <span className="text-muted-foreground font-medium">{course.level}</span>
-                    </CardContent>
-                     <CardContent>
-                        <Button asChild className="w-full">
-                           <Link href={`/courses/${course.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                        </Button>
-                    </CardContent>
-                  </Card>
+                    </Card>
+                  </Link>
                 );
               })}
             </div>
             <div className="text-center mt-12">
               <Button asChild variant="secondary">
-                <Link href="/courses">View All E-Learning</Link>
+                <Link href="/courses">View All Courses</Link>
               </Button>
             </div>
           </div>

@@ -23,7 +23,7 @@ export const courses: Course[] = [
       'Master the art of the sales pitch and product demonstration.',
       'Learn key closing techniques to seal the deal.',
     ],
-    price: '$499',
+    price: 'KES 65,000',
   },
   {
     id: 'advanced-negotiation',
@@ -38,7 +38,7 @@ export const courses: Course[] = [
       'Learn to counter common negotiation tactics.',
       'Develop skills for creating win-win outcomes.',
     ],
-    price: '$899',
+    price: 'KES 115,000',
   },
   {
     id: 'crm-mastery',
@@ -53,7 +53,7 @@ export const courses: Course[] = [
       'Utilize CRM data to generate insightful sales reports.',
       'Integrate your CRM with other sales and marketing tools.',
     ],
-    price: '$399',
+    price: 'KES 50,000',
   },
   {
     id: 'digital-prospecting',
@@ -68,6 +68,6 @@ export const courses: Course[] = [
       'Leverage sales intelligence tools to find qualified leads.',
       'Create a repeatable system for digital lead generation.',
     ],
-    price: '$699',
+    price: 'KES 90,000',
   },
 ];

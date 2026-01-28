@@ -1,6 +1,6 @@
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,7 +32,7 @@ const testimonials = [
   },
 ];
 
-export default function SuccessStoriesPage() {
+export default function GalleryPage() {
   const successImage = PlaceHolderImages.find(p => p.id === 'success-hero');
   return (
     <div className="flex flex-col min-h-screen">
@@ -53,10 +53,10 @@ export default function SuccessStoriesPage() {
               <div className="container mx-auto px-4 py-16">
                 <div className="max-w-3xl text-white">
                   <h1 className="font-headline text-4xl sm:text-5xl font-bold">
-                    Success Stories
+                    Gallery
                   </h1>
                   <p className="mt-4 text-lg sm:text-xl text-white/90">
-                    Hear from our graduates who have transformed their careers with KSS.
+                    See the impact of our training through the stories of our graduates.
                   </p>
                 </div>
               </div>
@@ -97,5 +97,3 @@ export default function SuccessStoriesPage() {
     </div>
   );
 }
-
-    

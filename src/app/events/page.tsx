@@ -2,12 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { events } from "@/lib/events-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 export default function EventsPage() {
   const eventImage = PlaceHolderImages.find(p => p.id === 'event-conference-summit');
@@ -46,39 +46,34 @@ export default function EventsPage() {
               {events.map((event) => {
                 const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
-                  <Card key={event.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    {eventImage && (
-                      <div className="relative h-48 w-full">
+                  <Link href={`/events/${event.id}`} key={event.id} className="block group">
+                    <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
+                      {eventImage && (
                         <Image
                           src={eventImage.imageUrl}
-                          alt={eventImage.description}
+                          alt={event.title}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                           data-ai-hint={eventImage.imageHint}
                         />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="font-headline text-lg sm:text-xl">{event.title}</CardTitle>
-                      <CardDescription className="line-clamp-2">{event.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow space-y-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4"/>
-                            <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+                        <h3 className="font-headline text-2xl font-bold">{event.title}</h3>
+                        <div className="flex items-center gap-2 text-sm mt-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4"/>
+                        <div className="flex justify-between items-center text-sm mt-4 font-medium">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
                             <span>{event.location}</span>
+                          </div>
+                          <Badge variant={event.price === 'Free' ? 'secondary' : 'default'}>{event.price}</Badge>
                         </div>
-                    </CardContent>
-                    <CardContent className="flex justify-between items-center">
-                      <span className="font-bold text-primary">{event.price}</span>
-                       <Button asChild variant="secondary">
-                        <Link href={`/events/${event.id}`}>View Event <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                      </div>
+                    </Card>
+                  </Link>
                 );
               })}
             </div>
@@ -89,5 +84,3 @@ export default function EventsPage() {
     </div>
   );
 }
-
-    
