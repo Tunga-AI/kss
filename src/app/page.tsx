@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle, BrainCircuit, Users, BookOpen, Star, Award } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight, CheckCircle, BrainCircuit, Users, Award } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { courses } from "@/lib/courses-data";
 import { Header } from "@/components/shared/header";
@@ -71,42 +71,6 @@ export default function Home() {
                             </Button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-16 sm:py-20 bg-muted">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-                    <Card>
-                        <CardHeader>
-                            <Award className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="font-headline text-3xl sm:text-4xl font-bold">10+</p>
-                            <CardDescription>Years of Experience</CardDescription>
-                        </CardHeader>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                            <BookOpen className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="font-headline text-3xl sm:text-4xl font-bold">50+</p>
-                            <CardDescription>Expert-Led Courses</CardDescription>
-                        </CardHeader>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                            <Users className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="font-headline text-3xl sm:text-4xl font-bold">10k+</p>
-                            <CardDescription>Successful Graduates</CardDescription>
-                        </CardHeader>
-                    </Card>
-                     <Card>
-                        <CardHeader>
-                            <Star className="h-8 w-8 mx-auto text-accent"/>
-                            <p className="font-headline text-3xl sm:text-4xl font-bold">4.9/5</p>
-                            <CardDescription>Average Rating</CardDescription>
-                        </CardHeader>
-                    </Card>
                 </div>
             </div>
         </section>

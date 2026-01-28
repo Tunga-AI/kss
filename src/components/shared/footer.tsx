@@ -5,9 +5,10 @@ const navLinks = [
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
   { href: "/courses", label: "Courses" },
+  { href: "/e-learning", label: "E-Learning" },
   { href: "/events", label: "Events" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact Us" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Footer() {

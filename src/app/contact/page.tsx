@@ -29,7 +29,7 @@ export default function ContactPage() {
               <div className="container mx-auto px-4 py-16">
                 <div className="max-w-3xl text-white">
                   <h1 className="font-headline text-4xl sm:text-5xl font-bold">
-                    Contact Us
+                    Contact
                   </h1>
                   <p className="mt-4 text-lg sm:text-xl text-white/90">
                     Have a question? We'd love to hear from you.
@@ -42,7 +42,7 @@ export default function ContactPage() {
             <div className="container mx-auto px-4 max-w-2xl">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Send us a message</CardTitle>
+                        <CardTitle className="font-headline">Send a Message</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form className="grid gap-6">
