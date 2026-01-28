@@ -33,9 +33,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <GraduationCap className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold text-primary">KSS Learner</span>
+            <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-primary">
+              <GraduationCap className="h-8 w-8" />
+              <span className="font-headline text-xl font-bold">KSS Learner</span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Avatar>
             </div>
           </header>
-          <main className="p-4 sm:p-6">
+          <main className="p-4 sm:p-6 lg:p-10">
             {children}
           </main>
         </SidebarInset>

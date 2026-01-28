@@ -31,9 +31,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <Link href="/staff" className="flex items-center gap-2">
-              <Briefcase className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold text-primary">KSS Staff</span>
+            <Link href="/staff" className="flex items-center gap-2 text-sidebar-primary">
+              <Briefcase className="h-8 w-8" />
+              <span className="font-headline text-xl font-bold">KSS Staff</span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -77,7 +77,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
               </Avatar>
             </div>
           </header>
-          <main className="p-4 sm:p-6">
+          <main className="p-4 sm:p-6 lg:p-10">
             {children}
           </main>
         </SidebarInset>

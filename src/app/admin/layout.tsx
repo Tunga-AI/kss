@@ -33,9 +33,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
           <SidebarHeader>
-            <Link href="/admin" className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold text-primary">KSS Admin</span>
+            <Link href="/admin" className="flex items-center gap-2 text-sidebar-primary">
+              <Shield className="h-8 w-8" />
+              <span className="font-headline text-xl font-bold">KSS Admin</span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Avatar>
             </div>
           </header>
-          <main className="p-4 sm:p-6">
+          <main className="p-4 sm:p-6 lg:p-10">
             {children}
           </main>
         </SidebarInset>
