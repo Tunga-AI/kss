@@ -6,10 +6,10 @@ import { ArrowRight } from "lucide-react";
 export default function DashboardPage() {
   return (
     <div className="grid gap-6">
-      <Card>
+      <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="font-headline text-xl sm:text-2xl">Welcome Back, Learner!</CardTitle>
-          <CardDescription>Here's a quick overview of your learning journey. Keep up the great work!</CardDescription>
+          <CardDescription className="text-primary-foreground/80">Here's a quick overview of your learning journey. Keep up the great work!</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">

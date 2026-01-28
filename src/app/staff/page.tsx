@@ -19,10 +19,10 @@ const pendingTasks = [
 export default function StaffDashboardPage() {
   return (
     <div className="grid gap-6">
-      <Card>
+      <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="font-headline text-xl sm:text-2xl">Welcome Back, Staff!</CardTitle>
-          <CardDescription>Here's what's on your plate today. Let's make it a productive one.</CardDescription>
+          <CardDescription className="text-primary-foreground/80">Here's what's on your plate today. Let's make it a productive one.</CardDescription>
         </CardHeader>
       </Card>
       

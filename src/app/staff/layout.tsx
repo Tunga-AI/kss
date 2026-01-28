@@ -15,12 +15,11 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Briefcase, LayoutDashboard, BookOpen, Calendar, LogOut } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const menuItems = [
   { href: '/staff', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/staff/classes', label: 'My Classes', icon: BookOpen },
-  { href: '/staff/schedule', label: 'My Schedule', icon: Calendar },
+  { href: '/staff/classes', label: 'Classes', icon: BookOpen },
+  { href: '/staff/schedule', label: 'Schedule', icon: Calendar },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
@@ -47,7 +46,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                   >
                     <Link href={item.href}>
                       <item.icon />
-                      <span>{item.label}</span>
+                      <span className="font-bold uppercase">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -60,7 +59,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                     <SidebarMenuButton asChild tooltip="Logout">
                         <Link href="/">
                             <LogOut />
-                            <span>Logout</span>
+                            <span className="font-bold uppercase">Logout</span>
                         </Link>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
@@ -68,14 +67,8 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex items-center gap-4 ml-auto">
-              <Avatar>
-                <AvatarImage src="https://picsum.photos/seed/staff/40/40" alt="Staff" data-ai-hint="person portrait" />
-                <AvatarFallback>S</AvatarFallback>
-              </Avatar>
-            </div>
+           <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
+            <SidebarTrigger />
           </header>
           <main className="p-4 sm:p-6 lg:p-10">
             {children}

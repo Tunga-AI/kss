@@ -15,14 +15,12 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { GraduationCap, LayoutDashboard, BookOpen, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/courses', label: 'My Courses', icon: BookOpen },
-  { href: '/dashboard/progress', label: 'My Progress', icon: TrendingUp },
-  { href: '/dashboard/recommendations', label: 'AI Recommendations', icon: Sparkles },
+  { href: '/dashboard/courses', label: 'Courses', icon: BookOpen },
+  { href: '/dashboard/progress', label: 'Progress', icon: TrendingUp },
+  { href: '/dashboard/recommendations', label: 'AI', icon: Sparkles },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -49,7 +47,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   >
                     <Link href={item.href}>
                       <item.icon />
-                      <span>{item.label}</span>
+                      <span className="font-bold uppercase">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -62,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <SidebarMenuButton asChild tooltip="Logout">
                         <Link href="/">
                             <LogOut />
-                            <span>Logout</span>
+                            <span className="font-bold uppercase">Logout</span>
                         </Link>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
@@ -70,14 +68,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex items-center gap-4 ml-auto">
-              <Avatar>
-                <AvatarImage src="https://picsum.photos/seed/user/40/40" alt="User" data-ai-hint="person portrait" />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-            </div>
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
+            <SidebarTrigger />
           </header>
           <main className="p-4 sm:p-6 lg:p-10">
             {children}
