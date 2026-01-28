@@ -9,18 +9,34 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { ArrowRight } from "lucide-react";
 
 export default function CoursesPage() {
+  const coursesImage = PlaceHolderImages.find(p => p.id === 'courses-hero');
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="bg-primary/5 py-16 sm:py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-4xl sm:text-5xl font-bold text-primary">
-              Our Courses
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-base sm:text-lg text-foreground/80">
-              Browse our comprehensive catalog of sales training programs. Find the perfect course to advance your skills and career.
-            </p>
+        <section className="relative h-[560px] w-full">
+          {coursesImage && (
+            <Image
+              src={coursesImage.imageUrl}
+              alt={coursesImage.description}
+              fill
+              className="object-cover"
+              data-ai-hint={coursesImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 h-full flex flex-col justify-end">
+            <div className="container mx-auto px-4 py-16">
+              <div className="max-w-3xl text-white">
+                <h1 className="font-headline text-4xl sm:text-5xl font-bold">
+                  Our Courses
+                </h1>
+                <p className="mt-4 text-lg sm:text-xl text-white/90">
+                  Browse our comprehensive catalog of sales training programs. Find the perfect course to advance your skills and career.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -68,3 +84,5 @@ export default function CoursesPage() {
     </div>
   );
 }
+
+    

@@ -19,19 +19,33 @@ const partners = [
 ]
 
 export default function AboutPage() {
-  
+  const aboutImage = PlaceHolderImages.find(p => p.id === 'framework-hero');
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="bg-primary/5 py-16 sm:py-24">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-4xl sm:text-5xl font-bold text-primary">
-              Elevating Sales. Empowering Professionals. Transforming Africa.
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg sm:text-xl text-foreground/80">
-              Kenya School of Sales is the first professional sales school in Kenya, dedicated to making sales training desirable and simplifying sales career development across Africa.
-            </p>
+        <section className="relative h-[560px] w-full">
+          {aboutImage && (
+            <Image
+              src={aboutImage.imageUrl}
+              alt={aboutImage.description}
+              fill
+              className="object-cover"
+              data-ai-hint={aboutImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 h-full flex flex-col justify-end">
+            <div className="container mx-auto px-4 py-16">
+              <div className="max-w-3xl text-white">
+                <h1 className="font-headline text-4xl sm:text-5xl font-bold">
+                  Elevating Sales. Empowering Professionals. Transforming Africa.
+                </h1>
+                <p className="mt-4 text-lg sm:text-xl text-white/90">
+                  Kenya School of Sales is the first professional sales school in Kenya, dedicated to making sales training desirable and simplifying sales career development across Africa.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -194,3 +208,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

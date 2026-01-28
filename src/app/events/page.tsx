@@ -10,20 +10,35 @@ import { ArrowRight, Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 
 export default function EventsPage() {
+  const eventImage = PlaceHolderImages.find(p => p.id === 'event-conference-summit');
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="bg-primary/5 py-16 sm:py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-4xl sm:text-5xl font-bold text-primary">
-              Upcoming Events
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-base sm:text-lg text-foreground/80">
-              Join our webinars, workshops, and conferences to learn from industry experts and network with peers.
-            </p>
-          </div>
-        </section>
+        <section className="relative h-[560px] w-full">
+            {eventImage && (
+              <Image
+                src={eventImage.imageUrl}
+                alt={eventImage.description}
+                fill
+                className="object-cover"
+                data-ai-hint={eventImage.imageHint}
+              />
+            )}
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 h-full flex flex-col justify-end">
+              <div className="container mx-auto px-4 py-16">
+                <div className="max-w-3xl text-white">
+                  <h1 className="font-headline text-4xl sm:text-5xl font-bold">
+                    Upcoming Events
+                  </h1>
+                  <p className="mt-4 text-lg sm:text-xl text-white/90">
+                    Join our webinars, workshops, and conferences to learn from industry experts and network with peers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
 
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
@@ -74,3 +89,5 @@ export default function EventsPage() {
     </div>
   );
 }
+
+    

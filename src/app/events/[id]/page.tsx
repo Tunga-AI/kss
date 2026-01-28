@@ -23,30 +23,31 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="relative bg-primary/5 py-20 md:py-32">
-          <div className="container mx-auto px-4 z-10 relative">
-            <div className="max-w-3xl">
-              <p className="font-semibold text-accent">{format(new Date(event.date), "EEEE, MMMM d, yyyy")}</p>
-              <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mt-2">
-                {event.title}
-              </h1>
-              <div className="mt-8 flex gap-4">
-                <Button size="lg">Register Now</Button>
-                <Button size="lg" variant="secondary">Add to Calendar</Button>
+        <section className="relative h-[560px] w-full">
+          {eventImage && (
+             <Image
+                src={eventImage.imageUrl}
+                alt={event.title}
+                fill
+                className="object-cover"
+                data-ai-hint={eventImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 h-full flex flex-col justify-end">
+            <div className="container mx-auto px-4 py-16">
+              <div className="max-w-3xl text-white">
+                <p className="font-semibold text-accent">{format(new Date(event.date), "EEEE, MMMM d, yyyy")}</p>
+                <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold mt-2">
+                  {event.title}
+                </h1>
+                <div className="mt-8 flex gap-4">
+                  <Button size="lg">Register Now</Button>
+                  <Button size="lg" variant="secondary">Add to Calendar</Button>
+                </div>
               </div>
             </div>
           </div>
-          {eventImage && (
-             <div className="absolute inset-0 z-0 opacity-10">
-                <Image
-                    src={eventImage.imageUrl}
-                    alt={eventImage.description}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={eventImage.imageHint}
-                />
-             </div>
-          )}
         </section>
 
         <section className="py-16 sm:py-20">
@@ -118,3 +119,5 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+
+    

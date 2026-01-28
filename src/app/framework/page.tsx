@@ -29,31 +29,32 @@ export default function FrameworkPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <section className="relative bg-primary/5 py-20 md:py-32">
-             <div className="container mx-auto px-4 z-10 relative">
-                <div className="max-w-3xl text-center mx-auto">
-                    <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-primary">
-                        Your Roadmap to Sales Mastery
-                    </h1>
-                    <p className="mt-4 text-lg sm:text-xl text-foreground/80">
-                       Ever wonder what separates good salespeople from great ones? Our proven framework shows you exactly how to get there.
-                    </p>
-                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button asChild size="lg"><Link href="/courses">View Programs</Link></Button>
+        <section className="relative h-[560px] w-full">
+            {heroImage && (
+              <Image
+                src={heroImage.imageUrl}
+                alt={heroImage.description}
+                fill
+                className="object-cover"
+                data-ai-hint={heroImage.imageHint}
+              />
+            )}
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 h-full flex flex-col justify-end">
+                <div className="container mx-auto px-4 py-16">
+                    <div className="max-w-3xl text-white">
+                        <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold">
+                            Your Roadmap to Sales Mastery
+                        </h1>
+                        <p className="mt-4 text-lg sm:text-xl text-white/90">
+                           Ever wonder what separates good salespeople from great ones? Our proven framework shows you exactly how to get there.
+                        </p>
+                        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                            <Button asChild size="lg"><Link href="/courses">View Programs</Link></Button>
+                        </div>
                     </div>
                 </div>
             </div>
-             {heroImage && (
-             <div className="absolute inset-0 z-0 opacity-10">
-                <Image
-                    src={heroImage.imageUrl}
-                    alt={heroImage.description}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={heroImage.imageHint}
-                />
-             </div>
-          )}
         </section>
 
         <section className="py-16 sm:py-20">
@@ -187,3 +188,5 @@ export default function FrameworkPage() {
     </div>
   );
 }
+
+    

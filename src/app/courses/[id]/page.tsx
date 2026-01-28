@@ -23,30 +23,31 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
       <Header />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-primary/5 py-20 md:py-32">
-          <div className="container mx-auto px-4 z-10 relative">
-            <div className="max-w-3xl">
-              <Badge>{course.level}</Badge>
-              <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mt-4">
-                {course.title}
-              </h1>
-              <p className="mt-4 text-lg sm:text-xl text-foreground/80">
-                {course.description}
-              </p>
-              <Button size="lg" className="mt-8">Register Now</Button>
+        <section className="relative h-[560px] w-full">
+          {courseImage && (
+             <Image
+                src={courseImage.imageUrl}
+                alt={course.title}
+                fill
+                className="object-cover"
+                data-ai-hint={courseImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 h-full flex flex-col justify-end">
+            <div className="container mx-auto px-4 py-16">
+              <div className="max-w-3xl text-white">
+                <Badge>{course.level}</Badge>
+                <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold mt-4">
+                  {course.title}
+                </h1>
+                <p className="mt-4 text-lg sm:text-xl text-white/90">
+                  {course.description}
+                </p>
+                <Button size="lg" className="mt-8">Register Now</Button>
+              </div>
             </div>
           </div>
-          {courseImage && (
-             <div className="absolute inset-0 z-0 opacity-10">
-                <Image
-                    src={courseImage.imageUrl}
-                    alt={courseImage.description}
-                    fill
-                    className="object-cover"
-                    data-ai-hint={courseImage.imageHint}
-                />
-             </div>
-          )}
         </section>
         
         {/* Course Details Section */}
@@ -97,3 +98,5 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
+
+    
