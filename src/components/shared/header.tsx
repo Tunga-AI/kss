@@ -57,9 +57,6 @@ export function Header() {
                     {link.label}
                 </Link>
                 ))}
-                <Button asChild size="sm" className={cn(scrolled ? 'bg-primary' : 'bg-white text-primary hover:bg-white/90')}>
-                    <Link href="/login">Portal</Link>
-                </Button>
             </nav>
             <div className="md:hidden">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -84,9 +81,6 @@ export function Header() {
                           {link.label}
                         </Link>
                       ))}
-                       <Button asChild className="mt-4">
-                         <Link href="/login">Portal</Link>
-                       </Button>
                     </div>
                   </SheetContent>
                 </Sheet>
