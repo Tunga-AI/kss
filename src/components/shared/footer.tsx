@@ -50,17 +50,17 @@ export function Footer() {
                 <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
               )}
             </Link>
-            <div className="flex justify-center gap-x-6 sm:justify-end">
-              <Link href="/privacy" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Terms of Service
-              </Link>
+            <div className="text-center sm:text-right">
+                <div className="flex justify-center gap-x-6 sm:justify-end">
+                    <Link href="/privacy" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                        Privacy Policy
+                    </Link>
+                    <Link href="/terms" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                        Terms of Service
+                    </Link>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Kenya School of Sales. All Rights Reserved.</p>
             </div>
-          </div>
-          <div className="border-t py-6 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Kenya School of Sales. All Rights Reserved.</p>
           </div>
         </div>
       </footer>
