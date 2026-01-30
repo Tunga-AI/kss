@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
@@ -24,6 +26,7 @@ export function AuthDialog({ open, onOpenChange, program, onSuccess }: AuthDialo
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [agreed, setAgreed] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('register');
@@ -127,6 +130,22 @@ export function AuthDialog({ open, onOpenChange, program, onSuccess }: AuthDialo
                                 <Label htmlFor="password-reg">Password</Label>
                                 <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} minLength={6} />
                             </div>
+                            <div className="flex items-start space-x-2 pt-2">
+                                <Checkbox 
+                                    id="terms-individual" 
+                                    checked={agreed}
+                                    onCheckedChange={(checked) => setAgreed(checked === true)}
+                                    disabled={loading}
+                                />
+                                <div className="grid gap-1.5 leading-none">
+                                    <label
+                                        htmlFor="terms-individual"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        I agree to the <Link href="/terms" className="underline hover:text-primary" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-primary" target="_blank">Privacy Policy</Link>.
+                                    </label>
+                                </div>
+                            </div>
                              {error && activeTab === 'register' && (
                                 <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
@@ -134,7 +153,7 @@ export function AuthDialog({ open, onOpenChange, program, onSuccess }: AuthDialo
                                 <AlertDescription>{error}</AlertDescription>
                                 </Alert>
                             )}
-                            <Button type="submit" disabled={loading} className="w-full mt-2">
+                            <Button type="submit" disabled={loading || !agreed} className="w-full mt-2">
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Create Account
                             </Button>
