@@ -61,6 +61,19 @@ export default function OrganizationDetailPage() {
     if (!organization) {
         notFound();
     }
+    
+    const getStatusBadgeVariant = (status: Organization['status']) => {
+        switch (status) {
+            case 'Active':
+            case 'Trial':
+                return 'default';
+            case 'Expired':
+            case 'Cancelled':
+                return 'destructive';
+            default:
+                return 'secondary';
+        }
+    }
 
     return (
         <div className="grid gap-6">
@@ -96,6 +109,14 @@ export default function OrganizationDetailPage() {
                             <Label>Date Joined</Label>
                             <p className="font-medium">{organization.createdAt ? format(organization.createdAt.toDate(), 'yyyy-MM-dd') : 'N/A'}</p>
                         </div>
+                        <div className="space-y-1">
+                            <Label>Max Learners</Label>
+                            <p className="font-medium">{organization.maxLearners}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>Subscription End Date</Label>
+                            <p className="font-medium">{organization.subscriptionEndDate ? format(organization.subscriptionEndDate.toDate(), 'yyyy-MM-dd') : 'N/A'}</p>
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="status-select">Subscription Status</Label>
@@ -111,7 +132,7 @@ export default function OrganizationDetailPage() {
                                     <SelectItem value="Cancelled">Cancelled</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Badge variant={organization.status === 'Active' ? 'default' : 'destructive'}>
+                            <Badge variant={getStatusBadgeVariant(organization.status)}>
                                 {organization.status}
                             </Badge>
                         </div>

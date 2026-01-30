@@ -20,6 +20,20 @@ export default function B2BPage() {
   }, [firestore]);
 
   const { data: organizations, loading } = useCollection<Organization>(orgsQuery);
+  
+  const getStatusBadgeVariant = (status: Organization['status']) => {
+      switch (status) {
+          case 'Active':
+              return 'default';
+          case 'Trial':
+              return 'secondary';
+          case 'Expired':
+          case 'Cancelled':
+              return 'destructive';
+          default:
+              return 'secondary';
+      }
+  }
 
   return (
     <div className="grid gap-6">
@@ -61,7 +75,7 @@ export default function B2BPage() {
                             <TableCell className="font-medium">{org.name}</TableCell>
                             <TableCell><Badge variant="secondary">{org.tier}</Badge></TableCell>
                             <TableCell>
-                                <Badge variant={org.status === 'Active' ? 'default' : 'destructive'}>{org.status}</Badge>
+                                <Badge variant={getStatusBadgeVariant(org.status)}>{org.status}</Badge>
                             </TableCell>
                             <TableCell>{org.subscriptionEndDate ? format(org.subscriptionEndDate.toDate(), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                             <TableCell>
@@ -76,7 +90,7 @@ export default function B2BPage() {
                                         <DropdownMenuItem asChild>
                                             <Link href={`/a/b2b/${org.id}`}>View Details</Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>Manage Subscription</DropdownMenuItem>
+                                        <DropdownMenuItem disabled>Manage Subscription</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>

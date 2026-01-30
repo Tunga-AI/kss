@@ -28,8 +28,11 @@ export function LoginForm() {
   const firestore = useFirestore();
 
   useEffect(() => {
-    if (searchParams.get('message') === 'registration_successful') {
+    const message = searchParams.get('message');
+    if (message === 'registration_successful') {
         setSuccess('Registration successful! Your account is pending admin activation. You will be able to log in once approved.');
+    } else if (message === 'b2b_registration_successful') {
+        setSuccess('Registration successful! You can now log in to your Business Portal.');
     }
   }, [searchParams]);
 
@@ -90,7 +93,7 @@ export function LoginForm() {
         }
         const orgRef = doc(firestore, 'organizations', userProfile.organizationId);
         const orgDoc = await getDoc(orgRef);
-        if (!orgDoc.exists() || (orgDoc.data() as Organization).status !== 'Active') {
+        if (!orgDoc.exists() || ((orgDoc.data() as Organization).status !== 'Active' && (orgDoc.data() as Organization).status !== 'Trial')) {
             await signOut(auth);
             setError("Your organization's account is not active. Please wait for activation or contact support.");
             setLoading(false);
@@ -160,7 +163,7 @@ export function LoginForm() {
           {success && (
             <Alert>
               <CheckCircle className="h-4 w-4" />
-              <AlertTitle>Registration Complete</AlertTitle>
+              <AlertTitle>Information</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}

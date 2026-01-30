@@ -101,7 +101,7 @@ export default function ForBusinessPage() {
                                     </CardContent>
                                     <CardContent>
                                         <Button asChild className="w-full" variant={tier.name === 'Growth' ? 'default' : 'secondary'}>
-                                            <Link href={tier.price ? `/register-business?tier=${tier.name}` : '/contact'}>{tier.cta}</Link>
+                                            <Link href={tier.price ? `/register-business?tier=${tier.name}&price=${tier.price}` : '/contact'}>{tier.cta}</Link>
                                         </Button>
                                     </CardContent>
                                 </Card>

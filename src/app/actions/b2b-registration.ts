@@ -5,6 +5,8 @@ import { initializeFirebase } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { addDoc, collection, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { addUser } from '@/lib/users';
+import { addTransaction } from '@/lib/transactions';
+import { addMonths } from 'date-fns';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -12,33 +14,42 @@ const schema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   companyName: z.string().min(1, 'Company name is required'),
   tier: z.string(),
+  numLearners: z.number().int().min(1),
+  period: z.number().int(),
+  amount: z.number(),
+  paymentReference: z.string(),
 });
 
-export async function b2bRegister(formData: FormData) {
-  const validatedFields = schema.safeParse(Object.fromEntries(formData.entries()));
+export async function completeB2bRegistration(data: unknown) {
+  const validatedFields = schema.safeParse(data);
 
   if (!validatedFields.success) {
-    return { success: false, error: 'Invalid form data.' };
+    console.error("B2B Registration Validation Error:", validatedFields.error);
+    return { success: false, error: 'Invalid data received. Please try again.' };
   }
 
-  const { name, email, password, companyName, tier } = validatedFields.data;
+  const { name, email, password, companyName, tier, numLearners, period, amount, paymentReference } = validatedFields.data;
   const { auth, firestore } = initializeFirebase();
 
   try {
     // 1. Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await createUserWithEmailAndPassword(auth, email, password);
 
-    // 2. Create the Organization document
+    // 2. Calculate subscription end date
+    const subscriptionEndDate = addMonths(new Date(), period);
+
+    // 3. Create the Organization document
     const orgRef = await addDoc(collection(firestore, 'organizations'), {
       name: companyName,
       adminId: '', // will be updated shortly
       tier: tier,
-      status: 'Trial',
-      maxLearners: 10, // Default for startup, can be adjusted
+      status: 'Active', // Active since they have paid
+      maxLearners: numLearners,
       createdAt: serverTimestamp(),
+      subscriptionEndDate: subscriptionEndDate,
     });
 
-    // 3. Create the User document (BusinessAdmin)
+    // 4. Create the User document (BusinessAdmin)
     const userRef = await addUser(firestore, {
       name,
       email,
@@ -47,9 +58,20 @@ export async function b2bRegister(formData: FormData) {
       organizationId: orgRef.id,
     });
     
-    // 4. Update the Organization with the BusinessAdmin's user document ID
+    // 5. Update the Organization with the BusinessAdmin's user document ID
     await updateDoc(orgRef, {
         adminId: userRef.id,
+    });
+
+    // 6. Add transaction record
+    addTransaction(firestore, {
+      learnerName: `${name} (${companyName})`,
+      learnerEmail: email,
+      program: `B2B Subscription - ${tier} (${numLearners} Seats)`,
+      amount: amount,
+      currency: 'KES',
+      status: 'Success',
+      paystackReference: paymentReference,
     });
 
     return { success: true };
