@@ -1,5 +1,6 @@
 'use client';
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -64,8 +65,8 @@ export default function StaffClassroomPage() {
                     <Badge variant={session.status === 'Completed' ? 'secondary' : 'default'}>{session.status}</Badge>
                   </TableCell>
                   <TableCell>
-                      <Button variant="outline" size="sm" disabled={session.status === 'Completed' || session.status === 'Cancelled'}>
-                          Start Session
+                      <Button asChild variant="outline" size="sm" disabled={session.status === 'Completed' || session.status === 'Cancelled'}>
+                          <Link href={`/f/classroom/${session.id}`}>Start Session</Link>
                       </Button>
                   </TableCell>
                 </TableRow>

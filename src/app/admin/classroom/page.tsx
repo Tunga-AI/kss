@@ -79,6 +79,9 @@ export default function AdminClassroomPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
+                          <Link href={`/a/classroom/session/${session.id}`}>Join Session</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                           <Link href={`/a/classroom/${session.id}`}>Edit</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(session.id)} className="text-destructive">Delete</DropdownMenuItem>
