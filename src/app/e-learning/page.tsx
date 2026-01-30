@@ -69,7 +69,7 @@ function CourseList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {filteredCourses.map((course) => {
             return (
-              <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">
+              <Link href={`/e-learning/${course.slug}`} key={course.id} className="block group">
                 <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
                   {course.imageUrl && (
                     <Image

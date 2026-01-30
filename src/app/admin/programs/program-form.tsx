@@ -15,18 +15,19 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 export function ProgramForm({ program }: { program: Partial<Program> }) {
     const isNew = !program.id;
     const [formData, setFormData] = useState<Partial<Program>>({
+        title: '',
+        slug: '',
+        description: '',
+        imageUrl: '',
+        duration: '',
+        level: 'Beginner',
+        takeaways: [],
+        price: '',
+        date: '',
+        time: '',
+        location: '',
+        speakers: [],
         ...program,
-        title: program.title || '',
-        description: program.description || '',
-        imageUrl: program.imageUrl || '',
-        duration: program.duration || '',
-        level: program.level || 'Beginner',
-        takeaways: program.takeaways || [],
-        price: program.price || '',
-        date: program.date || '',
-        time: program.time || '',
-        location: program.location || '',
-        speakers: program.speakers || [],
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -40,7 +41,11 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
+         let finalValue = value;
+        if (id === 'slug') {
+            finalValue = value.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+        }
+        setFormData(prev => ({ ...prev, [id]: finalValue }));
     };
 
     const handleSelectChange = (id: string, value: string) => {
@@ -111,9 +116,15 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
             <Card>
                 <CardContent className="pt-6">
                     <form className="grid gap-6" onSubmit={handleSubmit}>
-                        <div className="grid gap-3">
-                            <Label htmlFor="title">Title</Label>
-                            <Input id="title" type="text" value={formData.title} onChange={handleChange} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="grid gap-3">
+                                <Label htmlFor="title">Title</Label>
+                                <Input id="title" type="text" value={formData.title} onChange={handleChange} required />
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="slug">URL Slug</Label>
+                                <Input id="slug" type="text" value={formData.slug} onChange={handleChange} required />
+                            </div>
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="description">Description</Label>

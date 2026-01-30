@@ -3,6 +3,7 @@ import type { Timestamp } from 'firebase/firestore';
 export type Program = {
     id: string;
     title: string;
+    slug: string;
     description: string;
     imageUrl: string;
     programType: 'Core' | 'E-Learning' | 'Event' | 'Short';

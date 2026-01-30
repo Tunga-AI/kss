@@ -129,7 +129,7 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
               {courses?.slice(0, 1).map((course) => {
                 return (
-                  <Link href={`/courses/${course.id}`} key={course.id} className="block group">
+                  <Link href={`/courses/${course.slug}`} key={course.id} className="block group">
                     <Card className="relative overflow-hidden h-full min-h-[36rem] lg:min-h-[42rem] border-0 shadow-lg">
                       {course.imageUrl && (
                         <Image
@@ -154,7 +154,7 @@ export default function Home() {
               <div className="grid grid-rows-2 gap-6 md:gap-8">
                 {courses?.slice(1, 3).map((course) => {
                   return (
-                    <Link href={`/courses/${course.id}`} key={course.id} className="block group">
+                    <Link href={`/courses/${course.slug}`} key={course.id} className="block group">
                       <Card className="relative overflow-hidden h-full border-0 shadow-lg">
                         {course.imageUrl && (
                           <Image
@@ -287,7 +287,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {events?.map((event) => {
                 return (
-                  <Link href={`/events/${event.id}`} key={event.id} className="block group">
+                  <Link href={`/events/${event.slug}`} key={event.id} className="block group">
                      <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
                       {event.imageUrl && (
                         <Image
@@ -337,7 +337,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {moocCourses?.map((course) => {
                 return (
-                  <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">
+                  <Link href={`/e-learning/${course.slug}`} key={course.id} className="block group">
                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
                       {course.imageUrl && (
                         <Image

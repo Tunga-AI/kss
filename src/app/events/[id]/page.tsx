@@ -9,22 +9,24 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { useFirestore } from "@/firebase";
-import { doc } from "firebase/firestore";
-import { useDoc } from "@/firebase/firestore/use-doc";
+import { collection, query, where, limit } from "firebase/firestore";
+import { useCollection } from "@/firebase/firestore/use-collection";
 import type { Program } from "@/lib/program-types";
 import { useMemo } from "react";
+import { ProgramRegistration } from "@/components/payments/ProgramRegistration";
 
 export default function EventDetailPage() {
   const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const slug = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
 
-  const programRef = useMemo(() => {
-    if (!firestore || !id) return null;
-    return doc(firestore, 'programs', id);
-  }, [firestore, id]);
+  const programQuery = useMemo(() => {
+    if (!firestore || !slug) return null;
+    return query(collection(firestore, 'programs'), where('slug', '==', slug), limit(1));
+  }, [firestore, slug]);
 
-  const { data: event, loading } = useDoc<Program>(programRef);
+  const { data: programs, loading } = useCollection<Program>(programQuery);
+  const event = useMemo(() => programs?.[0], [programs]);
   
   if (loading) {
     return <div>Loading...</div>;
@@ -56,7 +58,7 @@ export default function EventDetailPage() {
                   {event.title}
                 </h1>
                 <div className="mt-8 flex gap-4">
-                  <Button size="lg">Register Now</Button>
+                  <ProgramRegistration program={event} />
                   <Button size="lg" variant="secondary">Add to Calendar</Button>
                 </div>
               </div>

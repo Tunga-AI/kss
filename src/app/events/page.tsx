@@ -60,7 +60,7 @@ export default function EventsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {events?.map((event) => {
                 return (
-                  <Link href={`/events/${event.id}`} key={event.id} className="block group">
+                  <Link href={`/events/${event.slug}`} key={event.id} className="block group">
                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
                       {event.imageUrl && (
                         <Image

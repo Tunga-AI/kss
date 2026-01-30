@@ -20,6 +20,18 @@ export default function StaffClassesPage() {
 
     const { data: courses, loading } = useCollection<Program>(programsQuery);
 
+    const getPublicPageUrl = (course: Program) => {
+        switch(course.programType) {
+            case 'Core':
+            case 'Short':
+                return `/courses/${course.slug}`;
+            case 'E-Learning':
+                return `/e-learning/${course.slug}`;
+            default:
+                return '#';
+        }
+    }
+
     return (
         <div className="grid gap-6">
             <Card className="bg-primary text-primary-foreground">
@@ -68,7 +80,7 @@ export default function StaffClassesPage() {
                                                 <DropdownMenuItem>Send Announcement</DropdownMenuItem>
                                                 <DropdownMenuItem>Grade Submissions</DropdownMenuItem>
                                                 <DropdownMenuItem className="p-0">
-                                                    <Link href={`/courses/${course.id}`} target="_blank" className="w-full h-full block px-2 py-1.5">
+                                                    <Link href={getPublicPageUrl(course)} target="_blank" className="w-full h-full block px-2 py-1.5">
                                                         <Eye className="mr-2 h-4 w-4 inline-block"/>
                                                         View Public Page
                                                     </Link>

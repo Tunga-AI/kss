@@ -9,6 +9,10 @@
           "type": "string",
           "description": "The title of the program."
         },
+        "slug": {
+          "type": "string",
+          "description": "The unique, URL-friendly identifier for the program."
+        },
         "description": {
           "type": "string",
           "description": "A detailed description of the program."
@@ -71,7 +75,7 @@
             "format": "date-time"
         }
       },
-      "required": ["title", "description", "programType"]
+      "required": ["title", "slug", "description", "programType"]
     },
     "Speaker": {
       "title": "Speaker",
@@ -126,6 +130,7 @@
       "type": "object",
       "properties": {
         "learnerName": { "type": "string" },
+        "learnerEmail": { "type": "string" },
         "program": { "type": "string" },
         "amount": { "type": "number" },
         "currency": { "type": "string" },
@@ -133,7 +138,7 @@
         "paystackReference": { "type": "string" },
         "date": { "type": "string", "format": "date-time" }
       },
-      "required": ["learnerName", "program", "amount", "status"]
+      "required": ["learnerName", "learnerEmail", "program", "amount", "status"]
     },
     "GalleryImage": {
       "title": "Gallery Image",
