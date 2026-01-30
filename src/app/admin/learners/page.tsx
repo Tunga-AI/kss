@@ -39,7 +39,7 @@ export default function AdminLearnersPage() {
                             <CardDescription className="text-primary-foreground/80">View and manage all enrolled learners.</CardDescription>
                         </div>
                         <Button variant="secondary" asChild>
-                            <Link href="/a/users/new?role=Learner">
+                            <Link href="/a/learners/new">
                                 <PlusCircle className="mr-2"/>
                                 Add Learner
                             </Link>

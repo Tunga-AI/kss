@@ -40,7 +40,7 @@ export default function AdminFacilitatorsPage() {
                             <CardDescription className="text-primary-foreground/80">View, edit, or add new facilitators to the system.</CardDescription>
                         </div>
                         <Button variant="secondary" asChild>
-                            <Link href="/a/users/new?role=Facilitator">
+                            <Link href="/a/facilitators/new">
                                 <PlusCircle className="mr-2"/>
                                 Create Facilitator
                             </Link>

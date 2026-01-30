@@ -73,7 +73,15 @@ export function UserForm({ user }: { user?: Partial<User> }) {
                 const { id, ...rest } = dataToSave;
                 await updateUser(firestore, id, rest);
             }
-            router.push('/a/users');
+            
+            if (formData.role === 'Learner') {
+                router.push('/a/learners');
+            } else if (formData.role === 'Facilitator') {
+                router.push('/a/facilitators');
+            } else {
+                router.push('/a/users');
+            }
+
         } catch (error) {
             console.error("Failed to save user:", error);
             // In a real app, show a toast notification to the user
