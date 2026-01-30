@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
             <SidebarTrigger />
           </header>
-          <main className="p-4 sm:p-6 lg:p-10">
+          <main>
             {children}
           </main>
         </SidebarInset>

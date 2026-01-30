@@ -32,7 +32,7 @@ const users = [
 
 export default function OperationsLearnersPage() {
     return (
-        <div className="grid gap-6">
+        <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
             <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

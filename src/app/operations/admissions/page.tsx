@@ -2,7 +2,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 
 export default function AdmissionsPage() {
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="font-headline text-xl sm:text-2xl">Admissions</CardTitle>

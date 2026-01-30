@@ -3,7 +3,7 @@ import { Users, BookOpen, UserPlus, Calendar } from "lucide-react";
 
 export default function AdminDashboardPage() {
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="font-headline text-xl sm:text-2xl">Admin Dashboard</CardTitle>
