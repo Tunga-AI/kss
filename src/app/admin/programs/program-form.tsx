@@ -14,7 +14,20 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export function ProgramForm({ program }: { program: Partial<Program> }) {
     const isNew = !program.id;
-    const [formData, setFormData] = useState<Partial<Program>>(program);
+    const [formData, setFormData] = useState<Partial<Program>>({
+        ...program,
+        title: program.title || '',
+        description: program.description || '',
+        imageUrl: program.imageUrl || '',
+        duration: program.duration || '',
+        level: program.level || 'Beginner',
+        takeaways: program.takeaways || [],
+        price: program.price || '',
+        date: program.date || '',
+        time: program.time || '',
+        location: program.location || '',
+        speakers: program.speakers || [],
+    });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
@@ -31,7 +44,7 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
     };
 
     const handleSelectChange = (id: string, value: string) => {
-        setFormData(prev => ({ ...prev, [id]: value }));
+        setFormData(prev => ({ ...prev, [id]: value as any }));
     };
 
     const handleTakeawaysChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -41,8 +54,8 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
     const handleSpeakersChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const speakerData = e.target.value.split('\n').map(line => {
             const [name, title] = line.split(',').map(s => s.trim());
-            return { name, title, avatar: `https://picsum.photos/seed/${name?.toLowerCase().replace(' ', '')}/40/40` };
-        });
+            return { name: name || '', title: title || '', avatar: `https://picsum.photos/seed/${name?.toLowerCase().replace(' ', '')}/40/40` };
+        }).filter(s => s.name);
         setFormData(prev => ({ ...prev, speakers: speakerData }));
     }
 
@@ -70,6 +83,10 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
         // Clean up data before saving
         if (dataToSave.id === '') {
             delete dataToSave.id;
+        }
+
+        if (dataToSave.takeaways) {
+            dataToSave.takeaways = dataToSave.takeaways.filter(t => t.trim() !== '');
         }
 
         if (isNew) {
@@ -137,7 +154,7 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
                                 </div>
                                 <div className="grid gap-3">
                                     <Label htmlFor="takeaways">Key Takeaways (one per line)</Label>
-                                    <Textarea id="takeaways" value={formData.takeaways?.join('\n')} onChange={handleTakeawaysChange} rows={5} />
+                                    <Textarea id="takeaways" value={formData.takeaways!.join('\n')} onChange={handleTakeawaysChange} rows={5} />
                                 </div>
                                  {programType !== 'E-Learning' && <div className="grid gap-3">
                                     <Label htmlFor="price">Price</Label>
@@ -168,7 +185,7 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
                                 </div>
                                 <div className="grid gap-3">
                                     <Label htmlFor="speakers">Speakers (Name, Title - one per line)</Label>
-                                    <Textarea id="speakers" value={formData.speakers?.map(s => `${s.name}, ${s.title}`).join('\n')} onChange={handleSpeakersChange} rows={4} />
+                                    <Textarea id="speakers" value={formData.speakers!.map(s => `${s.name}, ${s.title}`).join('\n')} onChange={handleSpeakersChange} rows={4} />
                                 </div>
                            </>
                         )}
