@@ -53,16 +53,23 @@ export function LoginForm() {
         return;
       }
 
-      // 3. Determine role and redirect
+      // 3. Check user status
       const userProfile = querySnapshot.docs[0].data() as User;
-      
+      if (userProfile.status === 'Inactive') {
+        await signOut(auth);
+        setError("Your account has been deactivated. Please contact an administrator.");
+        setLoading(false);
+        return;
+      }
+
+      // 4. Determine role and redirect
       let redirectPath = '/l'; // Default to learner
       const role = userProfile.role;
       
       if (['Admin', 'Sales', 'Finance', 'Business', 'Operations'].includes(role)) {
         redirectPath = '/a';
-      } else if (role === 'Staff') {
-        redirectPath = '/s';
+      } else if (role === 'Facilitator') {
+        redirectPath = '/f';
       }
       
       router.push(redirectPath);
