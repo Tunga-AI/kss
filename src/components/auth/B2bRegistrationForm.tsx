@@ -2,6 +2,7 @@
     
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { usePaystackPayment } from 'react-paystack';
 import { completeB2bRegistration } from '@/app/actions/b2b-registration';
 
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 function B2bRegistrationFormComponent() {
@@ -25,6 +27,7 @@ function B2bRegistrationFormComponent() {
     const [numLearners, setNumLearners] = useState(1);
     const [period, setPeriod] = useState("6"); // months
     const [totalPrice, setTotalPrice] = useState(0);
+    const [agreed, setAgreed] = useState(false);
 
     // B2B Tier Info from URL
     const tier = searchParams.get('tier') || 'Startup';
@@ -133,6 +136,23 @@ function B2bRegistrationFormComponent() {
                     </RadioGroup>
               </div>
           </div>
+          
+           <div className="flex items-start space-x-2">
+              <Checkbox 
+                  id="terms" 
+                  checked={agreed}
+                  onCheckedChange={(checked) => setAgreed(checked === true)}
+                  disabled={loading}
+              />
+              <div className="grid gap-1.5 leading-none">
+                  <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                      I agree to the <Link href="/terms" className="underline hover:text-primary" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-primary" target="_blank">Privacy Policy</Link>.
+                  </label>
+              </div>
+          </div>
 
            <Card className="bg-muted">
                 <CardContent className="p-4">
@@ -151,7 +171,7 @@ function B2bRegistrationFormComponent() {
             </Alert>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading || totalPrice === 0}>
+          <Button type="submit" className="w-full" disabled={loading || totalPrice === 0 || !agreed}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {loading ? 'Processing...' : 'Proceed to Payment'}
           </Button>

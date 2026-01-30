@@ -59,7 +59,7 @@ export function Footer() {
                         Terms of Service
                     </Link>
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Kenya School of Sales. All Rights Reserved.</p>
+                <p className="mt-2 text-sm text-muted-foreground">&copy; 2026 - 2030 Kenya School of Sales. All Rights Reserved.</p>
             </div>
           </div>
         </div>
