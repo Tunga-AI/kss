@@ -84,7 +84,7 @@ export default function ForBusinessPage() {
                                         <CardTitle className="font-headline text-2xl">{tier.name}</CardTitle>
                                         <CardDescription>{tier.userCount}</CardDescription>
                                         {tier.price ? (
-                                             <div className="text-4xl font-bold pt-4">${tier.price}<span className="text-base font-normal text-muted-foreground">/user/mo</span></div>
+                                             <div className="text-4xl font-bold pt-4">KES {tier.price}<span className="text-base font-normal text-muted-foreground">/user/mo</span></div>
                                         ) : (
                                             <div className="text-4xl font-bold pt-4">Custom</div>
                                         )}
