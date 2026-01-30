@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, DollarSign, Image as ImageIcon, User, UserCheck, Briefcase } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building } from 'lucide-react';
 
 const menuItems = [
   { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -21,8 +21,8 @@ const menuItems = [
   { href: '/admin/crm', label: 'CRM', icon: BarChart },
   { href: '/admin/admissions', label: 'ADMISSIONS', icon: UserCheck },
   { href: '/admin/learners', label: 'LEARNERS', icon: Users },
-  { href: '/admin/finance', label: 'FINANCE', icon: DollarSign },
-  { href: '/admin/b2b', label: 'B2B', icon: Briefcase },
+  { href: '/admin/finance', label: 'FINANCE', icon: Tag },
+  { href: '/admin/b2b', label: 'B2B', icon: Building },
   { href: '/admin/gallery', label: 'GALLERY', icon: ImageIcon },
   { href: '/admin/users', label: 'USERS', icon: Users },
 ];
