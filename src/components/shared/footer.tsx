@@ -53,9 +53,15 @@ export function Footer() {
               Portal
             </Link>
         </nav>
-        <p className="text-center text-sm leading-loose text-muted-foreground md:text-right">
-          &copy; {new Date().getFullYear()} Kenya School of Sales.
-        </p>
+        <div className="text-center text-sm text-muted-foreground md:text-right">
+            <p className="leading-loose">
+              &copy; {new Date().getFullYear()} Kenya School of Sales.
+            </p>
+            <div className="flex justify-center md:justify-end gap-x-4">
+                 <Link href="/privacy" className="transition-colors hover:text-primary">Privacy Policy</Link>
+                 <Link href="/terms" className="transition-colors hover:text-primary">Terms of Service</Link>
+            </div>
+        </div>
       </div>
     </footer>
   );
