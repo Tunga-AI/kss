@@ -1,9 +1,10 @@
 'use client';
 import { useMemo } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
-import { useFirestore, useDoc } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection } from '@/firebase';
+import { doc, updateDoc, query, collection } from 'firebase/firestore';
 import type { Learner } from '@/lib/learners-types';
+import type { Program } from '@/lib/program-types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,9 +27,18 @@ export default function LearnerDetailPage() {
 
     const { data: learner, loading } = useDoc<Learner>(learnerRef);
 
+    const programsQuery = useMemo(() => firestore ? query(collection(firestore, "programs")) : null, [firestore]);
+    const { data: programs, loading: programsLoading } = useCollection<Program>(programsQuery);
+
     const handleStatusChange = async (newStatus: Learner['status']) => {
         if (learnerRef) {
             await updateDoc(learnerRef, { status: newStatus });
+        }
+    };
+    
+    const handleProgramChange = async (newProgram: string) => {
+        if (learnerRef) {
+            await updateDoc(learnerRef, { program: newProgram });
         }
     };
 
@@ -80,9 +90,17 @@ export default function LearnerDetailPage() {
                         </div>
                     </div>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <Label>Enrolled Program</Label>
-                            <p className="font-medium">{learner.program || 'Not specified'}</p>
+                        <div className="space-y-2">
+                            <Label htmlFor="program-select">Enrolled Program</Label>
+                             <Select value={learner.program} onValueChange={handleProgramChange} disabled={programsLoading}>
+                                <SelectTrigger id="program-select" className="w-[200px]">
+                                    <SelectValue placeholder="Select program" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">None</SelectItem>
+                                    {programs?.map(p => <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                          <div className="space-y-1">
                             <Label>Joined Date</Label>

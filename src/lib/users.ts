@@ -12,10 +12,17 @@ import {
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { User } from './user-types';
+import { createLearnerProfile } from './learners';
 
 export function addUser(db: Firestore, user: Omit<User, 'id' | 'createdAt'>) {
   const userWithTimestamp = { ...user, createdAt: serverTimestamp() };
   return addDoc(collection(db, 'users'), userWithTimestamp)
+    .then((docRef) => {
+      if (user.role === 'Learner' && user.name && user.email) {
+        createLearnerProfile(db, { name: user.name, email: user.email, avatar: user.avatar });
+      }
+      return docRef;
+    })
     .catch(async (serverError) => {
       const permissionError = new FirestorePermissionError({
         path: '/users',

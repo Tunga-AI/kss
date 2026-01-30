@@ -30,9 +30,11 @@ export default function OperationsLearnersPage() {
                             <CardTitle className="font-headline text-xl sm:text-2xl">Manage Learners</CardTitle>
                             <CardDescription className="text-primary-foreground/80">View and manage all enrolled learners.</CardDescription>
                         </div>
-                        <Button variant="secondary">
-                            <PlusCircle className="mr-2"/>
-                            Add Learner
+                        <Button variant="secondary" asChild>
+                            <Link href="/a/users/new?role=Learner">
+                                <PlusCircle className="mr-2"/>
+                                Add Learner
+                            </Link>
                         </Button>
                     </div>
                 </CardHeader>

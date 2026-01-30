@@ -28,6 +28,8 @@ export function UserForm({ user }: { user?: Partial<User> }) {
     const router = useRouter();
     const firestore = useFirestore();
     const storage = useStorage();
+    
+    const isLearnerRole = formData.role === 'Learner';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -88,7 +90,10 @@ export function UserForm({ user }: { user?: Partial<User> }) {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-xl sm:text-2xl">{isNew ? 'Create New User' : 'Edit User'}</CardTitle>
-                    <CardDescription>{isNew ? "Add a new user profile to the system. You will still need to create their authentication account in the Firebase Console." : `Editing profile for ${user?.name}.`}</CardDescription>
+                    <CardDescription>
+                        {isNew ? "Add a new user profile to the system. You will still need to create their authentication account in the Firebase Console." : `Editing profile for ${user?.name}.`}
+                        {isNew && isLearnerRole && " Adding a user with the 'Learner' role will also create a corresponding profile in the Learners module."}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form className="grid gap-6" onSubmit={handleSubmit}>

@@ -21,3 +21,24 @@ export function addLearner(db: Firestore, learner: Omit<Learner, 'id' | 'status'
         errorEmitter.emit('permission-error', permissionError);
       });
 }
+
+export function createLearnerProfile(db: Firestore, user: { name: string, email: string, avatar?: string }) {
+  const learnerData = {
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar || '',
+      status: 'Active',
+      joinedDate: new Date().toISOString().split('T')[0],
+      program: '', // Initially no program
+  };
+
+  addDoc(collection(db, 'learners'), learnerData)
+      .catch(async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: '/learners',
+          operation: 'create',
+          requestResourceData: learnerData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+}
