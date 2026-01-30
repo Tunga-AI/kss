@@ -10,21 +10,21 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 const tiers = [
     {
         name: "Startup",
-        price: "40",
+        price: "5000",
         userCount: "1-10 Users",
         features: ["Access to all courses", "Progress tracking", "Email support"],
         cta: "Get Started"
     },
     {
         name: "Growth",
-        price: "35",
+        price: "4500",
         userCount: "11-50 Users",
         features: ["All Startup features", "Dedicated account manager", "Usage reports"],
         cta: "Get Started"
     },
     {
         name: "Enterprise",
-        price: "30",
+        price: "4000",
         userCount: "51-100 Users",
         features: ["All Growth features", "Custom branding", "API access"],
         cta: "Get Started"
