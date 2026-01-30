@@ -18,11 +18,11 @@ export function LearnerProgramCard({ program, isEnrolled }: LearnerProgramCardPr
         switch (program.programType) {
             case 'Core':
             case 'Short':
-                return `/courses/${program.slug}`;
+                return `/l/courses/${program.slug}`;
             case 'E-Learning':
-                return `/e-learning/${program.slug}`;
+                return `/l/e-learning/${program.slug}`;
             case 'Event':
-                return `/events/${program.slug}`;
+                return `/l/events/${program.slug}`;
             default:
                 return '#';
         }
