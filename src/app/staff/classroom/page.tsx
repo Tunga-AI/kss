@@ -1,23 +1,79 @@
-import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Video } from "lucide-react";
+'use client';
+import { useMemo } from 'react';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { PlusCircle } from "lucide-react";
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { ClassroomSession } from '@/lib/classroom-types';
+import { format } from 'date-fns';
 
 export default function StaffClassroomPage() {
+  const firestore = useFirestore();
+  const classroomQuery = useMemo(() => {
+    if (!firestore) return null;
+    // For now, show all sessions. This could be filtered by facilitatorId later.
+    return query(collection(firestore, 'classroom'), orderBy('startDateTime', 'desc'));
+  }, [firestore]);
+
+  const { data: sessions, loading } = useCollection<ClassroomSession>(classroomQuery);
+
   return (
     <div className="grid gap-6">
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
-          <CardTitle className="font-headline text-xl sm:text-2xl">Classroom</CardTitle>
-          <CardDescription className="text-primary-foreground/80">Manage your scheduled live sessions.</CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <CardTitle className="font-headline text-xl sm:text-2xl">My Classroom</CardTitle>
+              <CardDescription className="text-primary-foreground/80">Schedule and manage your live sessions.</CardDescription>
+            </div>
+            {/* 
+              TODO: In a future step, this could link to a form at /f/classroom/new
+              to allow facilitators to create sessions.
+            */}
+            <Button variant="secondary" disabled>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Schedule Session
+            </Button>
+          </div>
         </CardHeader>
       </Card>
-      <Card className="text-center h-96 flex flex-col justify-center items-center">
+      <Card>
         <CardHeader>
-            <Video className="h-16 w-16 mx-auto text-muted-foreground" />
-            <CardTitle className="mt-4">Coming Soon!</CardTitle>
-            <CardDescription>We're building this section for your live classes.</CardDescription>
+            <CardTitle>My Sessions</CardTitle>
         </CardHeader>
         <CardContent>
-            <p className="text-sm text-muted-foreground">You will be able to start and manage your live class sessions from here.</p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Session</TableHead>
+                <TableHead>Start Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading && <TableRow><TableCell colSpan={4}>Loading sessions...</TableCell></TableRow>}
+              {sessions && sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="font-medium">{session.title}</TableCell>
+                  <TableCell>{session.startDateTime ? format(session.startDateTime.toDate(), 'MMM d, yyyy h:mm a') : 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge variant={session.status === 'Completed' ? 'secondary' : 'default'}>{session.status}</Badge>
+                  </TableCell>
+                  <TableCell>
+                      <Button variant="outline" size="sm" disabled={session.status === 'Completed' || session.status === 'Cancelled'}>
+                          Start Session
+                      </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!loading && sessions?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center">You have no sessions assigned.</TableCell></TableRow>}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
