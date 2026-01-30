@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +25,15 @@ const menuItems = [
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
+
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/login');
+    }
+  };
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -65,11 +76,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                     </SidebarMenuButton>
                  </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Logout">
-                        <Link href="/login">
-                            <LogOut />
-                            <span className="font-bold uppercase">Logout</span>
-                        </Link>
+                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
+                        <LogOut />
+                        <span className="font-bold uppercase">Logout</span>
                     </SidebarMenuButton>
                  </SidebarMenuItem>
              </SidebarMenu>
