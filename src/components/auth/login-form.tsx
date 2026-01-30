@@ -8,17 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 
 const roles = [
-    { value: 'dashboard', label: 'Learner' },
-    { value: 'staff', label: 'Staff' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'admin', label: 'Sales' },
-    { value: 'admin', label: 'Finance' },
-    { value: 'admin', label: 'Business' },
-    { value: 'admin', label: 'Operations' },
+    { value: 'l', label: 'Learner' },
+    { value: 's', label: 'Staff' },
+    { value: 'a', label: 'Admin' },
+    { value: 'a', label: 'Sales' },
+    { value: 'a', label: 'Finance' },
+    { value: 'a', label: 'Business' },
+    { value: 'a', label: 'Operations' },
 ];
 
 export function LoginForm() {
-  const [selectedRole, setSelectedRole] = useState<string>('dashboard');
+  const [selectedRole, setSelectedRole] = useState<string>('l');
   const router = useRouter();
 
   const handleLogin = () => {
@@ -42,7 +42,7 @@ export function LoginForm() {
                 </SelectTrigger>
                 <SelectContent>
                     {roles.map((role, index) => (
-                        <SelectItem key={`${role.value}-${index}`} value={role.value}>{role.label}</SelectItem>
+                        <SelectItem key={`${role.label}-${index}`} value={role.value}>{role.label}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>

@@ -19,7 +19,7 @@ export default function DeprecatedPortalLayout({
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href="/admin">Go to Admin Dashboard</Link>
+            <Link href="/a">Go to Admin Dashboard</Link>
           </Button>
         </CardContent>
       </Card>

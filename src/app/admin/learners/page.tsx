@@ -62,7 +62,7 @@ export default function OperationsLearnersPage() {
                                                 <AvatarFallback>{learner.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <Link href={`/admin/learners/${learner.id}`} className="hover:underline">
+                                                <Link href={`/a/learners/${learner.id}`} className="hover:underline">
                                                     <p className="font-medium">{learner.name}</p>
                                                 </Link>
                                                 <p className="text-xs sm:text-sm text-muted-foreground">{learner.email}</p>
@@ -85,7 +85,7 @@ export default function OperationsLearnersPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                  <Link href={`/admin/learners/${learner.id}`}>View Details</Link>
+                                                  <Link href={`/a/learners/${learner.id}`}>View Details</Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem>Change Status</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>

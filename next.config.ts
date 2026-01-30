@@ -30,6 +30,22 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/a/:path*',
+        destination: '/admin/:path*',
+      },
+      {
+        source: '/l/:path*',
+        destination: '/dashboard/:path*',
+      },
+      {
+        source: '/s/:path*',
+        destination: '/staff/:path*',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

@@ -45,7 +45,7 @@ export default function DashboardPage() {
         </CardContent>
         <CardContent>
              <Button asChild>
-                <Link href="/dashboard/courses/advanced-negotiation">Continue Learning <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                <Link href="/l/courses">Continue Learning <ArrowRight className="ml-2 h-4 w-4"/></Link>
              </Button>
         </CardContent>
        </Card>

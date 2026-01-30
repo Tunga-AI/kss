@@ -80,7 +80,7 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
         }
         
         setIsUploading(false);
-        router.push('/admin/programs');
+        router.push('/a/programs');
     };
 
     return (

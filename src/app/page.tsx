@@ -254,7 +254,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Button asChild size="lg" className="mt-8 bg-accent hover:bg-accent/90">
-                  <Link href="/dashboard/recommendations">
+                  <Link href="/l/recommendations">
                     <BrainCircuit className="mr-2 h-5 w-5" />
                     Try the AI Tool
                   </Link>

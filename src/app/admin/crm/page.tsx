@@ -55,7 +55,7 @@ export default function CrmPage() {
                       {leads && leads.map((lead) => (
                           <TableRow key={lead.id}>
                               <TableCell>
-                                <Link href={`/admin/crm/${lead.id}`} className="hover:underline">
+                                <Link href={`/a/crm/${lead.id}`} className="hover:underline">
                                   <p className="font-medium">{lead.name}</p>
                                 </Link>
                                 <p className="text-xs sm:text-sm text-muted-foreground">{lead.email}</p>
@@ -75,7 +75,7 @@ export default function CrmPage() {
                                       <DropdownMenuContent align="end">
                                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                           <DropdownMenuItem asChild>
-                                            <Link href={`/admin/crm/${lead.id}`}>View Details</Link>
+                                            <Link href={`/a/crm/${lead.id}`}>View Details</Link>
                                           </DropdownMenuItem>
                                           <DropdownMenuItem>Change Status</DropdownMenuItem>
                                           <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>

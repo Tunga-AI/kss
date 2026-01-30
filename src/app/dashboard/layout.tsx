@@ -16,10 +16,10 @@ import {
 import { LayoutDashboard, BookOpen, TrendingUp, Sparkles, LogOut, Globe, User } from 'lucide-react';
 
 const menuItems = [
-  { href: '/dashboard', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/dashboard/courses', label: 'COURSES', icon: BookOpen },
-  { href: '/dashboard/progress', label: 'PROGRESS', icon: TrendingUp },
-  { href: '/dashboard/recommendations', label: 'AI', icon: Sparkles },
+  { href: '/l', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/l/courses', label: 'COURSES', icon: BookOpen },
+  { href: '/l/progress', label: 'PROGRESS', icon: TrendingUp },
+  { href: '/l/recommendations', label: 'AI', icon: Sparkles },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/l' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>

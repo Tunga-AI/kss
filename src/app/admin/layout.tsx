@@ -16,15 +16,15 @@ import {
 import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building } from 'lucide-react';
 
 const menuItems = [
-  { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
-  { href: '/admin/crm', label: 'CRM', icon: BarChart },
-  { href: '/admin/admissions', label: 'ADMISSIONS', icon: UserCheck },
-  { href: '/admin/learners', label: 'LEARNERS', icon: Users },
-  { href: '/admin/finance', label: 'FINANCE', icon: Tag },
-  { href: '/admin/b2b', label: 'B2B', icon: Building },
-  { href: '/admin/gallery', label: 'GALLERY', icon: ImageIcon },
-  { href: '/admin/users', label: 'USERS', icon: Users },
+  { href: '/a', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/a/programs', label: 'PROGRAMS', icon: BookCopy },
+  { href: '/a/crm', label: 'CRM', icon: BarChart },
+  { href: '/a/admissions', label: 'ADMISSIONS', icon: UserCheck },
+  { href: '/a/learners', label: 'LEARNERS', icon: Users },
+  { href: '/a/finance', label: 'FINANCE', icon: Tag },
+  { href: '/a/b2b', label: 'B2B', icon: Building },
+  { href: '/a/gallery', label: 'GALLERY', icon: ImageIcon },
+  { href: '/a/users', label: 'USERS', icon: Users },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/a' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>

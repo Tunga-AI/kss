@@ -16,9 +16,9 @@ import {
 import { LayoutDashboard, BookOpen, Calendar, LogOut, Globe, User } from 'lucide-react';
 
 const menuItems = [
-  { href: '/staff', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/staff/classes', label: 'CLASSES', icon: BookOpen },
-  { href: '/staff/schedule', label: 'SCHEDULE', icon: Calendar },
+  { href: '/s', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/s/classes', label: 'CLASSES', icon: BookOpen },
+  { href: '/s/schedule', label: 'SCHEDULE', icon: Calendar },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || (item.href !== '/staff' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/s' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>

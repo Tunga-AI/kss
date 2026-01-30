@@ -52,16 +52,16 @@ export default function AdminProgramsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=core">Core</Link>
+                                        <Link href="/a/programs/new?type=core">Core</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=elearning">E-Learning</Link>
+                                        <Link href="/a/programs/new?type=elearning">E-Learning</Link>
                                     </DropdownMenuItem>
                                      <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=shortcourse">Short</Link>
+                                        <Link href="/a/programs/new?type=shortcourse">Short</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=event">Event</Link>
+                                        <Link href="/a/programs/new?type=event">Event</Link>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
@@ -104,7 +104,7 @@ export default function AdminProgramsPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem className="p-0">
-                                                    <Link href={`/admin/programs/${program.id}`} className="w-full h-full block px-2 py-1.5">
+                                                    <Link href={`/a/programs/${program.id}`} className="w-full h-full block px-2 py-1.5">
                                                         Edit
                                                     </Link>
                                                 </DropdownMenuItem>

@@ -54,7 +54,7 @@ export default function StaffDashboardPage() {
             </CardContent>
              <CardContent>
                 <Button asChild variant="secondary">
-                    <Link href="/staff/schedule">View Full Schedule <ArrowRight className="ml-2"/></Link>
+                    <Link href="/s/schedule">View Full Schedule <ArrowRight className="ml-2"/></Link>
                 </Button>
             </CardContent>
         </Card>
@@ -86,7 +86,7 @@ export default function StaffDashboardPage() {
         </CardContent>
         <CardContent>
              <Button asChild>
-                <Link href="/staff/classes">Manage My Classes <ArrowRight className="ml-2"/></Link>
+                <Link href="/s/classes">Manage My Classes <ArrowRight className="ml-2"/></Link>
              </Button>
         </CardContent>
        </Card>
