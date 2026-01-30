@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import { useFirestore, useDoc, useCollection } from '@/firebase';
-import { doc, updateDoc, query, collection } from 'firebase/firestore';
+import { doc, query, collection } from 'firebase/firestore';
 import type { Learner } from '@/lib/learners-types';
 import type { Program } from '@/lib/program-types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { updateLearner } from '@/lib/learners';
 
 export default function LearnerDetailPage() {
     const params = useParams();
@@ -31,14 +32,14 @@ export default function LearnerDetailPage() {
     const { data: programs, loading: programsLoading } = useCollection<Program>(programsQuery);
 
     const handleStatusChange = async (newStatus: Learner['status']) => {
-        if (learnerRef) {
-            await updateDoc(learnerRef, { status: newStatus });
+        if (firestore && id) {
+            updateLearner(firestore, id, { status: newStatus });
         }
     };
     
     const handleProgramChange = async (newProgram: string) => {
-        if (learnerRef) {
-            await updateDoc(learnerRef, { program: newProgram });
+        if (firestore && id) {
+            updateLearner(firestore, id, { program: newProgram });
         }
     };
 

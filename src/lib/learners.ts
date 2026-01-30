@@ -1,5 +1,5 @@
 'use client';
-import { addDoc, collection, Firestore } from 'firebase/firestore';
+import { addDoc, collection, doc, Firestore, deleteDoc, updateDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { Learner } from './learners-types';
@@ -41,4 +41,29 @@ export function createLearnerProfile(db: Firestore, user: { name: string, email:
         });
         errorEmitter.emit('permission-error', permissionError);
       });
+}
+
+export function updateLearner(db: Firestore, learnerId: string, learner: Partial<Learner>) {
+  const learnerRef = doc(db, 'learners', learnerId);
+  updateDoc(learnerRef, learner)
+    .catch(async (serverError) => {
+      const permissionError = new FirestorePermissionError({
+        path: learnerRef.path,
+        operation: 'update',
+        requestResourceData: learner,
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    });
+}
+
+export function deleteLearner(db: Firestore, learnerId: string) {
+  const learnerRef = doc(db, 'learners', learnerId);
+  deleteDoc(learnerRef)
+    .catch(async (serverError) => {
+      const permissionError = new FirestorePermissionError({
+        path: learnerRef.path,
+        operation: 'delete',
+      });
+      errorEmitter.emit('permission-error', permissionError);
+    });
 }

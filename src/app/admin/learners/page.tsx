@@ -11,8 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { Learner } from '@/lib/learners-types';
+import { deleteLearner } from '@/lib/learners';
+import { format } from 'date-fns';
 
-export default function OperationsLearnersPage() {
+export default function AdminLearnersPage() {
     const firestore = useFirestore();
     const learnersQuery = useMemo(() => {
         if (!firestore) return null;
@@ -20,6 +22,12 @@ export default function OperationsLearnersPage() {
     }, [firestore]);
 
     const { data: learners, loading } = useCollection<Learner>(learnersQuery);
+
+    const handleDelete = (id: string) => {
+        if (firestore && confirm('Are you sure you want to remove this learner profile? This will not delete their main user account.')) {
+            deleteLearner(firestore, id);
+        }
+    };
 
     return (
         <div className="grid gap-6">
@@ -75,7 +83,7 @@ export default function OperationsLearnersPage() {
                                     <TableCell>
                                         <Badge variant={learner.status === 'Active' ? 'default' : 'secondary'}>{learner.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden sm:table-cell">{learner.joinedDate}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{learner.joinedDate ? format(new Date(learner.joinedDate), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -89,8 +97,7 @@ export default function OperationsLearnersPage() {
                                                 <DropdownMenuItem asChild>
                                                   <Link href={`/a/learners/${learner.id}`}>View Details</Link>
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>Change Status</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDelete(learner.id)} className="text-destructive">Remove</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
