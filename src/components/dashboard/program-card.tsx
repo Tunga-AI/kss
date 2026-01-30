@@ -1,10 +1,11 @@
+'use client';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Program } from '@/lib/program-types';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ImageIcon } from 'lucide-react';
 
 interface LearnerProgramCardProps {
     program: Program;
@@ -30,13 +31,19 @@ export function LearnerProgramCard({ program, isEnrolled }: LearnerProgramCardPr
     return (
         <Card className="flex flex-col">
             <CardHeader className="p-0">
-                <div className="relative h-48 w-full">
-                    <Image
-                        src={program.imageUrl}
-                        alt={program.title}
-                        fill
-                        className="object-cover rounded-t-lg"
-                    />
+                <div className="relative h-48 w-full rounded-t-lg bg-muted">
+                    {program.imageUrl ? (
+                        <Image
+                            src={program.imageUrl}
+                            alt={program.title}
+                            fill
+                            className="object-cover rounded-t-lg"
+                        />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                            <ImageIcon className="h-16 w-16 text-muted-foreground" />
+                        </div>
+                    )}
                     {isEnrolled && (
                         <Badge className="absolute top-2 right-2" variant="default">Enrolled</Badge>
                     )}
