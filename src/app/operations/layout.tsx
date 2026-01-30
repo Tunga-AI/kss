@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, BookOpen, Calendar, LogOut } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, BookOpen, Calendar, LogOut, Globe } from 'lucide-react';
 
 const menuItems = [
   { href: '/operations', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -51,8 +51,16 @@ export default function OperationsLayout({ children }: { children: React.ReactNo
           <SidebarFooter>
              <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Logout">
+                    <SidebarMenuButton asChild tooltip="Back to Website">
                         <Link href="/">
+                            <Globe />
+                            <span className="font-bold uppercase">Website</span>
+                        </Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Logout">
+                        <Link href="/login">
                             <LogOut />
                             <span className="font-bold uppercase">Logout</span>
                         </Link>

@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookOpen, Users, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, LogOut, Calendar, Globe } from 'lucide-react';
 
 const menuItems = [
   { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -49,9 +49,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarContent>
           <SidebarFooter>
              <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Back to Website">
+                        <Link href="/">
+                            <Globe />
+                            <span className="font-bold uppercase">Website</span>
+                        </Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Logout">
-                        <Link href="/">
+                        <Link href="/login">
                             <LogOut />
                             <span className="font-bold uppercase">Logout</span>
                         </Link>
