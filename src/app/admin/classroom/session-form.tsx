@@ -16,7 +16,7 @@ import type { ClassroomSession } from '@/lib/classroom-types';
 import type { Program } from '@/lib/program-types';
 import type { User } from '@/lib/user-types';
 import { addClassroomSession, updateClassroomSession } from '@/lib/classroom';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 type SessionFormData = Omit<ClassroomSession, 'id' | 'startDateTime' | 'endDateTime'> & {
     startDate: string;
@@ -43,7 +43,7 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
         title: session?.title ?? '',
         description: session?.description ?? '',
         programId: session?.programId ?? '',
-        facilitatorId: session?.facilitatorId ?? '',
+        facilitatorId: session?.facilitatorId || 'none',
         status: session?.status ?? 'Scheduled',
         startDate: session?.startDateTime ? format(session.startDateTime.toDate(), 'yyyy-MM-dd') : '',
         startTime: session?.startDateTime ? format(session.startDateTime.toDate(), 'HH:mm') : '',
@@ -84,7 +84,7 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
                 status: formData.status!,
             };
 
-            if (formData.facilitatorId) {
+            if (formData.facilitatorId && formData.facilitatorId !== 'none') {
                 sessionData.facilitatorId = formData.facilitatorId;
             }
 
@@ -138,7 +138,7 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
                                  <Select value={formData.facilitatorId} onValueChange={(value) => handleSelectChange('facilitatorId', value)}>
                                     <SelectTrigger disabled={facilitatorsLoading}>{facilitatorsLoading ? 'Loading...' : <SelectValue placeholder="Assign a facilitator" />}</SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">None</SelectItem>
+                                        <SelectItem value="none">None</SelectItem>
                                         {facilitators?.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
