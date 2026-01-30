@@ -27,7 +27,7 @@ export default function TermsPage() {
                     Terms of Service
                   </h1>
                   <p className="mt-4 text-lg sm:text-xl text-white/90">
-                    Please read our terms of service carefully.
+                    Please read our terms of service carefully before using our services.
                   </p>
                 </div>
               </div>
@@ -35,20 +35,53 @@ export default function TermsPage() {
           </section>
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4 max-w-3xl prose lg:prose-lg">
+            
+            <p><strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+
+            <h2>1. Agreement to Terms</h2>
             <p>
-              This is a placeholder for your terms of service. You should replace this with your own terms, outlining the rules and regulations for the use of your website and services.
+              By accessing our website, registering for an account, or using our services, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, you may not use our services.
             </p>
-            <h2>1. Introduction</h2>
+
+            <h2>2. Intellectual Property Rights</h2>
             <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. 
+              Unless otherwise indicated, the Site and our courses, including source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics (collectively, the "Content") and the trademarks and logos contained therein (the "Marks") are owned or controlled by us and are protected by copyright and trademark laws. The Content and the Marks are provided on the Site "AS IS" for your information and personal use only.
             </p>
-             <h3>2. Intellectual Property Rights</h3>
+
+            <h2>3. User Accounts and Responsibilities</h2>
             <p>
-                Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa. Fusce ac turpis quis ligula lacinia aliquet. Mauris ipsum. 
+              To access certain features, you must register for an account. You agree to provide true, accurate, current, and complete information during the registration process. You are responsible for safeguarding your password and for all activities that occur under your account.
             </p>
-            <h3>3. Restrictions</h3>
+            
+            <h2>4. Consent to Media Use and Data Processing</h2>
             <p>
-                Nulla metus metus, ullamcorper vel, tincidunt sed, euismod in, nibh. Quisque volutpat condimentum velit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam nec ante. Sed lacinia, urna non tincidunt mattis, tortor neque adipiscing diam, a cursus ipsum ante quis turpis. Nulla facilisi. Ut fringilla. Suspendisse potenti. Nunc feugiat mi a tellus consequat imperdiet. Vestibulum sapien. Proin quam. Etiam ultrices.
+              Our classes, workshops, and events may be photographed or recorded. By attending, you grant Kenya School of Sales a non-exclusive, perpetual, worldwide, royalty-free license to use your image, likeness, and voice in any and all media for promotional, educational, and other business purposes.
+            </p>
+            <p>
+              By using our services, you also acknowledge and consent to our data practices as described in our <strong>Privacy Policy</strong>. This includes the collection, use, and sharing of your information in compliance with the GDPR and the Kenya Data Protection Act (DPA). You affirm that you understand your rights regarding your personal data as outlined in our Privacy Policy.
+            </p>
+
+            <h2>5. Payments and Refunds</h2>
+            <p>
+              All payments for courses, admissions, and subscriptions are processed through our third-party payment processor, Paystack. All fees are non-refundable except as required by law or as explicitly stated by us for a specific program.
+            </p>
+
+            <h2>6. Governing Law</h2>
+            <p>
+              These Terms of Service and your use of the Site are governed by and construed in accordance with the laws of the Republic of Kenya, without regard to its conflict of law principles.
+            </p>
+
+            <h2>7. Limitation of Liability</h2>
+            <p>
+              In no event will we or our directors, employees, or agents be liable to you or any third party for any direct, indirect, consequential, exemplary, incidental, special, or punitive damages arising from your use of the site or our services.
+            </p>
+
+            <h2>8. Contact Us</h2>
+            <p>To resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at:</p>
+            <p>
+              Kenya School of Sales<br />
+              Email: kss@cca.co.ke<br />
+              Phone: +254 722 257 323
             </p>
           </div>
         </section>
