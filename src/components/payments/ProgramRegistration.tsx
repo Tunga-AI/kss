@@ -23,7 +23,8 @@ const parsePrice = (price: string | undefined): number => {
     }
     // Remove currency symbols, commas, and other non-numeric characters except for the decimal point
     const numericString = price.replace(/[^0-9.]/g, '');
-    return parseFloat(numericString);
+    const amount = parseFloat(numericString);
+    return isNaN(amount) ? 0 : amount;
 };
 
 export function ProgramRegistration({ program }: ProgramRegistrationProps) {
@@ -103,9 +104,45 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         if (loggedInUser) {
             setIsSubmitting(true);
             initializePayment(onPaymentSuccess, onPaymentClose);
-        } else {
-            // The dialog trigger will open the dialog for guest users
         }
+    };
+    
+    const handleFreeEnrollment = () => {
+        if (!firestore) return;
+        setIsSubmitting(true);
+
+        if (!userName || !userEmail) {
+            toast({
+                variant: "destructive",
+                title: "Details Required",
+                description: "Please fill out your name and email to enroll.",
+            });
+            setIsSubmitting(false);
+            setOpen(true);
+            return;
+        }
+
+        addTransaction(firestore, {
+            learnerName: userName,
+            learnerEmail: userEmail,
+            program: program.title,
+            amount: 0,
+            currency: 'KES',
+            status: 'Success',
+            paystackReference: `free_enroll_${new Date().getTime()}`,
+        });
+
+        toast({
+            title: "Enrollment Successful!",
+            description: `You are now enrolled in ${program.title}.`,
+        });
+        setIsSubmitting(false);
+        setOpen(false);
+    };
+
+    const handleGuestFreeEnrollmentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleFreeEnrollment();
     };
 
     if (userLoading) {
@@ -113,7 +150,44 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
     }
     
     if (programPrice === 0) {
-        return <Button size="lg">Enroll for Free</Button>;
+        if (!loggedInUser) {
+            return (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        <Button size="lg">Enroll for Free</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Enroll in {program.title}</DialogTitle>
+                            <DialogDescription>
+                                This is a free program. Please provide your details to enroll.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleGuestFreeEnrollmentSubmit} className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name-free">Full Name</Label>
+                                <Input id="name-free" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="email-free">Email Address</Label>
+                                <Input id="email-free" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
+                            </div>
+                            <Button type="submit" disabled={isSubmitting || !guestName || !guestEmail}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Complete Enrollment
+                            </Button>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            );
+        }
+        
+        return (
+            <Button size="lg" onClick={handleFreeEnrollment} disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Enroll for Free
+            </Button>
+        );
     }
 
     if (!loggedInUser) {
