@@ -9,19 +9,20 @@ import { firebaseConfig } from './config';
 let firebaseApp: FirebaseApp;
 let auth: Auth;
 let firestore: Firestore;
+const databaseId = 'kenyasales';
 
 function initializeFirebase() {
   if (getApps().length === 0) {
     firebaseApp = initializeApp(firebaseConfig);
     auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp);
+    firestore = getFirestore(firebaseApp, databaseId);
     if (typeof window !== 'undefined') {
       getAnalytics(firebaseApp);
     }
   } else {
     firebaseApp = getApp();
     auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp);
+    firestore = getFirestore(firebaseApp, databaseId);
   }
   return { firebaseApp, auth, firestore };
 }
