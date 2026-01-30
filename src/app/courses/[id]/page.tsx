@@ -29,7 +29,7 @@ export default function CourseDetailPage() {
     return <div>Loading...</div>;
   }
   
-  if (!course || course.programType !== 'Core') {
+  if (!course || (course.programType !== 'Core' && course.programType !== 'Short')) {
     notFound();
   }
 
