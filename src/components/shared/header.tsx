@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser, useAuth } from "@/firebase";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut } from 'firebase/auth';
 
 
 const navLinks = [
@@ -27,8 +25,6 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, loading } = useUser();
-  const auth = useAuth();
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,12 +48,6 @@ export function Header() {
         case 'Learner':
         default:
             return "/l";
-    }
-  }
-
-  const handleLogout = async () => {
-    if (auth) {
-        await signOut(auth);
     }
   }
 
@@ -91,30 +81,14 @@ export function Header() {
                  {loading ? <Loader2 className={cn("animate-spin", scrolled ? "" : "text-white")} /> : (
                     <>
                         {user ? (
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className={cn("relative h-10 w-10 rounded-full", scrolled ? "hover:bg-accent" : "hover:bg-white/10")}>
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={user.avatar} alt={user.name} />
-                                            <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem asChild>
-                                        <Link href={getPortalLink()}>Go to Portal</Link>
-                                    </DropdownMenuItem>
-                                     <DropdownMenuItem asChild>
-                                        <Link href={`${getPortalLink()}/profile`}>My Profile</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleLogout}>
-                                        Logout
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button asChild variant="ghost" className={cn("relative h-10 w-10 rounded-full", scrolled ? "hover:bg-accent" : "hover:bg-white/10")}>
+                                <Link href={getPortalLink()}>
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={user.avatar} alt={user.name} />
+                                        <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                            </Button>
                         ) : (
                             <Link
                                 href="/login"
@@ -158,8 +132,6 @@ export function Header() {
                                 {user ? (
                                     <div className="flex flex-col gap-4">
                                          <Link href={getPortalLink()} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">Portal</Link>
-                                         <Link href={`${getPortalLink()}/profile`} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">My Profile</Link>
-                                         <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-left text-lg font-bold uppercase text-destructive">Logout</button>
                                     </div>
                                 ) : (
                                     <Link href="/login" onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">Portal Login</Link>
