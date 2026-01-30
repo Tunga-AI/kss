@@ -1,6 +1,6 @@
 'use client';
 
-import { UserForm } from '../users/user-form';
+import { UserForm } from '../../users/user-form';
 import type { User } from '@/lib/user-types';
 
 export default function CreateLearnerPage() {
