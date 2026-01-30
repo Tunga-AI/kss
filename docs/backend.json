@@ -323,6 +323,10 @@
           "type": "string",
           "description": "The URL for the user's avatar image."
         },
+        "organizationId": {
+          "type": "string",
+          "description": "The ID of the organization this user belongs to, if any."
+        },
         "role": {
           "type": "string",
           "description": "The user's role in the system.",
@@ -333,7 +337,9 @@
             "Business",
             "Operations",
             "Admin",
-            "Facilitator"
+            "Facilitator",
+            "BusinessAdmin",
+            "BusinessLearner"
           ]
         },
         "status": {
@@ -354,6 +360,60 @@
         "name",
         "email",
         "role",
+        "status"
+      ]
+    },
+    "Organization": {
+      "title": "Organization",
+      "description": "Represents a business or company with a B2B subscription.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the organization."
+        },
+        "adminId": {
+          "type": "string",
+          "description": "The user ID of the business admin for this organization."
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "Startup",
+            "Growth",
+            "Enterprise",
+            "Custom"
+          ],
+          "description": "The subscription tier."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Active",
+            "Trial",
+            "Expired",
+            "Cancelled"
+          ],
+          "description": "The status of the subscription."
+        },
+        "subscriptionEndDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date when the current subscription expires."
+        },
+        "maxLearners": {
+          "type": "number",
+          "description": "The maximum number of learners allowed under the current plan."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "adminId",
+        "tier",
         "status"
       ]
     },
@@ -449,6 +509,12 @@
         "$ref": "#/entities/User"
       },
       "description": "Collection of all users in the system."
+    },
+    "/organizations/{organizationId}": {
+      "schema": {
+        "$ref": "#/entities/Organization"
+      },
+      "description": "Collection of B2B client organizations."
     },
     "/settings/{settingId}": {
       "schema": {

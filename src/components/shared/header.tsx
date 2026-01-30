@@ -19,6 +19,7 @@ const navLinks = [
   { href: "/courses", label: "Courses" },
   { href: "/e-learning", label: "E-Learning" },
   { href: "/events", label: "Events" },
+  { href: "/for-business", label: "For Business" },
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
 ];
@@ -50,7 +51,10 @@ export function Header() {
             return "/a";
         case 'Facilitator':
             return "/f";
+        case 'BusinessAdmin':
+            return "/b";
         case 'Learner':
+        case 'BusinessLearner':
         default:
             return "/l";
     }

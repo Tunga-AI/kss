@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth } from '@/firebase';
 import {
   Sidebar,
   SidebarContent,
@@ -15,23 +15,18 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Laptop, CalendarDays, LogOut, Globe, User, Tag, Video, Award } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Globe, User, CreditCard } from 'lucide-react';
 
 const menuItems = [
-  { href: '/l', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/l/courses', label: 'COURSES', icon: BookCopy },
-  { href: '/l/e-learning', label: 'E-LEARNING', icon: Laptop },
-  { href: '/l/events', label: 'EVENTS', icon: CalendarDays },
-  { href: '/l/classroom', label: 'CLASSROOM', icon: Video },
-  { href: '/l/certificates', label: 'CERTIFICATES', icon: Award },
-  { href: '/l/finance', label: 'FINANCE', icon: Tag },
+  { href: '/b', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/b/learners', label: 'LEARNERS', icon: Users },
+  { href: '/b/billing', label: 'BILLING', icon: CreditCard },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function BusinessPortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const auth = useAuth();
-  const { user } = useUser();
 
   const handleLogout = async () => {
     if (auth) {
@@ -40,25 +35,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  const filteredMenuItems = menuItems.filter(item => {
-    // Hide finance tab for business learners
-    if (user?.role === 'BusinessLearner' && item.href === '/l/finance') {
-        return false;
-    }
-    return true;
-  });
-
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen bg-background">
         <Sidebar collapsible="icon">
           <SidebarContent className="pt-8">
             <SidebarMenu>
-              {filteredMenuItems.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || (item.href !== '/l' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/b' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>
@@ -74,7 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/l/profile">
+                        <Link href="/b/profile">
                             <User />
                             <span className="font-bold uppercase">My Profile</span>
                         </Link>

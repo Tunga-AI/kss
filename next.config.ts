@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
         source: '/f/:path*',
         destination: '/staff/:path*',
       },
+      {
+        source: '/b/:path*',
+        destination: '/business-portal/:path*',
+      }
     ]
   },
 };

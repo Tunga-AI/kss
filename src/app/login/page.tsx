@@ -25,6 +25,10 @@ export default function LoginPage() {
         redirectPath = '/a';
       } else if (role === 'Facilitator') {
         redirectPath = '/f';
+      } else if (role === 'BusinessAdmin') {
+        redirectPath = '/b';
+      } else if (role === 'BusinessLearner') {
+        redirectPath = '/l';
       }
       
       router.push(redirectPath);
