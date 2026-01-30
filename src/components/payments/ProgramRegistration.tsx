@@ -107,6 +107,9 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         if (!loggedInUser) {
             // User must create an account for courses
             setAuthDialogOpen(true);
+        } else if (loggedInUser.role === 'BusinessLearner') {
+            setIsSubmitting(true);
+            handleFreeEnrollment(loggedInUser.name, loggedInUser.email);
         } else {
             // User is logged in, but not yet enrolled.
             // Initiate payment flow.
@@ -121,6 +124,11 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
 
     const handleEventRegistration = () => {
         if (loggedInUser) {
+             if (loggedInUser.role === 'BusinessLearner') {
+                setIsSubmitting(true);
+                handleFreeEnrollment(loggedInUser.name, loggedInUser.email);
+                return;
+            }
             // If logged in, proceed directly to payment/enrollment for event
             setIsSubmitting(true);
             if (programPrice === 0) {
@@ -182,6 +190,15 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         return <Button size="lg" disabled>Loading...</Button>;
     }
     
+    if (loggedInUser?.role === 'BusinessLearner') {
+        return (
+             <Button size="lg" onClick={handleCourseRegistration} disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Enroll Now
+            </Button>
+        )
+    }
+
     // COURSE REGISTRATION FLOW
     if (isCourse) {
         return (

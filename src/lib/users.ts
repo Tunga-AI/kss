@@ -18,7 +18,7 @@ export function addUser(db: Firestore, user: Omit<User, 'id' | 'createdAt'>) {
   const userWithTimestamp = { ...user, createdAt: serverTimestamp() };
   return addDoc(collection(db, 'users'), userWithTimestamp)
     .then((docRef) => {
-      if (user.role === 'Learner' && user.name && user.email) {
+      if ((user.role === 'Learner' || user.role === 'BusinessLearner') && user.name && user.email) {
         createLearnerProfile(db, { name: user.name, email: user.email, avatar: user.avatar });
       }
       return docRef;

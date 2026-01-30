@@ -30,7 +30,7 @@ export default function B2BPage() {
                 <CardTitle className="font-headline text-xl sm:text-2xl">B2B Management</CardTitle>
                 <CardDescription className="text-primary-foreground/80">Manage corporate client accounts and subscriptions.</CardDescription>
               </div>
-              <Button variant="secondary">
+              <Button variant="secondary" disabled>
                   <PlusCircle className="mr-2"/>
                   Add Organization
               </Button>
@@ -73,7 +73,9 @@ export default function B2BPage() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href={`/a/b2b/${org.id}`}>View Details</Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem>Manage Subscription</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

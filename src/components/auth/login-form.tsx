@@ -1,33 +1,43 @@
 'use client';
     
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import type { User } from '@/lib/user-types';
+import type { Organization } from '@/lib/organization-types';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const auth = useAuth();
   const firestore = useFirestore();
+
+  useEffect(() => {
+    if (searchParams.get('message') === 'registration_successful') {
+        setSuccess('Registration successful! Your account is pending admin activation. You will be able to log in once approved.');
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     if (!auth || !firestore) {
       setError("Firebase is not initialized. Please try again later.");
@@ -46,7 +56,6 @@ export function LoginForm() {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        // If no profile, they are not permitted.
         await signOut(auth);
         setError("You are not permitted to access this application. Please contact an administrator.");
         setLoading(false);
@@ -54,7 +63,9 @@ export function LoginForm() {
       }
 
       // 3. Check user status
-      const userProfile = querySnapshot.docs[0].data() as User;
+      const userDoc = querySnapshot.docs[0];
+      const userProfile = { id: userDoc.id, ...userDoc.data() } as User;
+
       if (userProfile.status === 'Inactive') {
         await signOut(auth);
         setError("Your account has been deactivated. Please contact an administrator.");
@@ -70,6 +81,22 @@ export function LoginForm() {
         redirectPath = '/a';
       } else if (role === 'Facilitator') {
         redirectPath = '/f';
+      } else if (role === 'BusinessAdmin') {
+         if (!userProfile.organizationId) {
+            await signOut(auth);
+            setError("Your account is not configured correctly. Missing organization link.");
+            setLoading(false);
+            return;
+        }
+        const orgRef = doc(firestore, 'organizations', userProfile.organizationId);
+        const orgDoc = await getDoc(orgRef);
+        if (!orgDoc.exists() || (orgDoc.data() as Organization).status !== 'Active') {
+            await signOut(auth);
+            setError("Your organization's account is not active. Please wait for activation or contact support.");
+            setLoading(false);
+            return;
+        }
+        redirectPath = '/b';
       }
       
       router.push(redirectPath);
@@ -127,6 +154,14 @@ export function LoginForm() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Login Failed</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Registration Complete</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
 
