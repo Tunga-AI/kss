@@ -197,7 +197,7 @@
     }
   },
   "auth": {
-    "providers": []
+    "providers": ["Email"]
   },
   "firestore": {
     "/programs/{programId}": {

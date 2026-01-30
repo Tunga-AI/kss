@@ -28,7 +28,7 @@ export default function LoginPage() {
         </Button>
       </div>
 
-      <div className="relative z-10 flex items-end justify-end p-4 sm:p-12 min-h-screen">
+      <div className="relative z-10 flex items-center justify-center sm:justify-end p-4 sm:p-12 min-h-screen">
         <LoginForm />
       </div>
     </div>

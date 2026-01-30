@@ -1,8 +1,8 @@
 'use client';
-import { useMemo } from 'react';
-import { useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { User } from '@/lib/user-types';
+import { useState, useEffect } from 'react';
+import { useUser } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -10,57 +10,70 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { notFound } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
+    const { user, loading: userLoading } = useUser();
     const firestore = useFirestore();
-    // In a real app, you would get the current user's ID from the auth state.
-    // For now, we'll hardcode a sample user ID.
-    // Make sure a user with this ID exists in your 'users' collection in Firestore.
-    const userId = 'sample-user-id';
+    const { toast } = useToast();
+    
+    const [name, setName] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
-    const userRef = useMemo(() => {
-        if (!firestore || !userId) return null;
-        return doc(firestore, 'users', userId);
-    }, [firestore, userId]);
+    useEffect(() => {
+        if (user) {
+            setName(user.name);
+        }
+    }, [user]);
 
-    const { data: user, loading } = useDoc<User>(userRef);
+    const handleUpdateProfile = async () => {
+        if (!user || !firestore || !user.id) {
+            toast({ variant: 'destructive', title: 'Error', description: 'User not found.' });
+            return;
+        }
 
-    if (loading) {
+        setIsSaving(true);
+        const userRef = doc(firestore, 'users', user.id);
+        try {
+            await updateDoc(userRef, { name });
+            toast({ title: 'Success', description: 'Your profile has been updated.' });
+        } catch (error) {
+            console.error("Error updating profile: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to update profile.' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (userLoading) {
         return (
-             <Card className="max-w-2xl mx-auto">
-                <CardHeader className="text-center">
+            <Card className="max-w-2xl mx-auto">
+                <CardHeader className="text-center items-center">
                     <Skeleton className="h-24 w-24 rounded-full mx-auto mb-4" />
                     <Skeleton className="h-8 w-48 mx-auto" />
                     <Skeleton className="h-4 w-64 mx-auto" />
                 </CardHeader>
                 <CardContent className="grid gap-6">
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                     <div className="space-y-2">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                     <div className="space-y-2">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-10 w-32" />
-                    </div>
+                    {[...Array(4)].map((_, i) => (
+                        <div key={i} className="space-y-2">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
         );
     }
 
     if (!user) {
-        // You can replace this with a more user-friendly message or component
         return (
-             <Card className="max-w-2xl mx-auto">
+            <Card className="max-w-2xl mx-auto">
                 <CardHeader>
-                    <CardTitle>User Not Found</CardTitle>
+                    <CardTitle>Profile Not Found</CardTitle>
                     <CardDescription>Could not find a profile. Please ensure you are logged in or contact support.</CardDescription>
                 </CardHeader>
-             </Card>
+            </Card>
         )
     }
 
@@ -75,13 +88,13 @@ export default function ProfilePage() {
                 <CardDescription>{user.email}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-                 <div className="space-y-2">
+                <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" defaultValue={user.name} />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isSaving} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" defaultValue={user.email} disabled />
+                    <Input id="email" type="email" defaultValue={user.email!} disabled />
                 </div>
                 <div className="space-y-2">
                     <Label>Role</Label>
@@ -89,13 +102,16 @@ export default function ProfilePage() {
                         <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                     </div>
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                     <Label>Member Since</Label>
                     <p className="text-sm text-muted-foreground">
                         {user.createdAt ? new Date(user.createdAt.toDate()).toLocaleDateString() : 'N/A'}
                     </p>
                 </div>
-                <Button>Update Profile</Button>
+                <Button onClick={handleUpdateProfile} disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Profile
+                </Button>
             </CardContent>
         </Card>
     );
