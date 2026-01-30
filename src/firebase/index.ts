@@ -1,0 +1,30 @@
+'use client';
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAnalytics } from "firebase/analytics";
+import { firebaseConfig } from './config';
+
+// Note: firebaseApp, auth, and firestore are not exported directly to ensure they are accessed through the provider.
+let firebaseApp: FirebaseApp;
+let auth: Auth;
+let firestore: Firestore;
+
+function initializeFirebase() {
+  if (getApps().length === 0) {
+    firebaseApp = initializeApp(firebaseConfig);
+    auth = getAuth(firebaseApp);
+    firestore = getFirestore(firebaseApp);
+    if (typeof window !== 'undefined') {
+      getAnalytics(firebaseApp);
+    }
+  } else {
+    firebaseApp = getApp();
+    auth = getAuth(firebaseApp);
+    firestore = getFirestore(firebaseApp);
+  }
+  return { firebaseApp, auth, firestore };
+}
+
+export { initializeFirebase };
+export * from './provider';

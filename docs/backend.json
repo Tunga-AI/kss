@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "Course": {
+      "title": "Course",
+      "description": "Represents a course in the learning platform.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the course."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the course."
+        },
+        "imageId": {
+          "type": "string",
+          "description": "The ID of the placeholder image for the course."
+        },
+        "duration": {
+          "type": "string",
+          "description": "The duration of the course."
+        },
+        "level": {
+          "type": "string",
+          "description": "The difficulty level of the course.",
+          "enum": ["Beginner", "Intermediate", "Advanced"]
+        },
+        "takeaways": {
+          "type": "array",
+          "description": "A list of key takeaways from the course.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "price": {
+          "type": "string",
+          "description": "The price of the course."
+        }
+      },
+      "required": ["title", "description", "level", "duration"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "Represents an event, such as a webinar or workshop.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the event."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the event."
+        },
+        "imageId": {
+          "type": "string",
+          "description": "The ID of the placeholder image for the event."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the event."
+        },
+        "time": {
+          "type": "string",
+          "description": "The time of the event."
+        },
+        "location": {
+          "type": "string",
+          "description": "The location of the event."
+        },
+        "price": {
+          "type": "string",
+          "description": "The price of the event."
+        },
+        "speakers": {
+          "type": "array",
+          "description": "A list of speakers at the event.",
+          "items": {
+            "$ref": "#/entities/Speaker"
+          }
+        }
+      },
+      "required": ["title", "description", "date", "location"]
+    },
+    "Speaker": {
+      "title": "Speaker",
+      "description": "Represents a speaker at an event.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the speaker."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title or role of the speaker."
+        },
+        "avatar": {
+          "type": "string",
+          "description": "The URL for the speaker's avatar image."
+        }
+      },
+      "required": ["name", "title"]
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/courses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Collection of paid courses."
+    },
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/entities/Event" },
+      "description": "Collection of events."
+    },
+    "/elearning/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Collection of free e-learning courses (MOOCs)."
+    }
+  }
+}
