@@ -129,7 +129,7 @@ export default function LearnerElearningDetailPage() {
                   </Card>
                  <div>
                     {isEnrolled ? (
-                        <Button size="lg" className="w-full">Start Learning</Button>
+                        <Button size="lg" className="w-full" disabled>You are Registered</Button>
                     ) : (
                         <ProgramRegistration program={course} />
                     )}
