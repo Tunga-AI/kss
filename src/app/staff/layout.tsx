@@ -15,12 +15,13 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookOpen, Calendar, LogOut, Globe, User } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Calendar, LogOut, Globe, User, Video } from 'lucide-react';
 
 const menuItems = [
   { href: '/f', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/f/classes', label: 'CLASSES', icon: BookOpen },
   { href: '/f/schedule', label: 'SCHEDULE', icon: Calendar },
+  { href: '/f/classroom', label: 'CLASSROOM', icon: Video },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {

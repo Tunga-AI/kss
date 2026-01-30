@@ -1,5 +1,56 @@
 {
   "entities": {
+    "ClassroomSession": {
+      "title": "Classroom Session",
+      "description": "Represents a live virtual classroom session for a program.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the classroom session."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the session."
+        },
+        "programId": {
+          "type": "string",
+          "description": "The ID of the program this session belongs to."
+        },
+        "facilitatorId": {
+          "type": "string",
+          "description": "The ID of the facilitator hosting the session."
+        },
+        "startDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The start date and time of the session."
+        },
+        "endDateTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The end date and time of the session."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Scheduled",
+            "In Progress",
+            "Completed",
+            "Cancelled"
+          ],
+          "description": "The current status of the session."
+        }
+      },
+      "required": [
+        "title",
+        "programId",
+        "facilitatorId",
+        "startDateTime",
+        "endDateTime",
+        "status"
+      ]
+    },
     "Program": {
       "title": "Program",
       "description": "Represents a learning program, which can be a course or an event.",
@@ -24,7 +75,12 @@
         "programType": {
           "type": "string",
           "description": "The type of the program.",
-          "enum": ["Core", "E-Learning", "Event", "Short"]
+          "enum": [
+            "Core",
+            "E-Learning",
+            "Event",
+            "Short"
+          ]
         },
         "duration": {
           "type": "string",
@@ -33,7 +89,11 @@
         "level": {
           "type": "string",
           "description": "The difficulty level of the course.",
-          "enum": ["Beginner", "Intermediate", "Advanced"]
+          "enum": [
+            "Beginner",
+            "Intermediate",
+            "Advanced"
+          ]
         },
         "takeaways": {
           "type": "array",
@@ -67,15 +127,20 @@
           }
         },
         "createdAt": {
-            "type": "string",
-            "format": "date-time"
+          "type": "string",
+          "format": "date-time"
         },
         "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+          "type": "string",
+          "format": "date-time"
         }
       },
-      "required": ["title", "slug", "description", "programType"]
+      "required": [
+        "title",
+        "slug",
+        "description",
+        "programType"
+      ]
     },
     "Speaker": {
       "title": "Speaker",
@@ -95,50 +160,124 @@
           "description": "The URL for the speaker's avatar image."
         }
       },
-      "required": ["name", "title"]
+      "required": [
+        "name",
+        "title"
+      ]
     },
     "SaleLead": {
       "title": "Sale Lead",
       "description": "Represents a potential customer or lead in the sales pipeline.",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string" },
-        "program": { "type": "string" },
-        "status": { "type": "string", "enum": ["Prospect", "Lead", "Admitted", "Lost"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Prospect",
+            "Lead",
+            "Admitted",
+            "Lost"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
-      "required": ["name", "email", "status"]
+      "required": [
+        "name",
+        "email",
+        "status"
+      ]
     },
     "Learner": {
       "title": "Learner",
       "description": "Represents an enrolled student in a program.",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string" },
-        "avatar": { "type": "string" },
-        "program": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Inactive", "Alumni"] },
-        "joinedDate": { "type": "string", "format": "date" }
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Active",
+            "Inactive",
+            "Alumni"
+          ]
+        },
+        "joinedDate": {
+          "type": "string",
+          "format": "date"
+        }
       },
-      "required": ["name", "email", "status"]
+      "required": [
+        "name",
+        "email",
+        "status"
+      ]
     },
     "Transaction": {
       "title": "Transaction",
       "description": "Represents a financial transaction for a program enrollment.",
       "type": "object",
       "properties": {
-        "learnerName": { "type": "string" },
-        "learnerEmail": { "type": "string" },
-        "program": { "type": "string" },
-        "amount": { "type": "number" },
-        "currency": { "type": "string" },
-        "status": { "type": "string", "enum": ["Pending", "Success", "Failed"] },
-        "paystackReference": { "type": "string" },
-        "date": { "type": "string", "format": "date-time" }
+        "learnerName": {
+          "type": "string"
+        },
+        "learnerEmail": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Success",
+            "Failed"
+          ]
+        },
+        "paystackReference": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        }
       },
-      "required": ["learnerName", "learnerEmail", "program", "amount", "status"]
+      "required": [
+        "learnerName",
+        "learnerEmail",
+        "program",
+        "amount",
+        "status"
+      ]
     },
     "GalleryImage": {
       "title": "Gallery Image",
@@ -162,7 +301,10 @@
           "format": "date-time"
         }
       },
-      "required": ["album", "imageUrl"]
+      "required": [
+        "album",
+        "imageUrl"
+      ]
     },
     "User": {
       "title": "User",
@@ -185,12 +327,23 @@
         "role": {
           "type": "string",
           "description": "The user's role in the system.",
-          "enum": ["Learner", "Sales", "Finance", "Business", "Operations", "Admin", "Facilitator"]
+          "enum": [
+            "Learner",
+            "Sales",
+            "Finance",
+            "Business",
+            "Operations",
+            "Admin",
+            "Facilitator"
+          ]
         },
         "status": {
           "type": "string",
           "description": "The status of the user account.",
-          "enum": ["Active", "Inactive"]
+          "enum": [
+            "Active",
+            "Inactive"
+          ]
         },
         "createdAt": {
           "type": "string",
@@ -198,7 +351,12 @@
           "description": "The timestamp when the user account was created."
         }
       },
-      "required": ["name", "email", "role", "status"]
+      "required": [
+        "name",
+        "email",
+        "role",
+        "status"
+      ]
     },
     "Branding": {
       "title": "Branding",
@@ -217,7 +375,9 @@
     }
   },
   "auth": {
-    "providers": ["Email"]
+    "providers": [
+      "Email"
+    ]
   },
   "firestore": {
     "/programs/{programId}": {
@@ -261,6 +421,12 @@
         "$ref": "#/entities/Branding"
       },
       "description": "General application settings. Expects a single document with ID 'branding'."
+    },
+    "/classroom/{classroomId}": {
+      "schema": {
+        "$ref": "#/entities/ClassroomSession"
+      },
+      "description": "Collection of live classroom sessions."
     }
   }
 }

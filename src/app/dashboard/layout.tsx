@@ -15,13 +15,14 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Laptop, CalendarDays, LogOut, Globe, User, Tag } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Laptop, CalendarDays, LogOut, Globe, User, Tag, Video } from 'lucide-react';
 
 const menuItems = [
   { href: '/l', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/l/courses', label: 'COURSES', icon: BookCopy },
   { href: '/l/e-learning', label: 'E-LEARNING', icon: Laptop },
   { href: '/l/events', label: 'EVENTS', icon: CalendarDays },
+  { href: '/l/classroom', label: 'CLASSROOM', icon: Video },
   { href: '/l/finance', label: 'FINANCE', icon: Tag },
 ];
 
