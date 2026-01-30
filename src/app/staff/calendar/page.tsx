@@ -98,73 +98,73 @@ export default function StaffCalendarPage() {
                 </CardHeader>
             </Card>
 
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                     <div className="flex items-center gap-4">
-                        <Button variant="outline" onClick={handleToday}>Today</Button>
-                        <div className="flex items-center gap-2">
-                             <Button variant="outline" size="icon" onClick={handlePrev}><ChevronLeft/></Button>
-                             <Button variant="outline" size="icon" onClick={handleNext}><ChevronRight/></Button>
+            <Tabs value={view} onValueChange={setView}>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                         <div className="flex items-center gap-4">
+                            <Button variant="outline" onClick={handleToday}>Today</Button>
+                            <div className="flex items-center gap-2">
+                                 <Button variant="outline" size="icon" onClick={handlePrev}><ChevronLeft/></Button>
+                                 <Button variant="outline" size="icon" onClick={handleNext}><ChevronRight/></Button>
+                            </div>
+                            <CardTitle className="font-headline text-lg sm:text-xl">
+                                {format(currentDate, view === 'month' ? 'MMMM yyyy' : 'MMMM d, yyyy')}
+                            </CardTitle>
                         </div>
-                        <CardTitle className="font-headline text-lg sm:text-xl">
-                            {format(currentDate, view === 'month' ? 'MMMM yyyy' : 'MMMM d, yyyy')}
-                        </CardTitle>
-                    </div>
-                    <Tabs value={view} onValueChange={setView} className="w-auto">
                         <TabsList>
                             <TabsTrigger value="month">Month</TabsTrigger>
                             <TabsTrigger value="week">Week</TabsTrigger>
                         </TabsList>
-                    </Tabs>
-                </CardHeader>
-                <CardContent>
-                    <TabsContent value="month" className="mt-0">
-                        <div className="grid lg:grid-cols-[1fr_400px] gap-6">
-                            <Calendar
-                                mode="single"
-                                selected={currentDate}
-                                onSelect={(date) => date && setCurrentDate(date)}
-                                month={currentDate}
-                                onMonthChange={setCurrentDate}
-                                className="p-0"
-                                classNames={{
-                                    day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                                    day_today: "bg-accent/50 text-accent-foreground",
-                                }}
-                                modifiers={{
-                                    hasEvent: daysWithEvents,
-                                }}
-                                modifiersClassNames={{
-                                    hasEvent: 'has-event'
-                                }}
-                            />
-                            <div>
-                                <h3 className="font-headline text-lg mb-4">
-                                    Agenda for {format(currentDate, 'MMMM d, yyyy')}
-                                </h3>
-                                <div className="space-y-4">
-                                    {loading && <p>Loading...</p>}
-                                    {!loading && selectedDaySessions.length > 0 ? (
-                                        selectedDaySessions.map(session => (
-                                            <Link key={session.id} href={`/f/classroom/${session.id}`} className="block p-4 rounded-lg bg-muted hover:bg-accent/20 transition-colors">
-                                                <p className="font-semibold">{session.title}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {format(session.startDateTime.toDate(), 'h:mm a')} - {format(session.endDateTime.toDate(), 'h:mm a')}
-                                                </p>
-                                            </Link>
-                                        ))
-                                    ) : (
-                                    !loading && <p className="text-muted-foreground text-center py-8">No sessions scheduled for this day.</p>
-                                    )}
+                    </CardHeader>
+                    <CardContent>
+                        <TabsContent value="month" className="mt-0">
+                            <div className="grid lg:grid-cols-[1fr_400px] gap-6">
+                                <Calendar
+                                    mode="single"
+                                    selected={currentDate}
+                                    onSelect={(date) => date && setCurrentDate(date)}
+                                    month={currentDate}
+                                    onMonthChange={setCurrentDate}
+                                    className="p-0"
+                                    classNames={{
+                                        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                                        day_today: "bg-accent/50 text-accent-foreground",
+                                    }}
+                                    modifiers={{
+                                        hasEvent: daysWithEvents,
+                                    }}
+                                    modifiersClassNames={{
+                                        hasEvent: 'has-event'
+                                    }}
+                                />
+                                <div>
+                                    <h3 className="font-headline text-lg mb-4">
+                                        Agenda for {format(currentDate, 'MMMM d, yyyy')}
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {loading && <p>Loading...</p>}
+                                        {!loading && selectedDaySessions.length > 0 ? (
+                                            selectedDaySessions.map(session => (
+                                                <Link key={session.id} href={`/f/classroom/${session.id}`} className="block p-4 rounded-lg bg-muted hover:bg-accent/20 transition-colors">
+                                                    <p className="font-semibold">{session.title}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {format(session.startDateTime.toDate(), 'h:mm a')} - {format(session.endDateTime.toDate(), 'h:mm a')}
+                                                    </p>
+                                                </Link>
+                                            ))
+                                        ) : (
+                                        !loading && <p className="text-muted-foreground text-center py-8">No sessions scheduled for this day.</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="week" className="mt-0">
-                        {loading ? <p>Loading...</p> : <WeekView sessions={sessionsForWeekView} currentDate={currentDate} />}
-                    </TabsContent>
-                </CardContent>
-            </Card>
+                        </TabsContent>
+                        <TabsContent value="week" className="mt-0">
+                            {loading ? <p>Loading...</p> : <WeekView sessions={sessionsForWeekView} currentDate={currentDate} />}
+                        </TabsContent>
+                    </CardContent>
+                </Card>
+            </Tabs>
             <style jsx global>{`
                 .has-event {
                     font-weight: bold;
