@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { usePaystackPayment } from 'react-paystack';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUser } from '@/firebase';
-import { useFirestore } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import type { Program } from '@/lib/program-types';
 import { addTransaction } from '@/lib/transactions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { AuthDialog } from '@/components/auth/AuthDialog';
+import { addLearner } from '@/lib/learners';
+import { convertLeadToAdmitted } from '@/lib/sales';
 
 interface ProgramRegistrationProps {
     program: Program;
@@ -21,7 +24,6 @@ const parsePrice = (price: string | undefined): number => {
     if (!price || price.toLowerCase() === 'free') {
         return 0;
     }
-    // Remove currency symbols, commas, and other non-numeric characters except for the decimal point
     const numericString = price.replace(/[^0-9.]/g, '');
     const amount = parseFloat(numericString);
     return isNaN(amount) ? 0 : amount;
@@ -30,14 +32,18 @@ const parsePrice = (price: string | undefined): number => {
 export function ProgramRegistration({ program }: ProgramRegistrationProps) {
     const { user: loggedInUser, loading: userLoading } = useUser();
     const firestore = useFirestore();
+    const router = useRouter();
     const { toast } = useToast();
 
-    const [open, setOpen] = useState(false);
+    const [authDialogOpen, setAuthDialogOpen] = useState(false);
+    const [guestDialogOpen, setGuestDialogOpen] = useState(false);
     const [guestName, setGuestName] = useState('');
     const [guestEmail, setGuestEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    
+    const isCourse = ['Core', 'E-Learning', 'Short'].includes(program.programType);
     const programPrice = useMemo(() => parsePrice(program.price), [program.price]);
+    
     const userEmail = loggedInUser?.email || guestEmail;
     const userName = loggedInUser?.name || guestName;
 
@@ -49,16 +55,8 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
         metadata: {
             custom_fields: [
-                {
-                    display_name: "Full Name",
-                    variable_name: "full_name",
-                    value: userName,
-                },
-                {
-                    display_name: "Program",
-                    variable_name: "program",
-                    value: program.title
-                }
+                { display_name: "Full Name", variable_name: "full_name", value: userName },
+                { display_name: "Program", variable_name: "program", value: program.title }
             ]
         }
     };
@@ -66,7 +64,7 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
     const initializePayment = usePaystackPayment(paystackConfig);
 
     const onPaymentSuccess = (reference: any) => {
-        if (!firestore) return;
+        if (!firestore || !userName || !userEmail) return;
         
         addTransaction(firestore, {
             learnerName: userName,
@@ -78,12 +76,22 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
             paystackReference: reference.reference,
         });
 
+        // If a user is logged in (which they will be for courses), create a learner and update lead status
+        if (loggedInUser) {
+            addLearner(firestore, {
+                name: userName,
+                email: userEmail,
+                program: program.title,
+            });
+            convertLeadToAdmitted(firestore, userEmail, program.title);
+        }
+
         toast({
             title: "Registration Successful!",
             description: "Thank you for registering. You'll receive a confirmation email shortly.",
         });
         setIsSubmitting(false);
-        setOpen(false);
+        setGuestDialogOpen(false); // Also close guest dialog if open
     };
 
     const onPaymentClose = () => {
@@ -95,116 +103,124 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         });
     };
 
-    const handleGuestSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        initializePayment(onPaymentSuccess, onPaymentClose);
+    const handleCourseRegistration = () => {
+        if (!loggedInUser) {
+            // User must create an account for courses
+            setAuthDialogOpen(true);
+        } else {
+            // User is logged in, but not yet enrolled.
+            // Initiate payment flow.
+            setIsSubmitting(true);
+            if (programPrice === 0) {
+                 handleFreeEnrollment(userName, userEmail);
+            } else {
+                initializePayment(onPaymentSuccess, onPaymentClose);
+            }
+        }
     };
 
-    const handleRegisterClick = () => {
+    const handleEventRegistration = () => {
         if (loggedInUser) {
+            // If logged in, proceed directly to payment/enrollment for event
             setIsSubmitting(true);
-            initializePayment(onPaymentSuccess, onPaymentClose);
+            if (programPrice === 0) {
+                handleFreeEnrollment(userName, userEmail);
+            } else {
+                initializePayment(onPaymentSuccess, onPaymentClose);
+            }
+        } else {
+            // If guest, open the dialog to collect info
+            setGuestDialogOpen(true);
         }
     };
     
-    const handleFreeEnrollment = () => {
-        if (!firestore) return;
+    const handleGuestSubmitForEvent = (e: React.FormEvent) => {
+        e.preventDefault();
         setIsSubmitting(true);
-
-        if (!userName || !userEmail) {
-            toast({
-                variant: "destructive",
-                title: "Details Required",
-                description: "Please fill out your name and email to enroll.",
-            });
-            setIsSubmitting(false);
-            setOpen(true);
-            return;
+        // We know this is for a guest, so use guestName and guestEmail
+        if (programPrice === 0) {
+            handleFreeEnrollment(guestName, guestEmail);
+        } else {
+            initializePayment(onPaymentSuccess, onPaymentClose);
         }
+    };
+
+
+    const handleFreeEnrollment = (name: string, email: string) => {
+        if (!firestore) {
+            setIsSubmitting(false);
+            return;
+        };
 
         addTransaction(firestore, {
-            learnerName: userName,
-            learnerEmail: userEmail,
+            learnerName: name,
+            learnerEmail: email,
             program: program.title,
             amount: 0,
             currency: 'KES',
             status: 'Success',
             paystackReference: `free_enroll_${new Date().getTime()}`,
         });
+        
+        if (loggedInUser || isCourse) { // Create learner record if it's a course or if user is logged in for an event
+            addLearner(firestore, { name, email, program: program.title });
+            if (loggedInUser) { // Only convert leads for logged-in users
+                convertLeadToAdmitted(firestore, email, program.title);
+            }
+        }
 
         toast({
             title: "Enrollment Successful!",
             description: `You are now enrolled in ${program.title}.`,
         });
         setIsSubmitting(false);
-        setOpen(false);
+        setGuestDialogOpen(false);
     };
 
-    const handleGuestFreeEnrollmentSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        handleFreeEnrollment();
-    };
 
     if (userLoading) {
         return <Button size="lg" disabled>Loading...</Button>;
     }
     
-    if (programPrice === 0) {
-        if (!loggedInUser) {
-            return (
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                        <Button size="lg">Enroll for Free</Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Enroll in {program.title}</DialogTitle>
-                            <DialogDescription>
-                                This is a free program. Please provide your details to enroll.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleGuestFreeEnrollmentSubmit} className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name-free">Full Name</Label>
-                                <Input id="name-free" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email-free">Email Address</Label>
-                                <Input id="email-free" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} required />
-                            </div>
-                            <Button type="submit" disabled={isSubmitting || !guestName || !guestEmail}>
-                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Complete Enrollment
-                            </Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            );
-        }
-        
+    // COURSE REGISTRATION FLOW
+    if (isCourse) {
         return (
-            <Button size="lg" onClick={handleFreeEnrollment} disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Enroll for Free
-            </Button>
+            <>
+                <AuthDialog 
+                    open={authDialogOpen}
+                    onOpenChange={setAuthDialogOpen}
+                    program={program}
+                    onSuccess={() => {
+                        // On successful login/registration, redirect to the course page in the portal
+                        const portalUrl = `/l/${program.programType === 'E-Learning' ? 'e-learning' : 'courses'}/${program.slug}`;
+                        router.push(portalUrl);
+                    }}
+                />
+                <Button size="lg" onClick={handleCourseRegistration}>
+                    {loggedInUser ? (programPrice === 0 ? 'Enroll for Free' : `Enroll Now (${program.price})`) : 'Register to Enroll'}
+                </Button>
+            </>
         );
     }
+    
+    // EVENT REGISTRATION FLOW
+    const eventButtonText = programPrice === 0 ? 'Register for Free' : `Register Now (${program.price})`;
 
-    if (!loggedInUser) {
-        return (
-            <Dialog open={open} onOpenChange={setOpen}>
+    return (
+        <>
+            <Dialog open={guestDialogOpen} onOpenChange={setGuestDialogOpen}>
                 <DialogTrigger asChild>
-                    <Button size="lg">Register Now</Button>
+                    {/* This button is only visible for guests. Logged-in users have a direct button below. */}
+                    {!loggedInUser ? <Button size="lg">{eventButtonText}</Button> : null}
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Register for {program.title}</DialogTitle>
                         <DialogDescription>
-                            Please provide your details to continue to payment.
+                            Please provide your details to register for this event.
                         </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleGuestSubmit} className="grid gap-4 py-4">
+                    <form onSubmit={handleGuestSubmitForEvent} className="grid gap-4 py-4">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Full Name</Label>
                             <Input id="name" value={guestName} onChange={(e) => setGuestName(e.target.value)} required />
@@ -215,18 +231,19 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
                         </div>
                         <Button type="submit" disabled={isSubmitting || !guestName || !guestEmail}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Proceed to Payment ({program.price})
+                            {programPrice === 0 ? 'Complete Registration' : `Proceed to Payment (${program.price})`}
                         </Button>
                     </form>
                 </DialogContent>
             </Dialog>
-        );
-    }
-    
-    return (
-         <Button size="lg" onClick={handleRegisterClick} disabled={isSubmitting}>
-             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-             Register Now ({program.price})
-        </Button>
+
+            {/* This button is for logged-in users to register for events directly */}
+            {loggedInUser && (
+                 <Button size="lg" onClick={handleEventRegistration} disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {eventButtonText}
+                </Button>
+            )}
+        </>
     );
 }

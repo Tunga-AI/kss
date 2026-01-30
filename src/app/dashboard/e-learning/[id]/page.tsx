@@ -1,7 +1,7 @@
 'use client';
 import Image from "next/image";
 import { useParams, notFound, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Clock, BarChart, ArrowLeft } from "lucide-react";
