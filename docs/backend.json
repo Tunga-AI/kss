@@ -1,5 +1,85 @@
 {
   "entities": {
+    "Cohort": {
+      "title": "Cohort",
+      "description": "Represents an intake or cohort for a set of programs.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the cohort (e.g., 'Q3 2024 Intake')."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Accepting Applications",
+            "In Review",
+            "Closed"
+          ],
+          "description": "The current status of the cohort."
+        },
+        "council": {
+          "type": "array",
+          "description": "An array of facilitator user IDs who are on the admissions council for this cohort.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "status"
+      ]
+    },
+    "Admission": {
+      "title": "Admission",
+      "description": "Represents a learner's application and status in the admissions pipeline.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user applying."
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending Payment",
+            "Pending Test",
+            "Pending Review",
+            "Admitted",
+            "Rejected"
+          ]
+        },
+        "cohortId": {
+          "type": "string",
+          "description": "The ID of the cohort the learner is applying to."
+        },
+        "testScore": {
+          "type": "number",
+          "description": "The score from the sales capability assessment."
+        },
+        "recommendedProgramId": {
+          "type": "string",
+          "description": "The ID of the core program recommended by the council."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "email",
+        "status"
+      ]
+    },
     "ClassroomSession": {
       "title": "Classroom Session",
       "description": "Represents a live virtual classroom session for a program.",
@@ -533,6 +613,18 @@
         "$ref": "#/entities/Certificate"
       },
       "description": "Collection of all issued certificates."
+    },
+    "/cohorts/{cohortId}": {
+      "schema": {
+        "$ref": "#/entities/Cohort"
+      },
+      "description": "Collection of all program cohorts/intakes."
+    },
+    "/admissions/{admissionId}": {
+      "schema": {
+        "$ref": "#/entities/Admission"
+      },
+      "description": "Collection of all learner admission applications."
     }
   }
 }

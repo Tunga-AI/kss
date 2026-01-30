@@ -31,6 +31,20 @@ service cloud.firestore {
     match /organizations/{orgId} {
       allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
+    
+    match /cohorts/{cohortId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+
+    match /admissions/{admissionId} {
+      // Admins can do anything
+      allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      // User can read their own admission record
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Council members can read/update records for their cohort
+      allow read, update: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/cohorts/$(resource.data.cohortId)).data.council;
+    }
 
     match /settings/{settingId} {
       allow read: if true;

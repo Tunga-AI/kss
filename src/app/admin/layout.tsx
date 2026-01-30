@@ -15,14 +15,15 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building, BookUser, Settings, Video, Award } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building, BookUser, Settings, Video, Award, FolderKanban } from 'lucide-react';
 
 const menuItems = [
   { href: '/a', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/a/programs', label: 'PROGRAMS', icon: BookCopy },
+  { href: '/a/admissions', label: 'ADMISSIONS', icon: FolderKanban },
+  { href: '/a/cohorts', label: 'COHORTS', icon: Users },
   { href: '/a/crm', label: 'CRM', icon: BarChart },
-  { href: '/a/admissions', label: 'ADMISSIONS', icon: UserCheck },
-  { href: '/a/learners', label: 'LEARNERS', icon: Users },
+  { href: '/a/learners', label: 'LEARNERS', icon: UserCheck },
   { href: '/a/facilitators', label: 'FACILITATORS', icon: BookUser },
   { href: '/a/classroom', label: 'CLASSROOM', icon: Video },
   { href: '/a/certificates', label: 'CERTIFICATES', icon: Award },
