@@ -6,5 +6,6 @@ export type User = {
     email: string;
     avatar?: string;
     role: 'Learner' | 'Sales' | 'Finance' | 'Business' | 'Operations' | 'Admin' | 'Staff';
+    status: 'Active' | 'Inactive';
     createdAt?: Timestamp;
 };

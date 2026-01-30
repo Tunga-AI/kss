@@ -1,5 +1,6 @@
 'use client';
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,6 +12,7 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import type { User } from '@/lib/user-types';
 import { format } from 'date-fns';
+import { deleteUser } from '@/lib/users';
 
 
 export default function AdminUsersPage() {
@@ -21,9 +23,15 @@ export default function AdminUsersPage() {
     }, [firestore]);
 
     const { data: users, loading } = useCollection<User>(usersQuery);
+
+    const handleDelete = (id: string) => {
+        if (firestore && confirm('Are you sure you want to delete this user profile? This does not delete their authentication account.')) {
+            deleteUser(firestore, id);
+        }
+    };
     
     return (
-        <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
+        <div className="grid gap-6">
             <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -31,9 +39,11 @@ export default function AdminUsersPage() {
                             <CardTitle className="font-headline text-xl sm:text-2xl">Manage Users</CardTitle>
                             <CardDescription className="text-primary-foreground/80">View, edit, or add new users to the system.</CardDescription>
                         </div>
-                        <Button variant="secondary">
-                            <PlusCircle className="mr-2"/>
-                            Create User
+                        <Button variant="secondary" asChild>
+                            <Link href="/a/users/new">
+                                <PlusCircle className="mr-2"/>
+                                Create User
+                            </Link>
                         </Button>
                     </div>
                 </CardHeader>
@@ -45,6 +55,7 @@ export default function AdminUsersPage() {
                             <TableRow>
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead className="hidden sm:table-cell">Date Joined</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
@@ -52,7 +63,7 @@ export default function AdminUsersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {loading && <TableRow><TableCell colSpan={4}>Loading...</TableCell></TableRow>}
+                            {loading && <TableRow><TableCell colSpan={5}>Loading...</TableCell></TableRow>}
                             {users && users.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell>
@@ -70,6 +81,9 @@ export default function AdminUsersPage() {
                                     <TableCell>
                                         <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                                     </TableCell>
+                                     <TableCell>
+                                        <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>{user.status}</Badge>
+                                    </TableCell>
                                     <TableCell className="hidden sm:table-cell">{user.createdAt ? format(user.createdAt.toDate(), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
@@ -81,15 +95,17 @@ export default function AdminUsersPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem>Change Role</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <Link href={`/a/users/${user.id}`}>Edit</Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem disabled>Reset Password</DropdownMenuItem>
+                                                <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(user.id)}>Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                             {!loading && users?.length === 0 && <TableRow><TableCell colSpan={4}>No users found.</TableCell></TableRow>}
+                             {!loading && users?.length === 0 && <TableRow><TableCell colSpan={5}>No users found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>

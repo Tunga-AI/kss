@@ -182,13 +182,18 @@
           "description": "The user's role in the system.",
           "enum": ["Learner", "Sales", "Finance", "Business", "Operations", "Admin", "Staff"]
         },
+        "status": {
+          "type": "string",
+          "description": "The status of the user account.",
+          "enum": ["Active", "Inactive"]
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the user account was created."
         }
       },
-      "required": ["name", "email", "role"]
+      "required": ["name", "email", "role", "status"]
     }
   },
   "auth": {
