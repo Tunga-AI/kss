@@ -13,12 +13,11 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookOpen, Users, LogOut, Calendar, Globe } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe } from 'lucide-react';
 
 const menuItems = [
   { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/admin/courses', label: 'COURSES', icon: BookOpen },
-  { href: '/admin/events', label: 'EVENTS', icon: Calendar },
+  { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
   { href: '/admin/users', label: 'USERS', icon: Users },
 ];
 

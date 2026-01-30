@@ -13,14 +13,13 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, BookOpen, Calendar, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, BookCopy, LogOut, Globe } from 'lucide-react';
 
 const menuItems = [
   { href: '/operations', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/operations/admissions', label: 'ADMISSIONS', icon: UserCheck },
   { href: '/operations/learners', label: 'LEARNERS', icon: Users },
-  { href: '/operations/courses', label: 'COURSES', icon: BookOpen },
-  { href: '/operations/events', label: 'EVENTS', icon: Calendar },
+  { href: '/operations/programs', label: 'PROGRAMS', icon: BookCopy },
 ];
 
 export default function OperationsLayout({ children }: { children: React.ReactNode }) {
