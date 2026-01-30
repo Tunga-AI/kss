@@ -13,12 +13,15 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Users, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, DollarSign } from 'lucide-react';
 
 const menuItems = [
   { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
   { href: '/admin/users', label: 'USERS', icon: Users },
+  { href: '/sales/crm', label: 'SALES', icon: BarChart },
+  { href: '/operations/learners', label: 'LEARNERS', icon: Users },
+  { href: '/finance/finance', label: 'FINANCE', icon: DollarSign },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
