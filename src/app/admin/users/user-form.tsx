@@ -13,17 +13,16 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const roles: User['role'][] = ['Learner', 'Sales', 'Finance', 'Business', 'Operations', 'Admin', 'Facilitator'];
 
-export function UserForm({ user }: { user?: User }) {
-    const isNew = !user;
-    const [formData, setFormData] = useState<Partial<User>>(
-        user || {
-            name: '',
-            email: '',
-            role: 'Learner',
-            status: 'Active',
-            avatar: ''
-        }
-    );
+export function UserForm({ user }: { user?: Partial<User> }) {
+    const isNew = !user?.id;
+    const [formData, setFormData] = useState<Partial<User>>({
+        name: '',
+        email: '',
+        role: 'Learner',
+        status: 'Active',
+        avatar: '',
+        ...user, // Spread the passed user object to override defaults
+    });
     const [isSaving, setIsSaving] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const router = useRouter();
