@@ -6,39 +6,50 @@ import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const users = [
+const learners = [
     {
         name: "John Doe",
         email: "john.doe@example.com",
-        role: "Learner",
+        program: "Advanced Negotiation",
+        status: "Active",
         joined: "2023-10-23",
         avatar: "https://picsum.photos/seed/user1/40/40"
     },
     {
         name: "Jane Smith",
         email: "jane.smith@example.com",
-        role: "Learner",
+        program: "Sales Fundamentals 101",
+        status: "Active",
         joined: "2023-11-15",
         avatar: "https://picsum.photos/seed/user2/40/40"
     },
     {
         name: "Michael Johnson",
         email: "michael.j@example.com",
-        role: "Learner",
+        program: "Digital Prospecting",
+        status: "Inactive",
         joined: "2024-02-01",
         avatar: "https://picsum.photos/seed/user3/40/40"
+    },
+     {
+        name: "Emily Davis",
+        email: "emily.d@example.com",
+        program: "Sales Fundamentals 101",
+        status: "Alumni",
+        joined: "2022-08-10",
+        avatar: "https://picsum.photos/seed/user5/40/40"
     },
 ];
 
 export default function OperationsLearnersPage() {
     return (
-        <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
+        <div className="grid gap-6">
             <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <CardTitle className="font-headline text-xl sm:text-2xl">Manage Learners</CardTitle>
-                            <CardDescription className="text-primary-foreground/80">View and manage learners.</CardDescription>
+                            <CardDescription className="text-primary-foreground/80">View and manage all enrolled learners.</CardDescription>
                         </div>
                         <Button variant="secondary">
                             <PlusCircle className="mr-2"/>
@@ -52,8 +63,9 @@ export default function OperationsLearnersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Role</TableHead>
+                                <TableHead>Learner</TableHead>
+                                <TableHead>Program</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead className="hidden sm:table-cell">Date Joined</TableHead>
                                 <TableHead>
                                     <span className="sr-only">Actions</span>
@@ -61,24 +73,25 @@ export default function OperationsLearnersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.email}>
+                            {learners.map((learner) => (
+                                <TableRow key={learner.email}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>
-                                                <AvatarImage src={user.avatar} alt={user.name} />
-                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                <AvatarImage src={learner.avatar} alt={learner.name} />
+                                                <AvatarFallback>{learner.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <p className="font-medium">{user.name}</p>
-                                                <p className="text-xs sm:text-sm text-muted-foreground">{user.email}</p>
+                                                <p className="font-medium">{learner.name}</p>
+                                                <p className="text-xs sm:text-sm text-muted-foreground">{learner.email}</p>
                                             </div>
                                         </div>
                                     </TableCell>
+                                    <TableCell>{learner.program}</TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">{user.role}</Badge>
+                                        <Badge variant={learner.status === 'Active' ? 'default' : 'secondary'}>{learner.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden sm:table-cell">{user.joined}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{learner.joined}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -90,6 +103,7 @@ export default function OperationsLearnersPage() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem>Change Status</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

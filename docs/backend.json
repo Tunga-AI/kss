@@ -92,6 +92,48 @@
         }
       },
       "required": ["name", "title"]
+    },
+    "SaleLead": {
+      "title": "Sale Lead",
+      "description": "Represents a potential customer or lead in the sales pipeline.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "program": { "type": "string" },
+        "status": { "type": "string", "enum": ["Prospect", "Lead", "Admitted", "Lost"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "status"]
+    },
+    "Learner": {
+      "title": "Learner",
+      "description": "Represents an enrolled student in a program.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatar": { "type": "string" },
+        "program": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive", "Alumni"] },
+        "joinedDate": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "email", "status"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Represents a financial transaction for a program enrollment.",
+      "type": "object",
+      "properties": {
+        "learnerName": { "type": "string" },
+        "program": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Success", "Failed"] },
+        "paystackReference": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["learnerName", "program", "amount", "status"]
     }
   },
   "auth": {
@@ -103,6 +145,24 @@
         "$ref": "#/entities/Program"
       },
       "description": "Collection of all programs (Core Courses, E-Learning, Events, Short Courses)."
+    },
+    "/sales/{saleId}": {
+      "schema": {
+        "$ref": "#/entities/SaleLead"
+      },
+      "description": "Collection of sales leads."
+    },
+    "/learners/{learnerId}": {
+      "schema": {
+        "$ref": "#/entities/Learner"
+      },
+      "description": "Collection of enrolled learners."
+    },
+    "/transactions/{transactionId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Collection of financial transactions."
     }
   }
 }
