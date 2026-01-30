@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -54,8 +55,10 @@ export default function CrmPage() {
                       {leads && leads.map((lead) => (
                           <TableRow key={lead.id}>
                               <TableCell>
+                                <Link href={`/sales/crm/${lead.id}`} className="hover:underline">
                                   <p className="font-medium">{lead.name}</p>
-                                  <p className="text-xs sm:text-sm text-muted-foreground">{lead.email}</p>
+                                </Link>
+                                <p className="text-xs sm:text-sm text-muted-foreground">{lead.email}</p>
                               </TableCell>
                               <TableCell>{lead.program}</TableCell>
                               <TableCell>
@@ -71,7 +74,9 @@ export default function CrmPage() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
                                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                          <DropdownMenuItem>Edit Lead</DropdownMenuItem>
+                                          <DropdownMenuItem asChild>
+                                            <Link href={`/sales/crm/${lead.id}`}>View Details</Link>
+                                          </DropdownMenuItem>
                                           <DropdownMenuItem>Change Status</DropdownMenuItem>
                                           <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                                       </DropdownMenuContent>

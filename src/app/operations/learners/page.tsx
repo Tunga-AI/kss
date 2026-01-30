@@ -1,5 +1,6 @@
 'use client';
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,7 +22,7 @@ export default function OperationsLearnersPage() {
     const { data: learners, loading } = useCollection<Learner>(learnersQuery);
 
     return (
-        <div className="grid gap-6">
+        <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
             <Card className="bg-primary text-primary-foreground">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -61,7 +62,9 @@ export default function OperationsLearnersPage() {
                                                 <AvatarFallback>{learner.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <p className="font-medium">{learner.name}</p>
+                                                <Link href={`/operations/learners/${learner.id}`} className="hover:underline">
+                                                    <p className="font-medium">{learner.name}</p>
+                                                </Link>
                                                 <p className="text-xs sm:text-sm text-muted-foreground">{learner.email}</p>
                                             </div>
                                         </div>
@@ -81,7 +84,9 @@ export default function OperationsLearnersPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                  <Link href={`/operations/learners/${learner.id}`}>View Details</Link>
+                                                </DropdownMenuItem>
                                                 <DropdownMenuItem>Change Status</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
                                             </DropdownMenuContent>
