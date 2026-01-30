@@ -20,7 +20,7 @@
         "programType": {
           "type": "string",
           "description": "The type of the program.",
-          "enum": ["Core Course", "E-Learning", "Event", "Short Course"]
+          "enum": ["Core", "E-Learning", "Event", "Short"]
         },
         "duration": {
           "type": "string",

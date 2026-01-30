@@ -53,7 +53,7 @@ export default function Home() {
 
   const coursesQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, "programs"), where("programType", "in", ["Core Course", "Short Course"]), limit(3));
+    return query(collection(firestore, "programs"), where("programType", "in", ["Core", "Short"]), limit(3));
   }, [firestore]);
 
   const moocQuery = useMemo(() => {

@@ -52,13 +52,13 @@ export default function OperationsProgramsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/operations/programs/new?type=core">Core Course</Link>
+                                        <Link href="/operations/programs/new?type=core">Core</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/operations/programs/new?type=elearning">E-Learning Course</Link>
+                                        <Link href="/operations/programs/new?type=elearning">E-Learning</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/operations/programs/new?type=shortcourse">Short Course</Link>
+                                        <Link href="/operations/programs/new?type=shortcourse">Short</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link href="/operations/programs/new?type=event">Event</Link>

@@ -52,13 +52,13 @@ export default function AdminProgramsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=core">Core Course</Link>
+                                        <Link href="/admin/programs/new?type=core">Core</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=elearning">E-Learning Course</Link>
+                                        <Link href="/admin/programs/new?type=elearning">E-Learning</Link>
                                     </DropdownMenuItem>
                                      <DropdownMenuItem asChild>
-                                        <Link href="/admin/programs/new?type=shortcourse">Short Course</Link>
+                                        <Link href="/admin/programs/new?type=shortcourse">Short</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link href="/admin/programs/new?type=event">Event</Link>

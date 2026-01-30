@@ -11,10 +11,10 @@ function CreateProgram() {
     const type = searchParams.get('type');
 
     let programType: Program['programType'] | null = null;
-    if (type === 'core') programType = 'Core Course';
+    if (type === 'core') programType = 'Core';
     if (type === 'elearning') programType = 'E-Learning';
     if (type === 'event') programType = 'Event';
-    if (type === 'shortcourse') programType = 'Short Course';
+    if (type === 'shortcourse') programType = 'Short';
 
     if (programType) {
         const emptyProgram: Partial<Program> = {

@@ -18,7 +18,7 @@ export default function CoursesPage() {
 
   const coursesQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, "programs"), where("programType", "in", ["Core Course", "Short Course"]));
+    return query(collection(firestore, "programs"), where("programType", "in", ["Core", "Short"]));
   }, [firestore]);
 
   const { data: courses, loading } = useCollection<Program>(coursesQuery);

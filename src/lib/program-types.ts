@@ -5,7 +5,7 @@ export type Program = {
     title: string;
     description: string;
     imageId: string;
-    programType: 'Core Course' | 'E-Learning' | 'Event' | 'Short Course';
+    programType: 'Core' | 'E-Learning' | 'Event' | 'Short';
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
 

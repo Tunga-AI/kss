@@ -18,7 +18,7 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
     const firestore = useFirestore();
 
     const programType = formData.programType;
-    const isCourse = programType === 'Core Course' || programType === 'E-Learning' || programType === 'Short Course';
+    const isCourse = programType === 'Core' || programType === 'E-Learning' || programType === 'Short';
     const isEvent = programType === 'Event';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
