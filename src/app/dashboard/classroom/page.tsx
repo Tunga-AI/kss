@@ -57,7 +57,7 @@ export default function LearnerClassroomPage() {
                     <Badge variant={session.status === 'Completed' ? 'secondary' : 'default'}>{session.status}</Badge>
                   </TableCell>
                   <TableCell>
-                      <Button variant="default" size="sm" disabled={session.status !== 'In Progress'}>
+                      <Button variant="default" size="sm" disabled={session.status === 'Completed' || session.status === 'Cancelled'}>
                           Join Session
                       </Button>
                   </TableCell>
