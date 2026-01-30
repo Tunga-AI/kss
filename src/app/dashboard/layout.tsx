@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Laptop, CalendarDays, LogOut, Globe, User, Tag, Video } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Laptop, CalendarDays, LogOut, Globe, User, Tag, Video, Award } from 'lucide-react';
 
 const menuItems = [
   { href: '/l', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -23,6 +23,7 @@ const menuItems = [
   { href: '/l/e-learning', label: 'E-LEARNING', icon: Laptop },
   { href: '/l/events', label: 'EVENTS', icon: CalendarDays },
   { href: '/l/classroom', label: 'CLASSROOM', icon: Video },
+  { href: '/l/certificates', label: 'CERTIFICATES', icon: Award },
   { href: '/l/finance', label: 'FINANCE', icon: Tag },
 ];
 
