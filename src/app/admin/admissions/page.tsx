@@ -1,5 +1,6 @@
 'use client';
 import { useMemo } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +55,7 @@ export default function AdmissionsPage() {
                     {admissions && admissions.map((admission) => (
                         <TableRow key={admission.id}>
                             <TableCell>
-                                <p className="font-medium">{admission.name}</p>
+                                <Link href={`/a/admissions/${admission.id}`} className="font-medium hover:underline">{admission.name}</Link>
                                 <p className="text-sm text-muted-foreground">{admission.email}</p>
                             </TableCell>
                             <TableCell>

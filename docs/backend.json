@@ -60,6 +60,14 @@
           "type": "string",
           "description": "The ID of the cohort the learner is applying to."
         },
+        "interestedProgramId": {
+          "type": "string",
+          "description": "The ID of the program the learner initially showed interest in."
+        },
+        "interestedProgramTitle": {
+          "type": "string",
+          "description": "The title of the program the learner initially showed interest in."
+        },
         "testScore": {
           "type": "number",
           "description": "The score from the sales capability assessment."

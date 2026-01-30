@@ -7,6 +7,8 @@ export type Admission = {
     email: string;
     status: 'Pending Payment' | 'Pending Test' | 'Pending Review' | 'Admitted' | 'Rejected';
     cohortId?: string;
+    interestedProgramId?: string;
+    interestedProgramTitle?: string;
     testScore?: number;
     recommendedProgramId?: string;
     createdAt: Timestamp;
