@@ -31,7 +31,7 @@ export function useCollection<T extends DocumentData>(q: Query<T> | null) {
       },
       async (serverError) => {
         const permissionError = new FirestorePermissionError({
-          path: (q as any)._path?.toString() || 'unknown path',
+          path: (q as any)._query?.path?.toString() || 'unknown path',
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
