@@ -20,7 +20,7 @@ function CreateProgram() {
         const emptyProgram: Partial<Program> = {
             title: '',
             description: '',
-            imageId: '',
+            imageUrl: '',
             programType: programType,
             level: 'Beginner',
             takeaways: [],

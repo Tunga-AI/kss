@@ -7,15 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useStorage } from '@/firebase';
 import { addProgram, updateProgram } from '@/lib/programs';
 import React, { useState } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export function ProgramForm({ program }: { program: Partial<Program> }) {
     const isNew = !program.id;
     const [formData, setFormData] = useState<Partial<Program>>(program);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
     const firestore = useFirestore();
+    const storage = useStorage();
 
     const programType = formData.programType;
     const isCourse = programType === 'Core' || programType === 'E-Learning' || programType === 'Short';
@@ -42,11 +46,27 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
         setFormData(prev => ({ ...prev, speakers: speakerData }));
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!firestore) return;
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
 
-        const dataToSave = { ...formData };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!firestore || !storage) return;
+
+        setIsUploading(true);
+
+        let dataToSave = { ...formData };
+
+        if (imageFile) {
+            const storageRef = ref(storage, `programs/${Date.now()}_${imageFile.name}`);
+            await uploadBytes(storageRef, imageFile);
+            const downloadURL = await getDownloadURL(storageRef);
+            dataToSave.imageUrl = downloadURL;
+        }
+
         // Clean up data before saving
         if (dataToSave.id === '') {
             delete dataToSave.id;
@@ -58,6 +78,8 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
             const { id, ...rest } = dataToSave;
             updateProgram(firestore, id, rest);
         }
+        
+        setIsUploading(false);
         router.push('/operations/programs');
     };
 
@@ -79,6 +101,17 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
                         <div className="grid gap-3">
                             <Label htmlFor="description">Description</Label>
                             <Textarea id="description" value={formData.description} onChange={handleChange} rows={5} />
+                        </div>
+
+                        <div className="grid gap-3">
+                            <Label htmlFor="image">Program Image</Label>
+                            <Input id="image" type="file" onChange={handleImageChange} accept="image/*" />
+                            {formData.imageUrl && !imageFile && (
+                                <div className="mt-2">
+                                    <p className="text-sm text-muted-foreground">Current image:</p>
+                                    <img src={formData.imageUrl} alt="Current program image" className="w-32 h-32 object-cover rounded-md mt-1" />
+                                </div>
+                            )}
                         </div>
 
                         {isCourse && (
@@ -141,8 +174,8 @@ export function ProgramForm({ program }: { program: Partial<Program> }) {
                         )}
 
                         <div className="flex gap-4">
-                            <Button type="submit">Save Changes</Button>
-                            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+                            <Button type="submit" disabled={isUploading}>{isUploading ? 'Saving...' : 'Save Changes'}</Button>
+                            <Button type="button" variant="outline" onClick={() => router.back()} disabled={isUploading}>Cancel</Button>
                         </div>
                     </form>
                 </CardContent>

@@ -2,6 +2,7 @@
 import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics } from "firebase/analytics";
 import { firebaseConfig } from './config';
 
@@ -9,6 +10,7 @@ import { firebaseConfig } from './config';
 let firebaseApp: FirebaseApp;
 let auth: Auth;
 let firestore: Firestore;
+let storage: FirebaseStorage;
 const databaseId = 'kenyasales';
 
 function initializeFirebase() {
@@ -16,6 +18,7 @@ function initializeFirebase() {
     firebaseApp = initializeApp(firebaseConfig);
     auth = getAuth(firebaseApp);
     firestore = getFirestore(firebaseApp, databaseId);
+    storage = getStorage(firebaseApp);
     if (typeof window !== 'undefined') {
       getAnalytics(firebaseApp);
     }
@@ -23,8 +26,9 @@ function initializeFirebase() {
     firebaseApp = getApp();
     auth = getAuth(firebaseApp);
     firestore = getFirestore(firebaseApp, databaseId);
+    storage = getStorage(firebaseApp);
   }
-  return { firebaseApp, auth, firestore };
+  return { firebaseApp, auth, firestore, storage };
 }
 
 export { initializeFirebase };

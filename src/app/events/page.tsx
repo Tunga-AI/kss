@@ -59,17 +59,15 @@ export default function EventsPage() {
              {loading && <div className="text-center">Loading events...</div>}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {events?.map((event) => {
-                const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
                   <Link href={`/events/${event.id}`} key={event.id} className="block group">
                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
-                      {eventImage && (
+                      {event.imageUrl && (
                         <Image
-                          src={eventImage.imageUrl}
+                          src={event.imageUrl}
                           alt={event.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={eventImage.imageHint}
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />

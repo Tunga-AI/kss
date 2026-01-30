@@ -13,7 +13,7 @@ import { useDoc } from "@/firebase/firestore/use-doc";
 import type { Program } from "@/lib/program-types";
 import { useMemo } from "react";
 
-export default function CourseDetailPage() {
+export default function ShortCourseDetailPage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
@@ -29,7 +29,7 @@ export default function CourseDetailPage() {
     return <div>Loading...</div>;
   }
   
-  if (!course || course.programType !== 'Core') {
+  if (!course || course.programType !== 'Short') {
     notFound();
   }
 

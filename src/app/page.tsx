@@ -128,17 +128,15 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
               {courses?.slice(0, 1).map((course) => {
-                const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">
                     <Card className="relative overflow-hidden h-full min-h-[36rem] lg:min-h-[42rem] border-0 shadow-lg">
-                      {courseImage && (
+                      {course.imageUrl && (
                         <Image
-                          src={courseImage.imageUrl}
+                          src={course.imageUrl}
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={courseImage.imageHint}
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -155,17 +153,15 @@ export default function Home() {
               })}
               <div className="grid grid-rows-2 gap-6 md:gap-8">
                 {courses?.slice(1, 3).map((course) => {
-                  const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                   return (
                     <Link href={`/courses/${course.id}`} key={course.id} className="block group">
                       <Card className="relative overflow-hidden h-full border-0 shadow-lg">
-                        {courseImage && (
+                        {course.imageUrl && (
                           <Image
-                            src={courseImage.imageUrl}
+                            src={course.imageUrl}
                             alt={course.title}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            data-ai-hint={courseImage.imageHint}
                           />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -290,17 +286,15 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {events?.map((event) => {
-                const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
                   <Link href={`/events/${event.id}`} key={event.id} className="block group">
                      <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
-                      {eventImage && (
+                      {event.imageUrl && (
                         <Image
-                          src={eventImage.imageUrl}
+                          src={event.imageUrl}
                           alt={event.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={eventImage.imageHint}
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -342,17 +336,15 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {moocCourses?.map((course) => {
-                const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">
                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
-                      {courseImage && (
+                      {course.imageUrl && (
                         <Image
-                          src={courseImage.imageUrl}
+                          src={course.imageUrl}
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={courseImage.imageHint}
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />

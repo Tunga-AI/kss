@@ -4,7 +4,7 @@ export type Program = {
     id: string;
     title: string;
     description: string;
-    imageId: string;
+    imageUrl: string;
     programType: 'Core' | 'E-Learning' | 'Event' | 'Short';
     createdAt?: Timestamp;
     updatedAt?: Timestamp;

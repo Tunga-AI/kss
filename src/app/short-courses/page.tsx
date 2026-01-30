@@ -12,13 +12,13 @@ import { useCollection } from "@/firebase/firestore/use-collection";
 import type { Program } from "@/lib/program-types";
 import { useMemo } from "react";
 
-export default function CoursesPage() {
+export default function ShortCoursesPage() {
   const coursesImage = PlaceHolderImages.find(p => p.id === 'courses-hero');
   const firestore = useFirestore();
 
   const coursesQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, "programs"), where("programType", "in", ["Core"]));
+    return query(collection(firestore, "programs"), where("programType", "==", "Short"));
   }, [firestore]);
 
   const { data: courses, loading } = useCollection<Program>(coursesQuery);
@@ -42,10 +42,10 @@ export default function CoursesPage() {
             <div className="container mx-auto px-4 py-16">
               <div className="max-w-3xl text-white">
                 <h1 className="font-headline text-4xl sm:text-5xl font-bold">
-                  Courses
+                  Short Courses
                 </h1>
                 <p className="mt-4 text-lg sm:text-xl text-white/90">
-                  Explore our comprehensive catalog of online courses designed for sales professionals. Find the perfect program to advance your skills and career.
+                  Explore our short courses for focused skill development.
                 </p>
               </div>
             </div>
@@ -58,7 +58,7 @@ export default function CoursesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {courses?.map((course) => {
                 return (
-                  <Link href={`/courses/${course.id}`} key={course.id} className="block group">
+                  <Link href={`/short-courses/${course.id}`} key={course.id} className="block group">
                     <Card className="relative overflow-hidden h-96 border-0 shadow-lg rounded-lg">
                       {course.imageUrl && (
                         <Image

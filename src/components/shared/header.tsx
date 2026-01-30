@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/about", label: "About" },
   { href: "/framework", label: "Framework" },
   { href: "/courses", label: "Courses" },
+  { href: "/short-courses", label: "Short Courses" },
   { href: "/e-learning", label: "E-Learning" },
   { href: "/events", label: "Events" },
   { href: "/gallery", label: "Gallery" },

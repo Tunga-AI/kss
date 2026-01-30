@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useParams, notFound } from "next/navigation";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,20 +34,17 @@ export default function EventDetailPage() {
     notFound();
   }
 
-  const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
         <section className="relative h-[560px] w-full">
-          {eventImage && (
+          {event.imageUrl && (
              <Image
-                src={eventImage.imageUrl}
+                src={event.imageUrl}
                 alt={event.title}
                 fill
                 className="object-cover"
-                data-ai-hint={eventImage.imageHint}
             />
           )}
           <div className="absolute inset-0 bg-black/60" />

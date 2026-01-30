@@ -68,17 +68,15 @@ function CourseList() {
         {loading && <div className="text-center">Loading courses...</div>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {filteredCourses.map((course) => {
-            const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
             return (
               <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">
                 <Card className="relative overflow-hidden h-96 border-0 shadow-lg">
-                  {courseImage && (
+                  {course.imageUrl && (
                     <Image
-                      src={courseImage.imageUrl}
+                      src={course.imageUrl}
                       alt={course.title}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={courseImage.imageHint}
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />

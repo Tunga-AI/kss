@@ -13,9 +13,9 @@
           "type": "string",
           "description": "A detailed description of the program."
         },
-        "imageId": {
+        "imageUrl": {
           "type": "string",
-          "description": "The ID of the placeholder image for the program."
+          "description": "The URL of the program's image, hosted in Firebase Storage."
         },
         "programType": {
           "type": "string",
