@@ -13,11 +13,13 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, DollarSign, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, DollarSign, LogOut, Globe, BarChart, Users } from 'lucide-react';
 
 const menuItems = [
   { href: '/finance', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/finance/finance', label: 'FINANCE', icon: DollarSign },
+  { href: '/sales/crm', label: 'CRM', icon: BarChart },
+  { href: '/operations/learners', label: 'LEARNERS', icon: Users },
 ];
 
 export default function FinanceLayout({ children }: { children: React.ReactNode }) {

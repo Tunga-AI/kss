@@ -13,11 +13,12 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BarChart, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, BarChart, LogOut, Globe, BookCopy } from 'lucide-react';
 
 const menuItems = [
   { href: '/sales', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/sales/crm', label: 'CRM', icon: BarChart },
+  { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
 ];
 
 export default function SalesLayout({ children }: { children: React.ReactNode }) {
