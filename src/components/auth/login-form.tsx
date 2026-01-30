@@ -9,11 +9,12 @@ import { Label } from '@/components/ui/label';
 
 const roles = [
     { value: 'dashboard', label: 'Learner' },
-    { value: 'sales', label: 'Sales' },
-    { value: 'finance', label: 'Finance' },
-    { value: 'business', label: 'Business' },
-    { value: 'operations', label: 'Operations' },
+    { value: 'staff', label: 'Staff' },
     { value: 'admin', label: 'Admin' },
+    { value: 'admin', label: 'Sales' },
+    { value: 'admin', label: 'Finance' },
+    { value: 'admin', label: 'Business' },
+    { value: 'admin', label: 'Operations' },
 ];
 
 export function LoginForm() {
@@ -40,8 +41,8 @@ export function LoginForm() {
                     <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
-                    {roles.map(role => (
-                        <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                    {roles.map((role, index) => (
+                        <SelectItem key={`${role.value}-${index}`} value={role.value}>{role.label}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>

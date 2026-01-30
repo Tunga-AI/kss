@@ -1,90 +1,28 @@
-'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-import { LayoutDashboard, DollarSign, LogOut, Globe, BarChart, Users, User } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-const menuItems = [
-  { href: '/finance', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/finance/finance', label: 'FINANCE', icon: DollarSign },
-  { href: '/sales/crm', label: 'CRM', icon: BarChart },
-  { href: '/operations/learners', label: 'LEARNERS', icon: Users },
-];
-
-export default function FinanceLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
+export default function DeprecatedPortalLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar collapsible="icon">
-          <SidebarContent className="pt-8">
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || (item.href !== '/finance' && pathname.startsWith(item.href))}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span className="font-bold uppercase">{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarContent>
-          <SidebarFooter>
-             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/profile">
-                            <User />
-                            <span className="font-bold uppercase">My Profile</span>
-                        </Link>
-                    </SidebarMenuButton>
-                 </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Back to Website">
-                        <Link href="/">
-                            <Globe />
-                            <span className="font-bold uppercase">Website</span>
-                        </Link>
-                    </SidebarMenuButton>
-                 </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Logout">
-                        <Link href="/login">
-                            <LogOut />
-                            <span className="font-bold uppercase">Logout</span>
-                        </Link>
-                    </SidebarMenuButton>
-                 </SidebarMenuItem>
-             </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
-            <SidebarTrigger />
-          </header>
-          <main className="p-4 sm:p-6 lg:p-10">
-            {children}
-          </main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <div className="flex min-h-screen items-center justify-center bg-muted">
+      <Card className="m-4 text-center">
+        <CardHeader>
+          <CardTitle>Portal Merged</CardTitle>
+          <CardDescription>
+            This portal has been merged into the main Admin Dashboard for a unified experience.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild>
+            <Link href="/admin">Go to Admin Dashboard</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

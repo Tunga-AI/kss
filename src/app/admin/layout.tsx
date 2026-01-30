@@ -13,14 +13,16 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, DollarSign, Image as ImageIcon, User } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, DollarSign, Image as ImageIcon, User, UserCheck, Briefcase } from 'lucide-react';
 
 const menuItems = [
   { href: '/admin', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
-  { href: '/sales/crm', label: 'CRM', icon: BarChart },
-  { href: '/operations/learners', label: 'LEARNERS', icon: Users },
-  { href: '/finance/finance', label: 'FINANCE', icon: DollarSign },
+  { href: '/admin/crm', label: 'CRM', icon: BarChart },
+  { href: '/admin/admissions', label: 'ADMISSIONS', icon: UserCheck },
+  { href: '/admin/learners', label: 'LEARNERS', icon: Users },
+  { href: '/admin/finance', label: 'FINANCE', icon: DollarSign },
+  { href: '/admin/b2b', label: 'B2B', icon: Briefcase },
   { href: '/admin/gallery', label: 'GALLERY', icon: ImageIcon },
   { href: '/admin/users', label: 'USERS', icon: Users },
 ];
@@ -83,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
             <SidebarTrigger />
           </header>
-          <main>
+          <main className="p-4 sm:p-6 lg:p-10">
             {children}
           </main>
         </SidebarInset>
