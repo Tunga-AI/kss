@@ -1,14 +1,27 @@
+'use client';
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Card } from "@/components/ui/card";
-import { courses } from "@/lib/courses-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Badge } from "@/components/ui/badge";
+import { useFirestore } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import type { Program } from "@/lib/program-types";
+import { useMemo } from "react";
 
 export default function CoursesPage() {
   const coursesImage = PlaceHolderImages.find(p => p.id === 'courses-hero');
+  const firestore = useFirestore();
+
+  const coursesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "in", ["Core Course", "Short Course"]));
+  }, [firestore]);
+
+  const { data: courses, loading } = useCollection<Program>(coursesQuery);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -41,8 +54,9 @@ export default function CoursesPage() {
 
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
+             {loading && <div className="text-center">Loading courses...</div>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {courses.map((course) => {
+              {courses?.map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">

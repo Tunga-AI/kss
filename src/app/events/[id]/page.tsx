@@ -1,19 +1,37 @@
+'use client';
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { events } from "@/lib/events-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { format } from "date-fns";
+import { useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import type { Program } from "@/lib/program-types";
+import { useMemo } from "react";
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const event = events.find((e) => e.id === params.id);
+export default function EventDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const firestore = useFirestore();
 
-  if (!event) {
+  const programRef = useMemo(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'programs', id);
+  }, [firestore, id]);
+
+  const { data: event, loading } = useDoc<Program>(programRef);
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!event || event.programType !== 'Event') {
     notFound();
   }
 
@@ -37,7 +55,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           <div className="relative z-10 h-full flex flex-col justify-end">
             <div className="container mx-auto px-4 py-16">
               <div className="max-w-3xl text-white">
-                <p className="font-semibold text-accent">{format(new Date(event.date), "EEEE, MMMM d, yyyy")}</p>
+                {event.date && <p className="font-semibold text-accent">{format(new Date(event.date), "EEEE, MMMM d, yyyy")}</p>}
                 <h1 className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold mt-2">
                   {event.title}
                 </h1>
@@ -59,7 +77,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 
                 <h2 className="font-headline text-3xl sm:text-4xl font-bold mt-12 mb-6">Speakers</h2>
                 <div className="grid gap-8 sm:grid-cols-2">
-                  {event.speakers.map((speaker) => (
+                  {event.speakers?.map((speaker) => (
                     <div key={speaker.name} className="flex items-center gap-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage src={speaker.avatar} alt={speaker.name} />
@@ -80,13 +98,13 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     <CardTitle className="font-headline text-xl sm:text-2xl">Event Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-start gap-3">
+                    {event.date && <div className="flex items-start gap-3">
                       <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <div>
                         <p className="font-semibold">Date</p>
                         <p className="text-muted-foreground">{format(new Date(event.date), 'MMMM d, yyyy')}</p>
                       </div>
-                    </div>
+                    </div>}
                      <div className="flex items-start gap-3">
                       <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <div>
@@ -119,5 +137,3 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
-
-    

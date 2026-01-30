@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/shared/header";
@@ -8,21 +8,36 @@ import { Footer } from "@/components/shared/footer";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { moocCourses } from "@/lib/mooc-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Badge } from "@/components/ui/badge";
 import { Search } from 'lucide-react';
+import { useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import type { Program } from '@/lib/program-types';
 
 function CourseList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
 
-  const filteredCourses = moocCourses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = levelFilter === 'all' || course.level === levelFilter;
-    return matchesSearch && matchesLevel;
-  });
+  const firestore = useFirestore();
+
+  const moocQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "==", "E-Learning"));
+  }, [firestore]);
+
+  const { data: moocCourses, loading } = useCollection<Program>(moocQuery);
+
+  const filteredCourses = useMemo(() => {
+    if (!moocCourses) return [];
+    return moocCourses.filter(course => {
+      const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            course.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLevel = levelFilter === 'all' || course.level === levelFilter;
+      return matchesSearch && matchesLevel;
+    });
+  }, [moocCourses, searchTerm, levelFilter]);
 
   return (
     <section className="py-16 sm:py-20">
@@ -50,6 +65,7 @@ function CourseList() {
             </SelectContent>
           </Select>
         </div>
+        {loading && <div className="text-center">Loading courses...</div>}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {filteredCourses.map((course) => {
             const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
@@ -78,7 +94,7 @@ function CourseList() {
             );
           })}
         </div>
-        {filteredCourses.length === 0 && (
+        {!loading && filteredCourses.length === 0 && (
           <div className="text-center py-16">
             <h2 className="text-2xl font-bold">No courses found</h2>
             <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>

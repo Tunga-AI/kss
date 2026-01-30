@@ -1,0 +1,152 @@
+'use client';
+import type { Program } from '@/lib/program-types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useRouter } from 'next/navigation';
+import { useFirestore } from '@/firebase';
+import { addProgram, updateProgram } from '@/lib/programs';
+import React, { useState } from 'react';
+
+export function ProgramForm({ program }: { program: Partial<Program> }) {
+    const isNew = !program.id;
+    const [formData, setFormData] = useState<Partial<Program>>(program);
+    const router = useRouter();
+    const firestore = useFirestore();
+
+    const programType = formData.programType;
+    const isCourse = programType === 'Core Course' || programType === 'E-Learning' || programType === 'Short Course';
+    const isEvent = programType === 'Event';
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleSelectChange = (id: string, value: string) => {
+        setFormData(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleTakeawaysChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setFormData(prev => ({ ...prev, takeaways: e.target.value.split('\n') }));
+    }
+
+    const handleSpeakersChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const speakerData = e.target.value.split('\n').map(line => {
+            const [name, title] = line.split(',').map(s => s.trim());
+            return { name, title, avatar: `https://picsum.photos/seed/${name?.toLowerCase().replace(' ', '')}/40/40` };
+        });
+        setFormData(prev => ({ ...prev, speakers: speakerData }));
+    }
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!firestore) return;
+
+        const dataToSave = { ...formData };
+        // Clean up data before saving
+        if (dataToSave.id === '') {
+            delete dataToSave.id;
+        }
+
+        if (isNew) {
+            addProgram(firestore, dataToSave as Omit<Program, 'id' | 'createdAt' | 'updatedAt'>);
+        } else if (dataToSave.id) {
+            const { id, ...rest } = dataToSave;
+            updateProgram(firestore, id, rest);
+        }
+        router.push('/admin/programs');
+    };
+
+    return (
+        <div className="grid gap-6">
+            <Card className="bg-primary text-primary-foreground">
+                 <CardHeader>
+                    <CardTitle className="font-headline text-xl sm:text-2xl">{isNew ? 'Create' : 'Edit'} {program.programType}</CardTitle>
+                    <CardDescription className="text-primary-foreground/80">{isNew ? `Enter the details for the new ${program.programType}.` : `Make changes to the "${program.title}" details below.`}</CardDescription>
+                </CardHeader>
+            </Card>
+            <Card>
+                <CardContent className="pt-6">
+                    <form className="grid gap-6" onSubmit={handleSubmit}>
+                        <div className="grid gap-3">
+                            <Label htmlFor="title">Title</Label>
+                            <Input id="title" type="text" value={formData.title} onChange={handleChange} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea id="description" value={formData.description} onChange={handleChange} rows={5} />
+                        </div>
+
+                        {isCourse && (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="level">Level</Label>
+                                        <Select value={formData.level} onValueChange={(value) => handleSelectChange('level', value)}>
+                                            <SelectTrigger id="level">
+                                                <SelectValue placeholder="Select level" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Beginner">Beginner</SelectItem>
+                                                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                                <SelectItem value="Advanced">Advanced</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="duration">Duration</Label>
+                                        <Input id="duration" type="text" value={formData.duration} onChange={handleChange} />
+                                    </div>
+                                </div>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="takeaways">Key Takeaways (one per line)</Label>
+                                    <Textarea id="takeaways" value={formData.takeaways?.join('\n')} onChange={handleTakeawaysChange} rows={5} />
+                                </div>
+                                 {programType !== 'E-Learning' && <div className="grid gap-3">
+                                    <Label htmlFor="price">Price</Label>
+                                    <Input id="price" type="text" value={formData.price} onChange={handleChange} />
+                                </div>}
+                            </>
+                        )}
+
+                        {isEvent && (
+                           <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="date">Date</Label>
+                                        <Input id="date" type="date" value={formData.date} onChange={handleChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="time">Time</Label>
+                                        <Input id="time" type="text" value={formData.time} onChange={handleChange} />
+                                    </div>
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="price">Price</Label>
+                                        <Input id="price" type="text" value={formData.price} onChange={handleChange} />
+                                    </div>
+                                </div>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="location">Location</Label>
+                                    <Input id="location" type="text" value={formData.location} onChange={handleChange} />
+                                </div>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="speakers">Speakers (Name, Title - one per line)</Label>
+                                    <Textarea id="speakers" value={formData.speakers?.map(s => `${s.name}, ${s.title}`).join('\n')} onChange={handleSpeakersChange} rows={4} />
+                                </div>
+                           </>
+                        )}
+
+                        <div className="flex gap-4">
+                            <Button type="submit">Save Changes</Button>
+                            <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}

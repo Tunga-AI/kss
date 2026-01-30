@@ -1,16 +1,30 @@
+'use client';
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Card } from "@/components/ui/card";
-import { events } from "@/lib/events-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { useFirestore } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import type { Program } from "@/lib/program-types";
+import { useMemo } from "react";
 
 export default function EventsPage() {
   const eventImage = PlaceHolderImages.find(p => p.id === 'event-conference-summit');
+  const firestore = useFirestore();
+
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "==", "Event"));
+  }, [firestore]);
+
+  const { data: events, loading } = useCollection<Program>(eventsQuery);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -42,8 +56,9 @@ export default function EventsPage() {
 
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
+             {loading && <div className="text-center">Loading events...</div>}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.map((event) => {
+              {events?.map((event) => {
                 const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
                   <Link href={`/events/${event.id}`} key={event.id} className="block group">
@@ -60,10 +75,10 @@ export default function EventsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                       <div className="relative h-full flex flex-col justify-end p-6 text-white">
                         <h3 className="font-headline text-2xl font-bold">{event.title}</h3>
-                        <div className="flex items-center gap-2 text-sm mt-2">
+                        {event.date && <div className="flex items-center gap-2 text-sm mt-2">
                           <Calendar className="h-4 w-4" />
                           <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
-                        </div>
+                        </div>}
                         <div className="flex justify-between items-center text-sm mt-4 font-medium">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />

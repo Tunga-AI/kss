@@ -1,21 +1,26 @@
 {
   "entities": {
-    "Course": {
-      "title": "Course",
-      "description": "Represents a course in the learning platform.",
+    "Program": {
+      "title": "Program",
+      "description": "Represents a learning program, which can be a course or an event.",
       "type": "object",
       "properties": {
         "title": {
           "type": "string",
-          "description": "The title of the course."
+          "description": "The title of the program."
         },
         "description": {
           "type": "string",
-          "description": "A detailed description of the course."
+          "description": "A detailed description of the program."
         },
         "imageId": {
           "type": "string",
-          "description": "The ID of the placeholder image for the course."
+          "description": "The ID of the placeholder image for the program."
+        },
+        "programType": {
+          "type": "string",
+          "description": "The type of the program.",
+          "enum": ["Core Course", "E-Learning", "Event", "Short Course"]
         },
         "duration": {
           "type": "string",
@@ -35,27 +40,7 @@
         },
         "price": {
           "type": "string",
-          "description": "The price of the course."
-        }
-      },
-      "required": ["title", "description", "level", "duration"]
-    },
-    "Event": {
-      "title": "Event",
-      "description": "Represents an event, such as a webinar or workshop.",
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "The title of the event."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the event."
-        },
-        "imageId": {
-          "type": "string",
-          "description": "The ID of the placeholder image for the event."
+          "description": "The price of the program."
         },
         "date": {
           "type": "string",
@@ -70,19 +55,23 @@
           "type": "string",
           "description": "The location of the event."
         },
-        "price": {
-          "type": "string",
-          "description": "The price of the event."
-        },
         "speakers": {
           "type": "array",
           "description": "A list of speakers at the event.",
           "items": {
             "$ref": "#/entities/Speaker"
           }
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time"
         }
       },
-      "required": ["title", "description", "date", "location"]
+      "required": ["title", "description", "programType"]
     },
     "Speaker": {
       "title": "Speaker",
@@ -109,17 +98,11 @@
     "providers": []
   },
   "firestore": {
-    "/courses/{courseId}": {
-      "schema": { "$ref": "#/entities/Course" },
-      "description": "Collection of paid courses."
-    },
-    "/events/{eventId}": {
-      "schema": { "$ref": "#/entities/Event" },
-      "description": "Collection of events."
-    },
-    "/elearning/{courseId}": {
-      "schema": { "$ref": "#/entities/Course" },
-      "description": "Collection of free e-learning courses (MOOCs)."
+    "/programs/{programId}": {
+      "schema": {
+        "$ref": "#/entities/Program"
+      },
+      "description": "Collection of all programs (Core Courses, E-Learning, Events, Short Courses)."
     }
   }
 }

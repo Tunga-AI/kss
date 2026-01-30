@@ -1,18 +1,21 @@
+'use client';
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, CheckCircle, BrainCircuit, Users, Award, Calendar, MapPin, ChevronDown } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { courses } from "@/lib/courses-data";
-import { moocCourses } from "@/lib/mooc-data";
-import { events } from "@/lib/events-data";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useFirestore } from "@/firebase";
+import { collection, query, where, limit } from "firebase/firestore";
+import { useCollection } from "@/firebase/firestore/use-collection";
+import type { Program } from "@/lib/program-types";
+import { useMemo } from "react";
 
 const testimonials = [
   {
@@ -45,6 +48,27 @@ export default function Home() {
       PlaceHolderImages.find(p => p.id === 'framework-hero'),
       PlaceHolderImages.find(p => p.id === 'success-hero')
   ].filter(Boolean);
+
+  const firestore = useFirestore();
+
+  const coursesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "in", ["Core Course", "Short Course"]), limit(3));
+  }, [firestore]);
+
+  const moocQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "==", "E-Learning"), limit(4));
+  }, [firestore]);
+
+  const eventsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "programs"), where("programType", "==", "Event"), limit(3));
+  }, [firestore]);
+
+  const { data: courses } = useCollection<Program>(coursesQuery);
+  const { data: moocCourses } = useCollection<Program>(moocQuery);
+  const { data: events } = useCollection<Program>(eventsQuery);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -103,7 +127,7 @@ export default function Home() {
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-              {courses.slice(0, 1).map((course) => {
+              {courses?.slice(0, 1).map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/courses/${course.id}`} key={course.id} className="block group">
@@ -130,7 +154,7 @@ export default function Home() {
                 );
               })}
               <div className="grid grid-rows-2 gap-6 md:gap-8">
-                {courses.slice(1, 3).map((course) => {
+                {courses?.slice(1, 3).map((course) => {
                   const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                   return (
                     <Link href={`/courses/${course.id}`} key={course.id} className="block group">
@@ -265,7 +289,7 @@ export default function Home() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.slice(0, 3).map((event) => {
+              {events?.map((event) => {
                 const eventImage = PlaceHolderImages.find(p => p.id === event.imageId);
                 return (
                   <Link href={`/events/${event.id}`} key={event.id} className="block group">
@@ -284,7 +308,7 @@ export default function Home() {
                         <h3 className="font-headline text-2xl font-bold">{event.title}</h3>
                         <div className="flex items-center gap-2 text-sm mt-2">
                           <Calendar className="h-4 w-4" />
-                          <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>
+                          {event.date && <span>{format(new Date(event.date), 'MMMM d, yyyy')}</span>}
                         </div>
                         <div className="flex justify-between items-center text-sm mt-4 font-medium">
                           <div className="flex items-center gap-2">
@@ -317,7 +341,7 @@ export default function Home() {
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              {moocCourses.slice(0, 4).map((course) => {
+              {moocCourses?.map((course) => {
                 const courseImage = PlaceHolderImages.find(p => p.id === course.imageId);
                 return (
                   <Link href={`/e-learning/${course.id}`} key={course.id} className="block group">

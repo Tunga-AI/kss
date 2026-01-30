@@ -1,18 +1,36 @@
+'use client';
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
-import { courses } from "@/lib/courses-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Clock, BarChart } from "lucide-react";
+import { useFirestore } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import type { Program } from "@/lib/program-types";
+import { useMemo } from "react";
 
-export default function CourseDetailPage({ params }: { params: { id: string } }) {
-  const course = courses.find((c) => c.id === params.id);
+export default function CourseDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const firestore = useFirestore();
 
-  if (!course) {
+  const programRef = useMemo(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'programs', id);
+  }, [firestore, id]);
+
+  const { data: course, loading } = useDoc<Program>(programRef);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!course || (course.programType !== 'Core Course' && course.programType !== 'Short Course')) {
     notFound();
   }
 
@@ -58,7 +76,7 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
               <div className="md:col-span-2">
                 <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-6">What You'll Learn</h2>
                 <ul className="space-y-4">
-                  {course.takeaways.map((takeaway, index) => (
+                  {course.takeaways?.map((takeaway, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <CheckCircle className="h-6 w-6 text-accent flex-shrink-0 mt-1" />
                       <span className="text-base sm:text-lg">{takeaway}</span>
@@ -98,5 +116,3 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
     </div>
   );
 }
-
-    

@@ -2,43 +2,32 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CourseForm } from '../course-form';
-import { EventForm } from '../event-form';
-import type { Course } from '@/lib/courses-data';
-import type { Event } from '@/lib/events-data';
+import { ProgramForm } from '../program-form';
+import type { Program } from '@/lib/program-types';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 function CreateProgram() {
     const searchParams = useSearchParams();
     const type = searchParams.get('type');
 
-    if (type === 'core' || type === 'elearning') {
-        const emptyCourse: Course = {
-            id: '',
+    let programType: Program['programType'] | null = null;
+    if (type === 'core') programType = 'Core Course';
+    if (type === 'elearning') programType = 'E-Learning';
+    if (type === 'event') programType = 'Event';
+    if (type === 'shortcourse') programType = 'Short Course';
+
+    if (programType) {
+        const emptyProgram: Partial<Program> = {
             title: '',
             description: '',
             imageId: '',
-            duration: '',
+            programType: programType,
             level: 'Beginner',
             takeaways: [],
-            price: type === 'elearning' ? 'Free' : ''
+            price: programType === 'E-Learning' ? 'Free' : '',
+            speakers: [],
         };
-        return <CourseForm course={emptyCourse} type={type === 'core' ? 'Core Course' : 'E-Learning'} />;
-    }
-
-    if (type === 'event') {
-        const emptyEvent: Event = {
-            id: '',
-            title: '',
-            description: '',
-            imageId: '',
-            date: '',
-            time: '',
-            location: '',
-            price: 'Free',
-            speakers: []
-        };
-        return <EventForm event={emptyEvent} />;
+        return <ProgramForm program={emptyProgram} />;
     }
 
     return (
