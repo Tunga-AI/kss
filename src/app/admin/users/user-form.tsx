@@ -29,8 +29,6 @@ export function UserForm({ user }: { user?: Partial<User> }) {
     const firestore = useFirestore();
     const storage = useStorage();
     
-    const isLearnerRole = formData.role === 'Learner';
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setFormData(prev => ({ ...prev, [id]: value }));
@@ -85,14 +83,29 @@ export function UserForm({ user }: { user?: Partial<User> }) {
         }
     };
 
+    let title = isNew ? 'Create New User' : 'Edit User';
+    let description = isNew
+      ? 'Add a new user profile to the system. You will still need to create their authentication account in the Firebase Console.'
+      : `Editing profile for ${user?.name}.`;
+
+    if (isNew) {
+      if (formData.role === 'Learner') {
+        title = 'Add New Learner';
+        description = "This creates a profile in both the main Users list and the Learners section. You will still need to create their authentication account in the Firebase Console.";
+      } else if (formData.role === 'Facilitator') {
+        title = 'Create New Facilitator';
+        description = "This creates a profile for a new Facilitator. You will still need to create their authentication account in the Firebase Console.";
+      }
+    }
+
+
     return (
         <div className="grid gap-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline text-xl sm:text-2xl">{isNew ? 'Create New User' : 'Edit User'}</CardTitle>
+                    <CardTitle className="font-headline text-xl sm:text-2xl">{title}</CardTitle>
                     <CardDescription>
-                        {isNew ? "Add a new user profile to the system. You will still need to create their authentication account in the Firebase Console." : `Editing profile for ${user?.name}.`}
-                        {isNew && isLearnerRole && " Adding a user with the 'Learner' role will also create a corresponding profile in the Learners module."}
+                        {description}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
