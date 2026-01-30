@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
              <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/profile">
+                        <Link href="/l/profile">
                             <User />
                             <span className="font-bold uppercase">My Profile</span>
                         </Link>

@@ -50,7 +50,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
              <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/profile">
+                        <Link href="/s/profile">
                             <User />
                             <span className="font-bold uppercase">My Profile</span>
                         </Link>

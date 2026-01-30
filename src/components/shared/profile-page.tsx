@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-export default function ProfilePage() {
+export default function ProfilePageContent() {
     const { user, loading: userLoading } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -55,12 +55,23 @@ export default function ProfilePage() {
                     <Skeleton className="h-4 w-64 mx-auto" />
                 </CardHeader>
                 <CardContent className="grid gap-6">
-                    {[...Array(4)].map((_, i) => (
-                        <div key={i} className="space-y-2">
-                            <Skeleton className="h-4 w-16" />
-                            <Skeleton className="h-10 w-full" />
-                        </div>
-                    ))}
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-6 w-24" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-10 w-32" />
                 </CardContent>
             </Card>
         );

@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
              <SidebarMenu>
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/profile">
+                        <Link href="/a/profile">
                             <User />
                             <span className="font-bold uppercase">My Profile</span>
                         </Link>
