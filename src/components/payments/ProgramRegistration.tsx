@@ -45,6 +45,7 @@ export function ProgramRegistration({ program }: ProgramRegistrationProps) {
         reference: new Date().getTime().toString(),
         email: userEmail,
         amount: programPrice * 100, // Amount in kobo
+        currency: 'KES',
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
         metadata: {
             custom_fields: [
