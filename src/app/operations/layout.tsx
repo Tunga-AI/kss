@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, UserCheck, Users, BookCopy, LogOut, Globe, BarChart } from 'lucide-react';
+import { LayoutDashboard, UserCheck, Users, BookCopy, LogOut, Globe, BarChart, Image as ImageIcon } from 'lucide-react';
 
 const menuItems = [
   { href: '/operations', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -21,6 +21,7 @@ const menuItems = [
   { href: '/sales/crm', label: 'CRM', icon: BarChart },
   { href: '/operations/admissions', label: 'ADMISSIONS', icon: UserCheck },
   { href: '/operations/learners', label: 'LEARNERS', icon: Users },
+  { href: '/admin/gallery', label: 'GALLERY', icon: ImageIcon },
 ];
 
 export default function OperationsLayout({ children }: { children: React.ReactNode }) {

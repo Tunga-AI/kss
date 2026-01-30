@@ -134,6 +134,30 @@
         "date": { "type": "string", "format": "date-time" }
       },
       "required": ["learnerName", "program", "amount", "status"]
+    },
+    "GalleryImage": {
+      "title": "Gallery Image",
+      "description": "Represents an image in the gallery.",
+      "type": "object",
+      "properties": {
+        "album": {
+          "type": "string",
+          "description": "The name of the album the image belongs to."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the image hosted in Firebase Storage."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description for the image."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["album", "imageUrl"]
     }
   },
   "auth": {
@@ -163,6 +187,12 @@
         "$ref": "#/entities/Transaction"
       },
       "description": "Collection of financial transactions."
+    },
+    "/gallery/{imageId}": {
+      "schema": {
+        "$ref": "#/entities/GalleryImage"
+      },
+      "description": "Collection of gallery images."
     }
   }
 }

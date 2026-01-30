@@ -1,9 +1,14 @@
+'use client';
+import { useMemo } from 'react';
 import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { GalleryImage } from '@/lib/gallery-types';
 
 const testimonials = [
   {
@@ -32,20 +37,24 @@ const testimonials = [
   },
 ];
 
-const galleryAlbumImages = [
-    'event-workshop-calling', 
-    'event-conference-summit', 
-    'framework-hero', 
-    'hero-sales-training', 
-    'ai-recommendation-feature', 
-    'login-page-background', 
-    'event-webinar-psychology', 
-    'success-hero'
-];
-
 export default function GalleryPage() {
   const successImage = PlaceHolderImages.find(p => p.id === 'success-hero');
-  const albumImages = galleryAlbumImages.map(id => PlaceHolderImages.find(p => p.id === id)).filter(Boolean);
+
+  const firestore = useFirestore();
+  const galleryQuery = useMemo(() => {
+      if (!firestore) return null;
+      return query(collection(firestore, "gallery"), orderBy('createdAt', 'desc'));
+  }, [firestore]);
+
+  const { data: images, loading } = useCollection<GalleryImage>(galleryQuery);
+
+  const albums = useMemo(() => {
+    if (!images) return {};
+    return images.reduce((acc, image) => {
+      (acc[image.album] = acc[image.album] || []).push(image);
+      return acc;
+    }, {} as Record<string, GalleryImage[]>);
+  }, [images]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -114,25 +123,37 @@ export default function GalleryPage() {
 
         <section className="py-16 sm:py-20 bg-muted">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="font-headline text-3xl sm:text-4xl font-bold">Photo Album</h2>
-              <p className="mt-2 text-muted-foreground max-w-xl mx-auto text-base sm:text-lg">
-                A collection of moments from our courses, workshops, and events.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {albumImages.map((image, index) => (
-                    image && <div key={index} className="relative h-64 rounded-lg overflow-hidden shadow-lg group">
-                        <Image
-                            src={image.imageUrl}
-                            alt={image.description}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            data-ai-hint={image.imageHint}
-                        />
-                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+            {loading && <div className="text-center py-16">Loading gallery...</div>}
+            {!loading && Object.keys(albums).length === 0 && (
+                <div className="text-center py-16">
+                    <h2 className="text-2xl font-bold">The gallery is empty.</h2>
+                    <p className="text-muted-foreground mt-2">Check back soon for photos from our events and workshops!</p>
+                </div>
+            )}
+            <div className="space-y-16">
+              {Object.entries(albums).map(([albumName, albumImages]) => (
+                <div key={albumName}>
+                    <div className="text-center mb-8">
+                        <h2 className="font-headline text-3xl sm:text-4xl font-bold">{albumName}</h2>
                     </div>
-                ))}
+                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {albumImages.map((image) => (
+                            <div key={image.id} className="relative h-64 rounded-lg overflow-hidden shadow-lg group">
+                                <Image
+                                    src={image.imageUrl}
+                                    alt={image.description || 'Gallery image'}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                {image.description && <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                                  {image.description}
+                                </div>}
+                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
