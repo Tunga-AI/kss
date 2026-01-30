@@ -30,13 +30,11 @@ export default function StaffClassroomPage() {
               <CardTitle className="font-headline text-xl sm:text-2xl">My Classroom</CardTitle>
               <CardDescription className="text-primary-foreground/80">Manage your upcoming live sessions.</CardDescription>
             </div>
-            {/* 
-              TODO: In a future step, this could link to a form at /f/classroom/new
-              to allow facilitators to create sessions.
-            */}
-            <Button variant="secondary" disabled>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Schedule Session
+            <Button variant="secondary" asChild>
+                <Link href="/f/classroom/new">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Schedule Session
+                </Link>
             </Button>
           </div>
         </CardHeader>

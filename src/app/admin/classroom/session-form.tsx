@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ type SessionFormData = Omit<ClassroomSession, 'id' | 'startDateTime' | 'endDateT
 export function SessionForm({ session }: { session?: ClassroomSession }) {
     const { toast } = useToast();
     const router = useRouter();
+    const { user: currentUser } = useUser();
     const firestore = useFirestore();
     const isNew = !session?.id;
 
@@ -95,7 +96,12 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
                 updateClassroomSession(firestore, session.id, sessionData);
                 toast({ title: 'Success', description: 'Classroom session updated.'});
             }
-            router.push('/a/classroom');
+
+            if (currentUser?.role === 'Facilitator') {
+                 router.push('/f/calendar');
+            } else {
+                 router.push('/a/classroom');
+            }
 
         } catch (error) {
             console.error("Error saving session:", error);

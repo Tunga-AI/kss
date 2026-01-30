@@ -20,7 +20,7 @@ import { LayoutDashboard, BookOpen, Calendar, LogOut, Globe, User, Video } from 
 const menuItems = [
   { href: '/f', label: 'DASHBOARD', icon: LayoutDashboard },
   { href: '/f/classes', label: 'CLASSES', icon: BookOpen },
-  { href: '/f/schedule', label: 'SCHEDULE', icon: Calendar },
+  { href: '/f/calendar', label: 'CALENDAR', icon: Calendar },
   { href: '/f/classroom', label: 'CLASSROOM', icon: Video },
 ];
 
