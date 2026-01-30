@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookOpen, TrendingUp, Sparkles, LogOut, Globe } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, Sparkles, LogOut, Globe, User } from 'lucide-react';
 
 const menuItems = [
   { href: '/dashboard', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -49,6 +49,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarContent>
           <SidebarFooter>
              <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="My Profile">
+                        <Link href="/profile">
+                            <User />
+                            <span className="font-bold uppercase">My Profile</span>
+                        </Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Back to Website">
                         <Link href="/">

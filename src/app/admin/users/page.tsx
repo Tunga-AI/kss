@@ -9,18 +9,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
-import type { Learner } from '@/lib/learners-types';
+import type { User } from '@/lib/user-types';
+import { format } from 'date-fns';
 
 
 export default function AdminUsersPage() {
     const firestore = useFirestore();
     const usersQuery = useMemo(() => {
         if (!firestore) return null;
-        // Using learners as users for now
-        return query(collection(firestore, 'learners'));
+        return query(collection(firestore, 'users'));
     }, [firestore]);
 
-    const { data: users, loading } = useCollection<Learner>(usersQuery);
+    const { data: users, loading } = useCollection<User>(usersQuery);
     
     return (
         <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
@@ -68,9 +68,9 @@ export default function AdminUsersPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant='secondary'>Learner</Badge>
+                                        <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden sm:table-cell">{user.joinedDate}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{user.createdAt ? format(user.createdAt.toDate(), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
