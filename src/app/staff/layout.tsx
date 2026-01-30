@@ -16,9 +16,9 @@ import {
 import { LayoutDashboard, BookOpen, Calendar, LogOut, Globe, User } from 'lucide-react';
 
 const menuItems = [
-  { href: '/s', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/s/classes', label: 'CLASSES', icon: BookOpen },
-  { href: '/s/schedule', label: 'SCHEDULE', icon: Calendar },
+  { href: '/f', label: 'DASHBOARD', icon: LayoutDashboard },
+  { href: '/f/classes', label: 'CLASSES', icon: BookOpen },
+  { href: '/f/schedule', label: 'SCHEDULE', icon: Calendar },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.href || (item.href !== '/s' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/f' && pathname.startsWith(item.href))}
                     tooltip={item.label}
                   >
                     <Link href={item.href}>
@@ -50,7 +50,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
              <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="My Profile">
-                        <Link href="/s/profile">
+                        <Link href="/f/profile">
                             <User />
                             <span className="font-bold uppercase">My Profile</span>
                         </Link>

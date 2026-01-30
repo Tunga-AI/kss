@@ -11,7 +11,7 @@ import { addUser, updateUser } from '@/lib/users';
 import React, { useState } from 'react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-const roles: User['role'][] = ['Learner', 'Sales', 'Finance', 'Business', 'Operations', 'Admin', 'Staff'];
+const roles: User['role'][] = ['Learner', 'Sales', 'Finance', 'Business', 'Operations', 'Admin', 'Facilitator'];
 
 export function UserForm({ user }: { user?: User }) {
     const isNew = !user;

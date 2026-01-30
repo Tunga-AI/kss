@@ -185,7 +185,7 @@
         "role": {
           "type": "string",
           "description": "The user's role in the system.",
-          "enum": ["Learner", "Sales", "Finance", "Business", "Operations", "Admin", "Staff"]
+          "enum": ["Learner", "Sales", "Finance", "Business", "Operations", "Admin", "Facilitator"]
         },
         "status": {
           "type": "string",

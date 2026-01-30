@@ -43,8 +43,8 @@ export function Header() {
         case 'Business':
         case 'Operations':
             return "/a";
-        case 'Staff':
-            return "/s";
+        case 'Facilitator':
+            return "/f";
         case 'Learner':
         default:
             return "/l";

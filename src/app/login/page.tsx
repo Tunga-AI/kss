@@ -23,8 +23,8 @@ export default function LoginPage() {
       
       if (['Admin', 'Sales', 'Finance', 'Business', 'Operations'].includes(role)) {
         redirectPath = '/a';
-      } else if (role === 'Staff') {
-        redirectPath = '/s';
+      } else if (role === 'Facilitator') {
+        redirectPath = '/f';
       }
       
       router.push(redirectPath);

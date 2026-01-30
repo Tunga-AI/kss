@@ -21,7 +21,7 @@ export default function StaffDashboardPage() {
     <div className="grid gap-6">
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
-          <CardTitle className="font-headline text-xl sm:text-2xl">Welcome Back, Staff!</CardTitle>
+          <CardTitle className="font-headline text-xl sm:text-2xl">Welcome Back, Facilitator!</CardTitle>
           <CardDescription className="text-primary-foreground/80">Here's what's on your plate today. Let's make it a productive one.</CardDescription>
         </CardHeader>
       </Card>
@@ -54,7 +54,7 @@ export default function StaffDashboardPage() {
             </CardContent>
              <CardContent>
                 <Button asChild variant="secondary">
-                    <Link href="/s/schedule">View Full Schedule <ArrowRight className="ml-2"/></Link>
+                    <Link href="/f/schedule">View Full Schedule <ArrowRight className="ml-2"/></Link>
                 </Button>
             </CardContent>
         </Card>
@@ -86,7 +86,7 @@ export default function StaffDashboardPage() {
         </CardContent>
         <CardContent>
              <Button asChild>
-                <Link href="/s/classes">Manage My Classes <ArrowRight className="ml-2"/></Link>
+                <Link href="/f/classes">Manage My Classes <ArrowRight className="ml-2"/></Link>
              </Button>
         </CardContent>
        </Card>
