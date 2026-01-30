@@ -17,7 +17,7 @@ import { LayoutDashboard, UserCheck, Users, BookCopy, LogOut, Globe, BarChart } 
 
 const menuItems = [
   { href: '/operations', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/operations/programs', label: 'PROGRAMS', icon: BookCopy },
+  { href: '/admin/programs', label: 'PROGRAMS', icon: BookCopy },
   { href: '/sales/crm', label: 'CRM', icon: BarChart },
   { href: '/operations/admissions', label: 'ADMISSIONS', icon: UserCheck },
   { href: '/operations/learners', label: 'LEARNERS', icon: Users },
