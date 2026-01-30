@@ -5,7 +5,7 @@ export type ClassroomSession = {
     title: string;
     description: string;
     programId: string;
-    facilitatorId: string;
+    facilitatorId?: string;
     startDateTime: Timestamp;
     endDateTime: Timestamp;
     status: 'Scheduled' | 'In Progress' | 'Completed' | 'Cancelled';

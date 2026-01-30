@@ -79,11 +79,14 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
                 title: formData.title!,
                 description: formData.description!,
                 programId: formData.programId!,
-                facilitatorId: formData.facilitatorId!,
                 startDateTime,
                 endDateTime,
                 status: formData.status!,
             };
+
+            if (formData.facilitatorId) {
+                sessionData.facilitatorId = formData.facilitatorId;
+            }
 
             if (isNew) {
                 addClassroomSession(firestore, sessionData);
@@ -132,9 +135,10 @@ export function SessionForm({ session }: { session?: ClassroomSession }) {
                             </div>
                              <div className="grid gap-3">
                                 <Label htmlFor="facilitatorId">Facilitator</Label>
-                                 <Select value={formData.facilitatorId} onValueChange={(value) => handleSelectChange('facilitatorId', value)} required>
+                                 <Select value={formData.facilitatorId} onValueChange={(value) => handleSelectChange('facilitatorId', value)}>
                                     <SelectTrigger disabled={facilitatorsLoading}>{facilitatorsLoading ? 'Loading...' : <SelectValue placeholder="Assign a facilitator" />}</SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="">None</SelectItem>
                                         {facilitators?.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>

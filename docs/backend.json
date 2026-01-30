@@ -45,7 +45,6 @@
       "required": [
         "title",
         "programId",
-        "facilitatorId",
         "startDateTime",
         "endDateTime",
         "status"
