@@ -1,13 +1,25 @@
+'use client';
+import { useMemo } from 'react';
 import Link from "next/link";
-import { courses } from "@/lib/courses-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { Program } from '@/lib/program-types';
 
 export default function StaffClassesPage() {
+    const firestore = useFirestore();
+    const programsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'programs'), where('programType', 'in', ['Core', 'Short', 'E-Learning']));
+    }, [firestore]);
+
+    const { data: courses, loading } = useCollection<Program>(programsQuery);
+
     return (
         <div className="grid gap-6">
             <Card className="bg-primary text-primary-foreground">
@@ -34,11 +46,12 @@ export default function StaffClassesPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {courses.map((course) => (
+                            {loading && <TableRow><TableCell colSpan={4}>Loading...</TableCell></TableRow>}
+                            {courses && courses.map((course) => (
                                 <TableRow key={course.id}>
                                     <TableCell className="font-medium">{course.title}</TableCell>
                                     <TableCell>
-                                        <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Intermediate' ? 'default' : 'destructive'}>{course.level}</Badge>
+                                        {course.level && <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Intermediate' ? 'default' : 'destructive'}>{course.level}</Badge>}
                                     </TableCell>
                                     <TableCell className="hidden md:table-cell">{Math.floor(Math.random() * (50 - 20 + 1)) + 20}</TableCell>
                                     <TableCell>
@@ -65,6 +78,7 @@ export default function StaffClassesPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {!loading && courses?.length === 0 && <TableRow><TableCell colSpan={4}>No classes found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>

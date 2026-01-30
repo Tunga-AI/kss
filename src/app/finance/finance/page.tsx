@@ -1,16 +1,22 @@
+'use client';
+import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-const transactions = [
-    { learnerName: 'Ethan Hunt', program: 'Digital Prospecting', amount: 50000, currency: 'KES', status: 'Success', date: '2024-07-26', reference: 'T415826598' },
-    { learnerName: 'Alice Wonder', program: 'Advanced Negotiation', amount: 75000, currency: 'KES', status: 'Success', date: '2024-07-28', reference: 'T987654321' },
-    { name: 'Bob Builder', program: 'Sales Fundamentals 101', amount: 30000, currency: 'KES', status: 'Success', date: '2024-07-27', reference: 'T123456789' },
-    { name: 'Charlie Brown', program: 'Digital Prospecting', amount: 50000, currency: 'KES', status: 'Pending', date: '2024-07-29', reference: 'T654987321' },
-    { name: 'David Copperfield', program: 'CRM Mastery', amount: 45000, currency: 'KES', status: 'Failed', date: '2024-07-25', reference: 'T789123456' },
-]
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import type { Transaction } from '@/lib/transactions-types';
+import { format } from 'date-fns';
 
 export default function FinancePage() {
+  const firestore = useFirestore();
+  const transactionsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'transactions'));
+  }, [firestore]);
+  
+  const { data: transactions, loading } = useCollection<Transaction>(transactionsQuery);
+
   return (
     <div className="grid gap-6">
       <Card className="bg-primary text-primary-foreground">
@@ -33,18 +39,20 @@ export default function FinancePage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {transactions.map((tx) => (
-                          <TableRow key={tx.reference}>
-                              <TableCell>{tx.date}</TableCell>
+                      {loading && <TableRow><TableCell colSpan={6}>Loading...</TableCell></TableRow>}
+                      {transactions && transactions.map((tx) => (
+                          <TableRow key={tx.id}>
+                              <TableCell>{tx.date ? format(tx.date.toDate(), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                               <TableCell>{tx.learnerName}</TableCell>
                               <TableCell>{tx.program}</TableCell>
                               <TableCell>{tx.currency} {tx.amount.toLocaleString()}</TableCell>
                               <TableCell>
                                 <Badge variant={tx.status === 'Success' ? 'default' : tx.status === 'Failed' ? 'destructive' : 'secondary'}>{tx.status}</Badge>
                               </TableCell>
-                              <TableCell className="font-mono text-xs">{tx.reference}</TableCell>
+                              <TableCell className="font-mono text-xs">{tx.paystackReference}</TableCell>
                           </TableRow>
                       ))}
+                      {!loading && transactions?.length === 0 && <TableRow><TableCell colSpan={6}>No transactions found.</TableCell></TableRow>}
                   </TableBody>
               </Table>
           </CardContent>

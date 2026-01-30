@@ -1,14 +1,22 @@
+'use client';
+import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-const admissions = [
-    { name: 'Alice Wonder', program: 'Advanced Negotiation', status: 'Admitted', date: '2024-07-28' },
-    { name: 'Bob Builder', program: 'Sales Fundamentals 101', status: 'Admitted', date: '2024-07-27' },
-    { name: 'Charlie Brown', program: 'Digital Prospecting', status: 'Admitted', date: '2024-07-26' },
-]
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { SaleLead } from '@/lib/sales-types';
+import { format } from 'date-fns';
 
 export default function AdmissionsPage() {
+  const firestore = useFirestore();
+  const admissionsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'sales'), where('status', '==', 'Admitted'));
+  }, [firestore]);
+
+  const { data: admissions, loading } = useCollection<SaleLead>(admissionsQuery);
+
   return (
     <div className="grid gap-6">
       <Card className="bg-primary text-primary-foreground">
@@ -32,16 +40,18 @@ export default function AdmissionsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {admissions.map((admission) => (
-                        <TableRow key={admission.name}>
+                    {loading && <TableRow><TableCell colSpan={4}>Loading...</TableCell></TableRow>}
+                    {admissions && admissions.map((admission) => (
+                        <TableRow key={admission.id}>
                             <TableCell className="font-medium">{admission.name}</TableCell>
                             <TableCell>{admission.program}</TableCell>
                             <TableCell>
                                 <Badge>{admission.status}</Badge>
                             </TableCell>
-                            <TableCell>{admission.date}</TableCell>
+                            <TableCell>{admission.createdAt ? format(admission.createdAt.toDate(), 'yyyy-MM-dd') : 'N/A'}</TableCell>
                         </TableRow>
                     ))}
+                    {!loading && admissions?.length === 0 && <TableRow><TableCell colSpan={4}>No admissions found.</TableCell></TableRow>}
                 </TableBody>
             </Table>
           </CardContent>

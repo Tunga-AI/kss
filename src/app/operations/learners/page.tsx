@@ -1,3 +1,5 @@
+'use client';
+import { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -5,43 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-const learners = [
-    {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        program: "Advanced Negotiation",
-        status: "Active",
-        joined: "2023-10-23",
-        avatar: "https://picsum.photos/seed/user1/40/40"
-    },
-    {
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        program: "Sales Fundamentals 101",
-        status: "Active",
-        joined: "2023-11-15",
-        avatar: "https://picsum.photos/seed/user2/40/40"
-    },
-    {
-        name: "Michael Johnson",
-        email: "michael.j@example.com",
-        program: "Digital Prospecting",
-        status: "Inactive",
-        joined: "2024-02-01",
-        avatar: "https://picsum.photos/seed/user3/40/40"
-    },
-     {
-        name: "Emily Davis",
-        email: "emily.d@example.com",
-        program: "Sales Fundamentals 101",
-        status: "Alumni",
-        joined: "2022-08-10",
-        avatar: "https://picsum.photos/seed/user5/40/40"
-    },
-];
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import type { Learner } from '@/lib/learners-types';
 
 export default function OperationsLearnersPage() {
+    const firestore = useFirestore();
+    const learnersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'learners'));
+    }, [firestore]);
+
+    const { data: learners, loading } = useCollection<Learner>(learnersQuery);
+
     return (
         <div className="grid gap-6">
             <Card className="bg-primary text-primary-foreground">
@@ -73,8 +51,9 @@ export default function OperationsLearnersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {learners.map((learner) => (
-                                <TableRow key={learner.email}>
+                            {loading && <TableRow><TableCell colSpan={5}>Loading...</TableCell></TableRow>}
+                            {learners && learners.map((learner) => (
+                                <TableRow key={learner.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>
@@ -91,7 +70,7 @@ export default function OperationsLearnersPage() {
                                     <TableCell>
                                         <Badge variant={learner.status === 'Active' ? 'default' : 'secondary'}>{learner.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden sm:table-cell">{learner.joined}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{learner.joinedDate}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -110,6 +89,7 @@ export default function OperationsLearnersPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {!loading && learners?.length === 0 && <TableRow><TableCell colSpan={5}>No learners found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>

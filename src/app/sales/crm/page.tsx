@@ -1,19 +1,25 @@
+'use client';
+
+import { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
-const leads = [
-    { name: "Carlos Ray", email: "carlos.ray@example.com", program: "Advanced Negotiation", status: "Lead" },
-    { name: "Diana Prince", email: "diana.prince@example.com", program: "Sales Fundamentals 101", status: "Prospect" },
-    { name: "Ethan Hunt", email: "ethan.hunt@example.com", program: "Digital Prospecting", status: "Admitted" },
-    { name: "Fiona Glenanne", email: "fiona.g@example.com", program: "CRM Mastery", status: "Lost" },
-    { name: "George Costanza", email: "george.c@example.com", program: "Advanced Negotiation", status: "Prospect" },
-];
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import type { SaleLead } from '@/lib/sales-types';
 
 export default function CrmPage() {
+  const firestore = useFirestore();
+  const salesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'sales'));
+  }, [firestore]);
+
+  const { data: leads, loading } = useCollection<SaleLead>(salesQuery);
+
   return (
     <div className="grid gap-6">
       <Card className="bg-primary text-primary-foreground">
@@ -44,8 +50,9 @@ export default function CrmPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {leads.map((lead) => (
-                          <TableRow key={lead.email}>
+                      {loading && <TableRow><TableCell colSpan={4}>Loading...</TableCell></TableRow>}
+                      {leads && leads.map((lead) => (
+                          <TableRow key={lead.id}>
                               <TableCell>
                                   <p className="font-medium">{lead.name}</p>
                                   <p className="text-xs sm:text-sm text-muted-foreground">{lead.email}</p>
@@ -72,6 +79,7 @@ export default function CrmPage() {
                               </TableCell>
                           </TableRow>
                       ))}
+                      {!loading && leads?.length === 0 && <TableRow><TableCell colSpan={4}>No leads found.</TableCell></TableRow>}
                   </TableBody>
               </Table>
           </CardContent>

@@ -1,3 +1,5 @@
+'use client';
+import { useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -5,46 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import type { Learner } from '@/lib/learners-types';
 
-const users = [
-    {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        role: "Learner",
-        joined: "2023-10-23",
-        avatar: "https://picsum.photos/seed/user1/40/40"
-    },
-    {
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        role: "Learner",
-        joined: "2023-11-15",
-        avatar: "https://picsum.photos/seed/user2/40/40"
-    },
-    {
-        name: "Admin User",
-        email: "admin@kss.com",
-        role: "Admin",
-        joined: "2023-01-01",
-        avatar: "https://picsum.photos/seed/admin/40/40"
-    },
-    {
-        name: "Michael Johnson",
-        email: "michael.j@example.com",
-        role: "Learner",
-        joined: "2024-02-01",
-        avatar: "https://picsum.photos/seed/user3/40/40"
-    },
-    {
-        name: "Sarah Williams",
-        email: "sarah.w@example.com",
-        role: "Staff",
-        joined: "2023-05-20",
-        avatar: "https://picsum.photos/seed/user4/40/40"
-    }
-]
 
 export default function AdminUsersPage() {
+    const firestore = useFirestore();
+    const usersQuery = useMemo(() => {
+        if (!firestore) return null;
+        // Using learners as users for now
+        return query(collection(firestore, 'learners'));
+    }, [firestore]);
+
+    const { data: users, loading } = useCollection<Learner>(usersQuery);
+    
     return (
         <div className="grid gap-6 p-4 sm:p-6 lg:p-10">
             <Card className="bg-primary text-primary-foreground">
@@ -75,8 +52,9 @@ export default function AdminUsersPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.email}>
+                            {loading && <TableRow><TableCell colSpan={4}>Loading...</TableCell></TableRow>}
+                            {users && users.map((user) => (
+                                <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar>
@@ -90,9 +68,9 @@ export default function AdminUsersPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={user.role === 'Admin' ? 'destructive' : user.role === 'Staff' ? 'default' : 'secondary'}>{user.role}</Badge>
+                                        <Badge variant='secondary'>Learner</Badge>
                                     </TableCell>
-                                    <TableCell className="hidden sm:table-cell">{user.joined}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{user.joinedDate}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -111,6 +89,7 @@ export default function AdminUsersPage() {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                             {!loading && users?.length === 0 && <TableRow><TableCell colSpan={4}>No users found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
                 </CardContent>
