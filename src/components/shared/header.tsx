@@ -4,8 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Menu, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUser, useAuth } from "@/firebase";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { signOut } from 'firebase/auth';
+
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -21,6 +26,9 @@ const navLinks = [
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user, loading } = useUser();
+  const auth = useAuth();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +37,29 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const getPortalLink = () => {
+    if (!user) return "/login";
+    switch(user.role) {
+        case 'Admin':
+        case 'Sales':
+        case 'Finance':
+        case 'Business':
+        case 'Operations':
+            return "/a";
+        case 'Staff':
+            return "/s";
+        case 'Learner':
+        default:
+            return "/l";
+    }
+  }
+
+  const handleLogout = async () => {
+    if (auth) {
+        await signOut(auth);
+    }
+  }
 
   return (
     <header className={cn(
@@ -57,6 +88,46 @@ export function Header() {
                     {link.label}
                 </Link>
                 ))}
+                 {loading ? <Loader2 className={cn("animate-spin", scrolled ? "" : "text-white")} /> : (
+                    <>
+                        {user ? (
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className={cn("relative h-10 w-10 rounded-full", scrolled ? "hover:bg-accent" : "hover:bg-white/10")}>
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={user.avatar} alt={user.name} />
+                                            <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href={getPortalLink()}>Go to Portal</Link>
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem asChild>
+                                        <Link href={`${getPortalLink()}/profile`}>My Profile</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleLogout}>
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className={cn(
+                                    "text-sm font-bold uppercase transition-colors",
+                                    scrolled ? "text-primary hover:text-primary/80" : "text-white hover:text-primary"
+                                )}
+                                >
+                                Portal Login
+                            </Link>
+                        )}
+                    </>
+                 )}
             </nav>
             <div className="md:hidden">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -81,6 +152,21 @@ export function Header() {
                           {link.label}
                         </Link>
                       ))}
+                      <div className="border-t pt-4">
+                        {loading ? <Loader2 className="animate-spin" /> : (
+                            <>
+                                {user ? (
+                                    <div className="flex flex-col gap-4">
+                                         <Link href={getPortalLink()} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">Portal</Link>
+                                         <Link href={`${getPortalLink()}/profile`} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">My Profile</Link>
+                                         <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-left text-lg font-bold uppercase text-destructive">Logout</button>
+                                    </div>
+                                ) : (
+                                    <Link href="/login" onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase">Portal Login</Link>
+                                )}
+                            </>
+                        )}
+                      </div>
                     </div>
                   </SheetContent>
                 </Sheet>

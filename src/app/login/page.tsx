@@ -1,13 +1,45 @@
+'use client'; // Needs to be a client component to use hooks
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from '@/firebase';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { LoginForm } from '@/components/auth/login-form';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const loginImage = PlaceHolderImages.find(p => p.id === 'login-page-background');
+  const { user, loading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      // User is logged in, redirect to their portal
+      let redirectPath = '/l'; // Default to learner
+      const role = user.role;
+      
+      if (['Admin', 'Sales', 'Finance', 'Business', 'Operations'].includes(role)) {
+        redirectPath = '/a';
+      } else if (role === 'Staff') {
+        redirectPath = '/s';
+      }
+      
+      router.push(redirectPath);
+    }
+  }, [user, loading, router]);
   
+  if (loading || (!loading && user)) {
+    // Show a loading state while checking auth and redirecting
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   return (
     <div className="relative w-full min-h-screen">
       {loginImage && <Image
