@@ -199,6 +199,21 @@
         }
       },
       "required": ["name", "email", "role", "status"]
+    },
+    "Branding": {
+      "title": "Branding",
+      "description": "Stores branding assets like logo URL.",
+      "type": "object",
+      "properties": {
+        "logoUrl": {
+          "type": "string",
+          "description": "The URL of the company logo."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   },
   "auth": {
@@ -240,6 +255,12 @@
         "$ref": "#/entities/User"
       },
       "description": "Collection of all users in the system."
+    },
+    "/settings/{settingId}": {
+      "schema": {
+        "$ref": "#/entities/Branding"
+      },
+      "description": "General application settings. Expects a single document with ID 'branding'."
     }
   }
 }

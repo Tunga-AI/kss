@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building, BookUser } from 'lucide-react';
+import { LayoutDashboard, BookCopy, Users, LogOut, Globe, BarChart, Tag, Image as ImageIcon, User, UserCheck, Building, BookUser, Settings } from 'lucide-react';
 
 const menuItems = [
   { href: '/a', label: 'DASHBOARD', icon: LayoutDashboard },
@@ -28,6 +28,7 @@ const menuItems = [
   { href: '/a/finance', label: 'FINANCE', icon: Tag },
   { href: '/a/b2b', label: 'B2B', icon: Building },
   { href: '/a/gallery', label: 'GALLERY', icon: ImageIcon },
+  { href: '/a/settings', label: 'SETTINGS', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

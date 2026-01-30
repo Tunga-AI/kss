@@ -1,4 +1,10 @@
+'use client';
+
 import Link from "next/link";
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { BrandingSettings } from '@/lib/settings-types';
+import Image from 'next/image';
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -12,12 +18,22 @@ const navLinks = [
 ];
 
 export function Footer() {
+  const firestore = useFirestore();
+  const settingsRef = firestore ? doc(firestore, 'settings', 'branding') : null;
+  const { data: settings } = useDoc<BrandingSettings>(settingsRef);
+
   return (
     <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-between gap-6 py-10 md:h-24 md:flex-row">
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
+            {settings?.logoUrl ? (
+              <div className="relative w-24 h-10">
+                  <Image src={settings.logoUrl} alt="KSS Logo" fill className="object-contain" />
+              </div>
+            ) : (
+              <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
+            )}
           </Link>
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-muted-foreground">

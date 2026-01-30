@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import type { BrandingSettings } from "@/lib/settings-types";
+import { doc } from "firebase/firestore";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -25,6 +27,9 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, loading } = useUser();
+  const firestore = useFirestore();
+  const settingsRef = firestore ? doc(firestore, 'settings', 'branding') : null;
+  const { data: settings } = useDoc<BrandingSettings>(settingsRef);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,7 +66,18 @@ export function Header() {
             "flex items-center space-x-2 transition-colors",
             scrolled ? "text-primary" : "text-white hover:text-white/90"
         )}>
-          <span className="font-bold inline-block font-headline text-2xl">KSS</span>
+          {settings?.logoUrl ? (
+              <div className="relative w-24 h-10">
+                  <Image
+                      src={settings.logoUrl}
+                      alt="KSS Logo"
+                      fill
+                      className={cn("object-contain", !scrolled && "brightness-0 invert")}
+                  />
+              </div>
+          ) : (
+              <span className="font-bold inline-block font-headline text-2xl">KSS</span>
+          )}
         </Link>
         
         <div className="flex items-center gap-4">
@@ -113,7 +129,18 @@ export function Header() {
                   </SheetTrigger>
                   <SheetContent side="right">
                     <Link href="/" className="flex items-center space-x-2 mb-8">
-                      <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
+                       {settings?.logoUrl ? (
+                          <div className="relative w-24 h-10">
+                              <Image
+                                  src={settings.logoUrl}
+                                  alt="KSS Logo"
+                                  fill
+                                  className="object-contain"
+                              />
+                          </div>
+                      ) : (
+                          <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
+                      )}
                     </Link>
                     <div className="flex flex-col gap-4">
                       {navLinks.map((link) => (
