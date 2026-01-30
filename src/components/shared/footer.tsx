@@ -39,27 +39,28 @@ export function Footer() {
   return (
     <>
       <footer className="border-t bg-background">
-        <div className="container flex flex-col items-center justify-between gap-6 py-10 md:h-24 md:flex-row">
-          <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+        <div className="container">
+          <div className="flex flex-col items-center justify-between gap-6 py-8 sm:flex-row">
             <Link href="/" className="flex items-center space-x-2">
               {settings?.logoUrl ? (
-                <div className="relative w-24 h-10">
-                    <Image src={settings.logoUrl} alt="KSS Logo" fill className="object-contain" />
+                <div className="relative h-10 w-24">
+                  <Image src={settings.logoUrl} alt="KSS Logo" fill className="object-contain" />
                 </div>
               ) : (
                 <span className="font-bold inline-block font-headline text-2xl text-primary">KSS</span>
               )}
             </Link>
+            <div className="flex justify-center gap-x-6 sm:justify-end">
+              <Link href="/privacy" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Terms of Service
+              </Link>
+            </div>
           </div>
-          <div className="flex-1" />
-          <div className="text-center text-sm text-muted-foreground md:text-right">
-              <p className="leading-loose">
-                &copy; {new Date().getFullYear()} Kenya School of Sales.
-              </p>
-              <div className="flex justify-center md:justify-end gap-x-4">
-                   <Link href="/privacy" className="transition-colors hover:text-primary">Privacy Policy</Link>
-                   <Link href="/terms" className="transition-colors hover:text-primary">Terms of Service</Link>
-              </div>
+          <div className="border-t py-6 text-center text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} Kenya School of Sales. All Rights Reserved.</p>
           </div>
         </div>
       </footer>
