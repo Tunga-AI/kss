@@ -83,6 +83,7 @@ export default function Home() {
                     fill
                     className="object-cover"
                     data-ai-hint={heroImage.imageHint}
+                    priority
                 />
             )}
             <div className="absolute inset-0 bg-black/60" />
@@ -137,6 +138,7 @@ export default function Home() {
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -162,6 +164,7 @@ export default function Home() {
                             alt={course.title}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
+                             sizes="(max-width: 1024px) 100vw, 50vw"
                           />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -268,6 +271,7 @@ export default function Home() {
                     fill
                     className="object-cover"
                     data-ai-hint={aiFeatureImage.imageHint}
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 )}
               </div>
@@ -295,6 +299,7 @@ export default function Home() {
                           alt={event.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -345,6 +350,7 @@ export default function Home() {
                           alt={course.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -422,6 +428,7 @@ export default function Home() {
                                 fill
                                 className="object-cover"
                                 data-ai-hint={image.imageHint}
+                                sizes="(max-width: 768px) 50vw, 25vw"
                             />
                         </div>
                     ))}
