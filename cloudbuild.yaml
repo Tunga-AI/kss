@@ -17,6 +17,8 @@ steps:
       - 'PAYSTACK_SECRET_KEY=sk_test_caf341ef6d5594a1069c7f9c9465fb2124150e07'
       - '--build-arg'
       - 'NEXT_PUBLIC_APP_URL=https://sales-uurxypxfoa-uc.a.run.app'
+      - '--build-arg'
+      - 'GEMINI_API_KEY=AIzaSyBst8FOpJiCUjkxycR5KVQYA1I7YXBa-dw'
       - '-t'
       - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:${BUILD_ID}'
       - '.'
@@ -54,7 +56,7 @@ steps:
       - '--port'
       - '8080'
       - '--set-env-vars'
-      - 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=msommii,NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB0zPzaidQLDpNyrh7ReaiRyNhp8HOAPfc,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=msommii.firebaseapp.com,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=msommii.firebasestorage.app,NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_3531fac258f9e1e40a92e942e313e046fbf49866,PAYSTACK_SECRET_KEY=sk_test_caf341ef6d5594a1069c7f9c9465fb2124150e07,NEXT_PUBLIC_APP_URL=https://sales-uurxypxfoa-uc.a.run.app,APP_URL=https://sales-uurxypxfoa-uc.a.run.app,FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@msommii.iam.gserviceaccount.com,EMAIL_HOST=smtp.gmail.com,EMAIL_PORT=587,EMAIL_USER=hi@kss.or.ke,EMAIL_PASSWORD=yvva uynv aqry kdmi,EMAIL_FROM_NAME=KSS Academy,FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----
+      - 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=msommii,NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB0zPzaidQLDpNyrh7ReaiRyNhp8HOAPfc,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=msommii.firebaseapp.com,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=msommii.firebasestorage.app,NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_3531fac258f9e1e40a92e942e313e046fbf49866,PAYSTACK_SECRET_KEY=sk_test_caf341ef6d5594a1069c7f9c9465fb2124150e07,NEXT_PUBLIC_APP_URL=https://sales-uurxypxfoa-uc.a.run.app,APP_URL=https://sales-uurxypxfoa-uc.a.run.app,GEMINI_API_KEY=AIzaSyBst8FOpJiCUjkxycR5KVQYA1I7YXBa-dw,FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@msommii.iam.gserviceaccount.com,EMAIL_HOST=smtp.gmail.com,EMAIL_PORT=587,EMAIL_USER=hi@kss.or.ke,EMAIL_PASSWORD=yvva uynv aqry kdmi,EMAIL_FROM_NAME=KSS Academy,FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCwGXzvuNXDZHQh
 aZEH/Uj/opkWlYx5Xm+IitnhgPnsqmHHBi/PL4V2fSOQ3lK1B6zAadwsRA+t4/g3
 UlEvVBbJX/xMPnicAvtOGT9hv9t/NfQ8GC18i8G82yBuNXXL7NbbEtP/glPSw+sf
