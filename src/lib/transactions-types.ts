@@ -9,5 +9,7 @@ export type Transaction = {
     currency: string;
     status: 'Pending' | 'Success' | 'Failed';
     paystackReference?: string;
+    ticketCount?: number;
+    paymentType?: 'Admission' | 'Tuition';
     date?: Timestamp;
 };

@@ -16,10 +16,14 @@ export default function EditProgramPage() {
         return doc(firestore, 'programs', id);
     }, [firestore, id]);
 
-    const { data: program, loading } = useDoc<Program>(programRef);
+    const { data: program, loading } = useDoc<Program>(programRef as any);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="p-8 flex items-center justify-center min-h-screen">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-accent" />
+            </div>
+        );
     }
 
     if (!program) {

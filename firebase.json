@@ -1,0 +1,15 @@
+{
+  "firestore": [
+    {
+      "rules": "firestore.rules",
+      "database": "(default)"
+    },
+    {
+      "rules": "firestore.kenyasales.rules",
+      "database": "kenyasales"
+    }
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

@@ -1,4 +1,3 @@
-'use server';
 
 import { z } from 'zod';
 import { initializeFirebase } from '@/firebase';
@@ -31,6 +30,14 @@ export async function completeB2bRegistration(data: unknown) {
   const { name, email, password, companyName, tier, numLearners, period, amount, paymentReference } = validatedFields.data;
   const { auth, firestore } = initializeFirebase();
 
+  // Determine max learners based on tier
+  const tierMaxLearners: Record<string, number> = {
+    Startup: 5,
+    SME: 20,
+    Corporate: 999,
+  };
+  const maxLearners = tierMaxLearners[tier] ?? numLearners;
+
   try {
     // 1. Create Firebase Auth user
     await createUserWithEmailAndPassword(auth, email, password);
@@ -43,10 +50,14 @@ export async function completeB2bRegistration(data: unknown) {
       name: companyName,
       adminId: '', // will be updated shortly
       tier: tier,
-      status: 'Active', // Active since they have paid
-      maxLearners: numLearners,
+      status: 'Active',
+      maxLearners: maxLearners,
       createdAt: serverTimestamp(),
       subscriptionEndDate: subscriptionEndDate,
+      subscriptionPeriod: period,
+      totalSubscriptionAmount: amount,
+      paymentReference: paymentReference,
+      isSetupComplete: false, // Prompt to complete setup on first login
     });
 
     // 4. Create the User document (BusinessAdmin)
@@ -57,17 +68,17 @@ export async function completeB2bRegistration(data: unknown) {
       status: 'Active',
       organizationId: orgRef.id,
     });
-    
+
     // 5. Update the Organization with the BusinessAdmin's user document ID
     await updateDoc(orgRef, {
-        adminId: userRef.id,
+      adminId: userRef,
     });
 
     // 6. Add transaction record
-    addTransaction(firestore, {
+    await addTransaction(firestore, {
       learnerName: `${name} (${companyName})`,
       learnerEmail: email,
-      program: `B2B Subscription - ${tier} (${numLearners} Seats)`,
+      program: `B2B Subscription - ${tier} (${numLearners} Seats, ${period} months)`,
       amount: amount,
       currency: 'KES',
       status: 'Success',

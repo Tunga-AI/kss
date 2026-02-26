@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { onSnapshot, Query, DocumentData } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
+import { onSnapshot, Query, DocumentData, queryEqual } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -10,8 +10,22 @@ export function useCollection<T extends DocumentData>(q: Query<T> | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Use a ref to store the query to prevent infinite loops when the query object
+  // is recreated on every render but is semantically the same.
+  const queryRef = useRef(q);
+
+  if (q !== queryRef.current) {
+    // If one is null and other isn't, they are different.
+    // If both are non-null, check if they are equal queries.
+    if (!q || !queryRef.current || !queryEqual(q, queryRef.current)) {
+      queryRef.current = q;
+    }
+  }
+
+  const stableQuery = queryRef.current;
+
   useEffect(() => {
-    if (!q) {
+    if (!stableQuery) {
       setData(null);
       setLoading(false);
       return;
@@ -19,7 +33,7 @@ export function useCollection<T extends DocumentData>(q: Query<T> | null) {
     setLoading(true);
 
     const unsubscribe = onSnapshot(
-      q,
+      stableQuery,
       (querySnapshot) => {
         const documents = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -29,9 +43,10 @@ export function useCollection<T extends DocumentData>(q: Query<T> | null) {
         setLoading(false);
         setError(null);
       },
-      async (serverError) => {
+      (serverError) => {
+        console.error('Firestore error on collection:', (stableQuery as any)._query?.path?.toString(), serverError);
         const permissionError = new FirestorePermissionError({
-          path: (q as any)._query?.path?.toString() || 'unknown path',
+          path: (stableQuery as any)._query?.path?.toString() || 'unknown path',
           operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -41,7 +56,7 @@ export function useCollection<T extends DocumentData>(q: Query<T> | null) {
     );
 
     return () => unsubscribe();
-  }, [q]);
+  }, [stableQuery]);
 
   return { data, loading, error };
 }

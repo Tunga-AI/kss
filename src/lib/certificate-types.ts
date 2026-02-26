@@ -4,8 +4,28 @@ export type Certificate = {
     id: string;
     learnerName: string;
     learnerEmail: string;
+    learnerId?: string;
+
     programTitle: string;
+    programType?: 'Core' | 'E-Learning' | 'Event' | 'Short';
+    programId?: string;
+
+    courseTitle?: string;
+    courseId?: string;
+    cohortId?: string;
+    cohortName?: string;
+
     issuedDate: Timestamp;
-    // In a real app, this would link to a generated PDF
+    completedAt?: Timestamp;
+
+    // Auto-generated flag
+    isSystemGenerated?: boolean;
+
+    // Optional PDF URL for admin-uploaded certificates
     certificateUrl?: string;
+
+    // Legacy (pre-system) certificate fields
+    isLegacy?: boolean;
+    sourceFilename?: string;
+    uploadedAt?: Timestamp;
 };

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { onSnapshot, DocumentReference, DocumentData } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
+import { onSnapshot, DocumentReference, DocumentData, refEqual } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -10,8 +10,18 @@ export function useDoc<T extends DocumentData>(ref: DocumentReference<T> | null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  const refRef = useRef(ref);
+
+  if (ref !== refRef.current) {
+    if (!ref || !refRef.current || !refEqual(ref, refRef.current)) {
+      refRef.current = ref;
+    }
+  }
+
+  const stableRef = refRef.current;
+
   useEffect(() => {
-    if (!ref) {
+    if (!stableRef) {
       setData(null);
       setLoading(false);
       return;
@@ -19,7 +29,7 @@ export function useDoc<T extends DocumentData>(ref: DocumentReference<T> | null)
     setLoading(true);
 
     const unsubscribe = onSnapshot(
-      ref,
+      stableRef,
       (doc) => {
         if (doc.exists()) {
           setData({ id: doc.id, ...doc.data() } as T & { id: string });
@@ -31,7 +41,7 @@ export function useDoc<T extends DocumentData>(ref: DocumentReference<T> | null)
       },
       async (serverError) => {
         const permissionError = new FirestorePermissionError({
-          path: ref.path,
+          path: stableRef.path,
           operation: 'get',
         });
         errorEmitter.emit('permission-error', permissionError);
@@ -41,7 +51,7 @@ export function useDoc<T extends DocumentData>(ref: DocumentReference<T> | null)
     );
 
     return () => unsubscribe();
-  }, [ref]);
+  }, [stableRef]);
 
   return { data, loading, error };
 }

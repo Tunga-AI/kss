@@ -10,14 +10,17 @@ import { firebaseConfig } from './config';
 let firebaseApp: FirebaseApp;
 let auth: Auth;
 let firestore: Firestore;
+let usersFirestore: Firestore; // Specific for users collection
 let storage: FirebaseStorage;
-const databaseId = 'kenyasales';
+const usersDatabaseId = 'kenyasales';
 
 function initializeFirebase() {
   if (getApps().length === 0) {
     firebaseApp = initializeApp(firebaseConfig);
     auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp, databaseId);
+    // Both hooks now point to kenyasales — single DB for everything
+    usersFirestore = getFirestore(firebaseApp, usersDatabaseId);
+    firestore = usersFirestore;
     storage = getStorage(firebaseApp);
     if (typeof window !== 'undefined') {
       getAnalytics(firebaseApp);
@@ -25,10 +28,11 @@ function initializeFirebase() {
   } else {
     firebaseApp = getApp();
     auth = getAuth(firebaseApp);
-    firestore = getFirestore(firebaseApp, databaseId);
+    usersFirestore = getFirestore(firebaseApp, usersDatabaseId);
+    firestore = usersFirestore;
     storage = getStorage(firebaseApp);
   }
-  return { firebaseApp, auth, firestore, storage };
+  return { firebaseApp, auth, firestore, usersFirestore, storage };
 }
 
 export { initializeFirebase };

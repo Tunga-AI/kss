@@ -1,0 +1,6 @@
+'use client';
+import { SessionForm } from "@/app/admin/classroom/session-form";
+
+export default function NewSessionPage() {
+    return <SessionForm />;
+}

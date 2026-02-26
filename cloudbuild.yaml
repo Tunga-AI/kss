@@ -1,0 +1,68 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=msommii'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=msommii.firebaseapp.com'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=msommii.firebasestorage.app'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=YOUR_PAYSTACK_PUBLIC_KEY'
+      - '--build-arg'
+      - 'PAYSTACK_SECRET_KEY=YOUR_PAYSTACK_SECRET_KEY'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_APP_URL=https://sales-uurxypxfoa-uc.a.run.app'
+      - '-t'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:${BUILD_ID}'
+      - '.'
+
+  # 2. Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:${BUILD_ID}']
+
+  # 3. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:${BUILD_ID}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--project'
+      - '${_PROJECT_ID}'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--timeout'
+      - '300'
+      - '--port'
+      - '8080'
+      - '--set-env-vars'
+      - 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=msommii,NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY,NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=msommii.firebaseapp.com,NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=msommii.firebasestorage.app,NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=YOUR_PAYSTACK_PUBLIC_KEY,PAYSTACK_SECRET_KEY=YOUR_PAYSTACK_SECRET_KEY,NEXT_PUBLIC_APP_URL=https://sales-uurxypxfoa-uc.a.run.app,APP_URL=https://sales-uurxypxfoa-uc.a.run.app,FIREBASE_CLIENT_EMAIL=YOUR_FIREBASE_CLIENT_EMAIL,EMAIL_HOST=smtp.gmail.com,EMAIL_PORT=587,EMAIL_USER=hi@kss.or.ke,EMAIL_PASSWORD=YOUR_EMAIL_PASSWORD,EMAIL_FROM_NAME=KSS Academy,FIREBASE_PRIVATE_KEY=YOUR_FIREBASE_PRIVATE_KEY'
+
+substitutions:
+  _PROJECT_ID: gonogasport
+  _SERVICE_NAME: sales
+  _REGION: us-central1
+
+images:
+  - 'gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}:${BUILD_ID}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

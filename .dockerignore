@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+build
+.git
+.gitignore
+Dockerfile
+cloudbuild.yaml
+nginx.conf
+README.md

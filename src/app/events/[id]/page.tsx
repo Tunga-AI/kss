@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { format } from "date-fns";
-import { useFirestore } from "@/firebase";
+import { useUsersFirestore } from "@/firebase";
 import { collection, query, where, limit } from "firebase/firestore";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import type { Program } from "@/lib/program-types";
@@ -18,16 +18,16 @@ import { ProgramRegistration } from "@/components/payments/ProgramRegistration";
 export default function EventDetailPage() {
   const params = useParams();
   const slug = Array.isArray(params.id) ? params.id[0] : params.id;
-  const firestore = useFirestore();
+  const firestore = useUsersFirestore(); // programs live in kenyasales DB
 
   const programQuery = useMemo(() => {
     if (!firestore || !slug) return null;
     return query(collection(firestore, 'programs'), where('slug', '==', slug), limit(1));
   }, [firestore, slug]);
 
-  const { data: programs, loading } = useCollection<Program>(programQuery);
+  const { data: programs, loading } = useCollection<Program>(programQuery as any);
   const event = useMemo(() => programs?.[0], [programs]);
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -42,11 +42,11 @@ export default function EventDetailPage() {
       <main className="flex-grow">
         <section className="relative h-[560px] w-full">
           {event.imageUrl && (
-             <Image
-                src={event.imageUrl}
-                alt={event.title}
-                fill
-                className="object-cover"
+            <Image
+              src={event.imageUrl}
+              alt={event.title}
+              fill
+              className="object-cover"
             />
           )}
           <div className="absolute inset-0 bg-black/60" />
@@ -72,7 +72,7 @@ export default function EventDetailPage() {
               <div className="md:col-span-2">
                 <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-6">About This Event</h2>
                 <p className="text-lg text-foreground/80">{event.description}</p>
-                
+
                 <h2 className="font-headline text-3xl sm:text-4xl font-bold mt-12 mb-6">Speakers</h2>
                 <div className="grid gap-8 sm:grid-cols-2">
                   {event.speakers?.map((speaker) => (
@@ -89,7 +89,7 @@ export default function EventDetailPage() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <Card>
                   <CardHeader>
@@ -103,24 +103,24 @@ export default function EventDetailPage() {
                         <p className="text-muted-foreground">{format(new Date(event.date), 'MMMM d, yyyy')}</p>
                       </div>
                     </div>}
-                     <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3">
                       <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <div>
                         <p className="font-semibold">Time</p>
                         <p className="text-muted-foreground">{event.time}</p>
                       </div>
                     </div>
-                     <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <div>
                         <p className="font-semibold">Location</p>
                         <p className="text-muted-foreground">{event.location}</p>
                       </div>
                     </div>
-                     <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3">
                       <Ticket className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                       <div>
-                        <p className="font-semibold">Price</p>
+                        <p className="font-semibold">Ticket Price</p>
                         <p className="text-muted-foreground">{event.price}</p>
                       </div>
                     </div>

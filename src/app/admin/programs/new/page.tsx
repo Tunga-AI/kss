@@ -18,14 +18,23 @@ function CreateProgram() {
 
     if (programType) {
         const emptyProgram: Partial<Program> = {
-            title: '',
-            description: '',
-            imageUrl: '',
+            programName: '',
+            slug: '',
+            shortDescription: '',
+            image: '',
+            programCode: '',
             programType: programType,
-            level: 'Beginner',
-            takeaways: [],
-            price: programType === 'E-Learning' ? 'Free' : '',
-            speakers: [],
+            status: 'draft',
+            price: 0,
+            currency: 'KES',
+            programDuration: '',
+            programFormat: [],
+            level: 1,
+            whoIsItFor: [],
+            objectives: [],
+            completionRequirements: [],
+            curriculumBreakdown: [],
+            intakes: [],
         };
         return <ProgramForm program={emptyProgram} />;
     }
