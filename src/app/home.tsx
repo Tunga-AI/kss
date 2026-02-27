@@ -277,7 +277,7 @@ export default function Home() {
                       </h3>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-white/70 bg-white/10 px-2.5 py-1 rounded">Level {course.level}</span>
-                        <span className="font-bold">{course.currency} {(course.admissionCost || course.registrationFee || course.price)?.toLocaleString?.()}</span>
+                        <span className="font-bold">{course.currency} {course.price?.toLocaleString?.()}</span>
                       </div>
                     </div>
                   </div>
