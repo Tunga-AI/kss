@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff, Lock, User, Mail } from 'lucide-react';
 import type { User as UserType } from '@/lib/user-types';
 import type { Organization } from '@/lib/organization-types';
 
@@ -33,7 +33,7 @@ export function LoginForm() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
 
-  const [loginStep, setLoginStep] = useState<'email' | 'password' | 'set-password'>('email');
+  const [loginStep, setLoginStep] = useState<'email' | 'password' | 'check-email'>('email');
   const [userName, setUserName] = useState('');
 
   const router = useRouter();
@@ -112,14 +112,23 @@ export function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+
+      if (!res.ok) {
+        // API failure – default to password step (safer than showing set-password to real users)
+        console.warn('check-exists API returned', res.status, '— defaulting to password step');
+        setLoginStep('password');
+        setError(null);
+        return;
+      }
+
       const { exists } = await res.json();
 
       if (exists) {
         // Account exists → ask for password
         setLoginStep('password');
       } else {
-        // No Auth account yet → ask them to create a password
-        setLoginStep('set-password');
+        // No Auth account yet → silently send them a setup email
+        await sendSetupEmail();
       }
       setError(null);
     } catch (err: any) {
@@ -130,41 +139,25 @@ export function LoginForm() {
     }
   };
 
-  // Handle first-time password creation for users that exist in Firestore but not in Firebase Auth
-  const handleSetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (!auth) {
-      setError("Service unavailable. Please try again.");
-      return;
-    }
-
-    setLoading(true);
+  // Send a setup email for users who exist in Firestore but not yet in Firebase Auth.
+  // Called automatically during handleEmailCheck — the user never sees the set-password form.
+  const sendSetupEmail = async () => {
     try {
-      // Create Firebase Auth account using the email that already exists in Firestore
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: userName });
-      // Auth state change in use-user.tsx will handle the redirect automatically
-    } catch (authError: any) {
-      if (authError.code === 'auth/email-already-in-use') {
-        // Race condition – account was just created elsewhere; fall back to sign-in
+      const res = await fetch('/api/auth/send-setup-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: userName }),
+      });
+      if (!res.ok) {
+        // If the email API fails, fall back to password step with a helpful error
         setLoginStep('password');
-        setError("An account was already found. Please enter your password below.");
+        setError("We couldn't send you a setup email. Please use 'Forgot password?' to set your password.");
       } else {
-        setError("Failed to create account. Please try again or contact support.");
-        console.error(authError);
+        setLoginStep('check-email');
       }
-    } finally {
-      setLoading(false);
+    } catch {
+      setLoginStep('password');
+      setError("We couldn't send you a setup email. Please use 'Forgot password?' to set your password.");
     }
   };
 
@@ -435,8 +428,8 @@ export function LoginForm() {
             ? 'Set Up Your Business Account'
             : isSetupFlow
               ? 'Secure Your Account'
-              : loginStep === 'set-password'
-                ? `Welcome, ${userName.split(' ')[0]}`
+              : loginStep === 'check-email'
+                ? `Check your inbox, ${userName.split(' ')[0]}`
                 : loginStep === 'password'
                   ? `Welcome back, ${userName.split(' ')[0]}`
                   : 'Welcome Back'}
@@ -446,217 +439,254 @@ export function LoginForm() {
             ? 'Payment verified — create a password to access your business portal.'
             : isSetupFlow
               ? 'Set your password to complete registration.'
-              : loginStep === 'set-password'
-                ? 'Create a password to activate your account.'
+              : loginStep === 'check-email'
+                ? `We've sent a password setup link to ${email}`
                 : loginStep === 'password'
                   ? 'Enter your password to access your portal.'
                   : 'Enter your email to continue.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 sm:p-8">
-        <form onSubmit={
-          isB2bSetupFlow ? handleB2bAccountSetup :
-            isSetupFlow ? handleAccountSetup :
-              loginStep === 'email' ? handleEmailCheck :
-                loginStep === 'set-password' ? handleSetPassword :
-                  handleLogin
-        } className="grid gap-6">
-
-          {/* B2B payment verification banner */}
-          {isB2bSetupFlow && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800">Payment Confirmed</AlertTitle>
-              <AlertDescription className="text-green-700">
-                Your registration fee has been verified. Set a password below to activate your <strong>{searchParams.get('company')}</strong> account.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {isSetupFlow && txId && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800">Payment Verified</AlertTitle>
-              <AlertDescription className="text-green-700">
-                Your payment has been confirmed (Transaction: {txId}). Complete your account setup below to access your portal.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Pre-filled details for setup flows */}
-          {(isSetupFlow || isB2bSetupFlow) && (
-            <>
-              <div className="grid gap-2">
-                <Label htmlFor="name" className="text-primary font-medium">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    disabled
-                    className="pl-10 bg-gray-50 border-gray-200"
-                  />
-                </div>
+        {/* ── Check-email confirmation screen (no form) ── */}
+        {loginStep === 'check-email' && !isSetupFlow && !isB2bSetupFlow ? (
+          <div className="grid gap-6 py-2">
+            <div className="flex flex-col items-center gap-4 text-center py-4">
+              <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center">
+                <Mail className="h-8 w-8 text-accent" />
               </div>
-              {phone && (
-                <div className="grid gap-2">
-                  <Label htmlFor="phone" className="text-primary font-medium">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    disabled
-                    className="bg-gray-50 border-gray-200"
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Email Input */}
-          {(isSetupFlow || isB2bSetupFlow || loginStep === 'email' || loginStep === 'password') && (
-            <div className="grid gap-2">
-              <Label htmlFor="email" className="text-primary font-medium">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading || isSetupFlow || isB2bSetupFlow || loginStep === 'password'}
-                className={`rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none ${isSetupFlow || isB2bSetupFlow || loginStep === 'password' ? 'bg-gray-50 border-gray-200' : ''}`}
-              />
-            </div>
-          )}
-
-          {/* Password Input */}
-          {(isSetupFlow || isB2bSetupFlow || loginStep === 'password' || loginStep === 'set-password') && (
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-primary font-medium">
-                  {isSetupFlow || isB2bSetupFlow || loginStep === 'set-password' ? 'Create Password' : 'Password'}
-                </Label>
-                {!isSetupFlow && !isB2bSetupFlow && loginStep !== 'set-password' && (
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="px-0 h-auto text-xs text-accent hover:text-accent/80"
-                    onClick={handleForgotPassword}
-                    disabled={sendingReset || !email}
-                  >
-                    {sendingReset ? (
-                      <>
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      "Forgot password?"
-                    )}
-                  </Button>
-                )}
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  minLength={isSetupFlow || isB2bSetupFlow || loginStep === 'set-password' ? 6 : undefined}
-                  className="rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-primary/60" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-primary/60" />
-                  )}
-                  <span className="sr-only">
-                    {showPassword ? "Hide password" : "Show password"}
-                  </span>
-                </Button>
+              <div className="space-y-2">
+                <p className="text-sm text-primary/70 leading-relaxed">
+                  We've emailed a secure password setup link to <strong>{email}</strong>.
+                  Click the link in that email to choose your password, then come back here to log in.
+                </p>
+                <p className="text-xs text-primary/40">The link expires in 24 hours. Check your spam folder if you don't see it.</p>
               </div>
             </div>
-          )}
-
-          {(isSetupFlow || isB2bSetupFlow || loginStep === 'set-password') && (
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword" className="text-primary font-medium">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-                className="rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none"
-              />
-            </div>
-          )}
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
-            <Alert className="border-accent/20 bg-accent/5">
-              <CheckCircle className="h-4 w-4 text-accent" />
-              <AlertTitle className="text-accent">Information</AlertTitle>
-              <AlertDescription className="text-primary/70">{success}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex flex-col gap-3">
             <Button
-              type="submit"
-              className="w-full rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none bg-primary hover:bg-primary/90 text-white shadow-md transition-all h-12 font-bold"
+              type="button"
+              variant="outline"
+              className="w-full rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none"
+              onClick={async () => {
+                setLoading(true);
+                await sendSetupEmail();
+                setLoading(false);
+              }}
               disabled={loading}
             >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ((isSetupFlow || isB2bSetupFlow || loginStep === 'set-password') ? <Lock className="mr-2 h-4 w-4" /> : null)}
-              {isB2bSetupFlow
-                ? 'Activate Business Account'
-                : isSetupFlow
-                  ? 'Create Account & Login'
-                  : loginStep === 'set-password'
-                    ? 'Activate Account & Login'
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Resend email
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => { setLoginStep('email'); setError(null); setUserName(''); }}
+              className="w-full text-sm text-gray-500 hover:text-primary"
+            >
+              Use a different email
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={
+            isB2bSetupFlow ? handleB2bAccountSetup :
+              isSetupFlow ? handleAccountSetup :
+                loginStep === 'email' ? handleEmailCheck :
+                  handleLogin
+          } className="grid gap-6">
+
+            {/* B2B payment verification banner */}
+            {isB2bSetupFlow && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertTitle className="text-green-800">Payment Confirmed</AlertTitle>
+                <AlertDescription className="text-green-700">
+                  Your registration fee has been verified. Set a password below to activate your <strong>{searchParams.get('company')}</strong> account.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {isSetupFlow && txId && (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertTitle className="text-green-800">Payment Verified</AlertTitle>
+                <AlertDescription className="text-green-700">
+                  Your payment has been confirmed (Transaction: {txId}). Complete your account setup below to access your portal.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Pre-filled details for setup flows */}
+            {(isSetupFlow || isB2bSetupFlow) && (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="name" className="text-primary font-medium">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/40" />
+                    <Input
+                      id="name"
+                      type="text"
+                      value={name}
+                      disabled
+                      className="pl-10 bg-gray-50 border-gray-200"
+                    />
+                  </div>
+                </div>
+                {phone && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="phone" className="text-primary font-medium">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      disabled
+                      className="bg-gray-50 border-gray-200"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Email Input */}
+            {(isSetupFlow || isB2bSetupFlow || loginStep === 'email' || loginStep === 'password') && (
+              <div className="grid gap-2">
+                <Label htmlFor="email" className="text-primary font-medium">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading || isSetupFlow || isB2bSetupFlow || loginStep === 'password'}
+                  className={`rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none ${isSetupFlow || isB2bSetupFlow || loginStep === 'password' ? 'bg-gray-50 border-gray-200' : ''}`}
+                />
+              </div>
+            )}
+
+            {/* Password Input */}
+            {(isSetupFlow || isB2bSetupFlow || loginStep === 'password') && (
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-primary font-medium">
+                    {isSetupFlow || isB2bSetupFlow ? 'Create Password' : 'Password'}
+                  </Label>
+                  {!isSetupFlow && !isB2bSetupFlow && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="px-0 h-auto text-xs text-accent hover:text-accent/80"
+                      onClick={handleForgotPassword}
+                      disabled={sendingReset || !email}
+                    >
+                      {sendingReset ? (
+                        <>
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Forgot password?"
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    minLength={isSetupFlow || isB2bSetupFlow ? 6 : undefined}
+                    className="rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-primary/60" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-primary/60" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Hide password" : "Show password"}
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {(isSetupFlow || isB2bSetupFlow) && (
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword" className="text-primary font-medium">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                  className="rounded-tl-lg rounded-br-lg rounded-tr-none rounded-bl-none"
+                />
+              </div>
+            )}
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="border-accent/20 bg-accent/5">
+                <CheckCircle className="h-4 w-4 text-accent" />
+                <AlertTitle className="text-accent">Information</AlertTitle>
+                <AlertDescription className="text-primary/70">{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <Button
+                type="submit"
+                className="w-full rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none bg-primary hover:bg-primary/90 text-white shadow-md transition-all h-12 font-bold"
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ((isSetupFlow || isB2bSetupFlow) ? <Lock className="mr-2 h-4 w-4" /> : null)}
+                {isB2bSetupFlow
+                  ? 'Activate Business Account'
+                  : isSetupFlow
+                    ? 'Create Account & Login'
                     : loginStep === 'email'
                       ? 'Continue'
                       : 'Login'}
-            </Button>
-
-            {!isSetupFlow && (loginStep === 'password' || loginStep === 'set-password') && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setLoginStep('email');
-                  setError(null);
-                  setUserName('');
-                  setPassword('');
-                  setConfirmPassword('');
-                }}
-                className="w-full text-sm text-gray-500 hover:text-primary"
-                disabled={loading}
-              >
-                Not you? Use a different email
               </Button>
-            )}
-          </div>
-        </form>
+
+              {!isSetupFlow && loginStep === 'password' && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setLoginStep('email');
+                    setError(null);
+                    setUserName('');
+                    setPassword('');
+                    setConfirmPassword('');
+                  }}
+                  className="w-full text-sm text-gray-500 hover:text-primary"
+                  disabled={loading}
+                >
+                  Not you? Use a different email
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
       </CardContent>
     </Card>
   );
