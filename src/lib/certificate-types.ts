@@ -7,7 +7,7 @@ export type Certificate = {
     learnerId?: string;
 
     programTitle: string;
-    programType?: 'Core' | 'E-Learning' | 'Event' | 'Short';
+    programType?: 'Core' | 'E-Learning' | 'Event' | 'Short' | 'Corporate';
     programId?: string;
 
     courseTitle?: string;

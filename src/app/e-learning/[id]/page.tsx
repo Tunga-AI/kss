@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle, Clock, BookOpen, Star, UserCheck, Monitor, Lock, Play,
-  ChevronDown, ChevronUp, FileDown, Award, Globe, BarChart, ArrowRight
+  ChevronDown, ChevronUp, FileDown, Award, Globe, BarChart, ArrowRight, Check
 } from "lucide-react";
 import { useUsersFirestore } from "@/firebase";
+import { useUser } from "@/firebase/auth/use-user";
 import { collection, query, where, limit } from "firebase/firestore";
 import { useCollection } from "@/firebase/firestore/use-collection";
 import type { Program } from "@/lib/program-types";
@@ -22,6 +23,7 @@ export default function ElearningCourseDetailPage() {
   const slug = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useUsersFirestore();
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const { user } = useUser();
 
   const programQuery = useMemo(() => {
     if (!firestore || !slug) return null;
@@ -30,6 +32,14 @@ export default function ElearningCourseDetailPage() {
 
   const { data: programs, loading } = useCollection<Program>(programQuery as any);
   const course = useMemo(() => programs?.[0], [programs]);
+
+  const enrollmentQuery = useMemo(() => {
+    if (!firestore || !user || !course) return null;
+    return query(collection(firestore, 'elearningEnrollments'), where('userId', '==', user.uid), where('programId', '==', course.id), limit(1));
+  }, [firestore, user, course]);
+
+  const { data: enrollments, loading: enrollmentLoading } = useCollection<any>(enrollmentQuery as any);
+  const isEnrolled = !!(enrollments && enrollments.length > 0);
 
   if (loading) {
     return (
@@ -59,8 +69,8 @@ export default function ElearningCourseDetailPage() {
       <main className="flex-grow">
 
         {/* ═══ HERO (dark) ═══════════════════════════════════════════ */}
-        <section className="bg-[#1C1D1F] text-white pt-28 pb-16">
-          <div className="container mx-auto px-6 md:px-8 max-w-4xl text-center">
+        <section className="bg-[#1C1D1F] text-white pt-24 pb-12 lg:pt-28 lg:pb-16">
+          <div className="container mx-auto px-4 md:px-8 max-w-4xl text-center">
             {/* Badges */}
             <div className="flex flex-wrap justify-center gap-3 mb-6">
               <Badge className="bg-accent text-white font-black uppercase tracking-widest text-xs rounded-sm px-3">E-Learning</Badge>
@@ -86,20 +96,32 @@ export default function ElearningCourseDetailPage() {
         </section>
 
         {/* ═══ BODY ═══════════════════════════════════════════════════ */}
-        <div className="container mx-auto px-6 md:px-8 max-w-7xl">
-          <div className="grid lg:grid-cols-3 gap-12 py-14">
+        <div className="container mx-auto px-4 md:px-8 max-w-7xl">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 py-10 lg:py-14">
+
+            {/* ── MOBILE ENROLLMENT FORM (shows at top on mobile) ── */}
+            {!isEnrolled && (
+              <div className="block lg:hidden w-full mb-4" id="enroll-form-mobile">
+                <CourseEnrollCard course={course} price={price} slug={slug as string} />
+              </div>
+            )}
+            {isEnrolled && (
+              <div className="block lg:hidden w-full mb-4" id="access-form-mobile">
+                <CourseAccessCard slug={slug as string} />
+              </div>
+            )}
 
             {/* ── MAIN CONTENT (left 2/3) ── */}
-            <div className="lg:col-span-2 space-y-16">
+            <div className="lg:col-span-2 space-y-10 lg:space-y-16 min-w-0">
 
               {/* Overview Video */}
               {course.overviewVideoUrl && (
-                <section>
-                  <div className="rounded-2xl overflow-hidden bg-black aspect-video w-full shadow-2xl relative group">
+                <section className="w-full max-w-full">
+                  <div className="rounded-xl lg:rounded-2xl overflow-hidden bg-black aspect-video w-full shadow-lg lg:shadow-2xl relative group min-w-0">
                     <video
                       src={course.overviewVideoUrl}
                       controls
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-contain"
                       poster={course.imageUrl || course.image}
                     />
                   </div>
@@ -147,7 +169,9 @@ export default function ElearningCourseDetailPage() {
                               {mod.duration && <p className="text-xs text-gray-400 mt-0.5">{mod.duration}</p>}
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
-                              {mod.isPreview ? (
+                              {isEnrolled ? (
+                                <span className="text-[10px] font-black uppercase tracking-widest text-green-600 border border-green-600/40 bg-green-50 rounded-full px-2 py-0.5">Unlocked</span>
+                              ) : mod.isPreview ? (
                                 <span className="text-[10px] font-black uppercase tracking-widest text-accent border border-accent/40 rounded-full px-2 py-0.5">Preview</span>
                               ) : (
                                 <Lock className="h-4 w-4 text-gray-300" />
@@ -161,22 +185,24 @@ export default function ElearningCourseDetailPage() {
                             <div className="px-5 py-4 bg-white space-y-3">
                               {mod.description && <p className="text-sm text-gray-600 leading-relaxed">{mod.description}</p>}
 
-                              {mod.isPreview && mod.videoUrl ? (
-                                <div className="rounded-xl overflow-hidden bg-black aspect-video w-full relative group">
-                                  <video
-                                    src={mod.videoUrl}
-                                    controls
-                                    className="w-full h-full object-cover"
-                                    poster={mod.thumbnailUrl}
-                                  />
-                                </div>
-                              ) : !mod.isPreview && mod.videoUrl ? (
-                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                                  <div className="flex flex-col items-center gap-2 text-gray-400">
-                                    <Lock className="h-8 w-8" />
-                                    <p className="text-sm font-medium">Enroll to unlock this lesson</p>
+                              {mod.videoUrl ? (
+                                isEnrolled || mod.isPreview ? (
+                                  <div className="rounded-xl overflow-hidden bg-black aspect-video w-full relative group">
+                                    <video
+                                      src={mod.videoUrl}
+                                      controls
+                                      className="w-full h-full object-cover"
+                                      poster={mod.thumbnailUrl}
+                                    />
                                   </div>
-                                </div>
+                                ) : (
+                                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                                      <Lock className="h-8 w-8" />
+                                      <p className="text-sm font-medium">Enroll to unlock this lesson</p>
+                                    </div>
+                                  </div>
+                                )
                               ) : null}
 
                               {mod.materials.length > 0 && (
@@ -184,7 +210,7 @@ export default function ElearningCourseDetailPage() {
                                   <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Supporting Materials</p>
                                   <div className="space-y-1">
                                     {mod.materials.map((mat, mIdx) => (
-                                      mod.isPreview ? (
+                                      isEnrolled || mod.isPreview ? (
                                         <a key={mIdx} href={mat.fileUrl} target="_blank" rel="noreferrer"
                                           className="flex items-center gap-2 text-sm text-primary hover:underline">
                                           <FileDown className="h-4 w-4 text-accent" /> {mat.name}
@@ -263,26 +289,40 @@ export default function ElearningCourseDetailPage() {
             </div>
 
             {/* ── SIDEBAR (sticky, right 1/3, desktop only) ── */}
-            <div className="hidden lg:block lg:col-span-1">
-              <div className="sticky top-8">
-                <CourseEnrollCard course={course} price={price} slug={slug as string} />
+            <div className="hidden lg:block lg:col-span-1 min-w-0">
+              <div className="sticky top-8" id="enroll-form-desktop">
+                {isEnrolled ? (
+                  <CourseAccessCard slug={slug as string} />
+                ) : (
+                  <CourseEnrollCard course={course} price={price} slug={slug as string} />
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* ═══ Mobile enroll bar ═══════════════════════════════════════ */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex items-center justify-between gap-4 z-50 shadow-2xl">
-          <div className="shrink-0">
-            <p className="text-2xl font-black text-primary">{price}</p>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Lifetime access</p>
+        {!isEnrolled ? (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex items-center justify-between gap-4 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+            <div className="shrink-0 flex flex-col justify-center">
+              <p className="text-xl sm:text-2xl font-black text-primary leading-none">{price}</p>
+              <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Lifetime access</p>
+            </div>
+            <Button className="h-12 px-6 sm:px-8 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl flex-1 shadow-lg shadow-accent/20" asChild>
+              <a href="#enroll-form-mobile">
+                Enroll Now <ArrowRight className="h-4 w-4 ml-1.5" />
+              </a>
+            </Button>
           </div>
-          <Button className="h-12 px-8 bg-accent hover:bg-accent/90 text-white font-bold rounded-tl-xl rounded-br-xl flex-1" onClick={() => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}>
-            Enroll Now <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
+        ) : (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex items-center justify-between gap-4 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+            <Button className="h-12 w-full bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-600/20" asChild>
+              <Link href={`/e-learning/${slug}/learn`}>
+                Go to Course <ArrowRight className="h-4 w-4 ml-1.5" />
+              </Link>
+            </Button>
+          </div>
+        )}
 
       </main>
       <div className="pb-20 lg:pb-0"><Footer /></div>
@@ -306,6 +346,36 @@ function CourseEnrollCard({ course, price, slug }: { course: Program; price: str
   return (
     <div className="w-full">
       <EnrollmentSection program={elearningCourseObj} />
+    </div>
+  );
+}
+
+function CourseAccessCard({ slug }: { slug: string }) {
+  return (
+    <div className="bg-white border-2 border-green-600 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-4 opacity-10">
+        <CheckCircle className="w-32 h-32 text-green-600" />
+      </div>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <Check className="h-6 w-6 text-green-600" />
+        </div>
+        <div>
+          <h3 className="font-bold text-lg text-gray-900 leading-tight">You're enrolled!</h3>
+          <p className="text-xs text-gray-500 font-medium">Ready when you are.</p>
+        </div>
+      </div>
+      <div className="mt-8 mb-6">
+        <p className="text-sm text-gray-600">You already have lifetime access to this course. Jump right in and start learning.</p>
+      </div>
+      <Button
+        className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-green-600/20"
+        asChild
+      >
+        <Link href={`/e-learning/${slug}/learn`}>
+          Go to Course <ArrowRight className="h-5 w-5 ml-2" />
+        </Link>
+      </Button>
     </div>
   );
 }

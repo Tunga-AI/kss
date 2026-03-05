@@ -9,6 +9,7 @@ import { Laptop, RefreshCw, Play, CheckCircle, ArrowRight } from "lucide-react";
 import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { LearnerEnrollment, LearningCourse } from '@/lib/learning-types';
+import type { Program } from '@/lib/program-types';
 import { cn } from "@/lib/utils";
 
 export default function LearnerElearningPage() {
@@ -19,24 +20,24 @@ export default function LearnerElearningPage() {
     const allCoursesQuery = useMemo(() => {
         if (!firestore) return null;
         return query(
-            collection(firestore, 'learningCourses'),
-            where('status', 'in', ['Active', 'Draft']),
-            orderBy('createdAt', 'desc')
+            collection(firestore, 'programs'),
+            where('programType', '==', 'E-Learning'),
+            where('status', 'in', ['active', 'draft'])
         ) as any;
     }, [firestore]);
-    const { data: allCourses, loading: coursesLoading } = useCollection<LearningCourse>(allCoursesQuery);
+    const { data: allCourses, loading: coursesLoading } = useCollection<Program>(allCoursesQuery);
 
-    // Fetch learner enrollments
+    // Fetch elearning enrollments
     const enrollmentsQuery = useMemo(() => {
         if (!firestore || !user) return null;
-        return query(collection(firestore, 'learnerEnrollments'), where('learnerId', '==', user.id)) as any;
+        return query(collection(firestore, 'elearningEnrollments'), where('userId', '==', user.id)) as any;
     }, [firestore, user]);
-    const { data: enrollments, loading: enrollmentsLoading } = useCollection<LearnerEnrollment>(enrollmentsQuery);
+    const { data: enrollments, loading: enrollmentsLoading } = useCollection<any>(enrollmentsQuery);
 
     // Create a map of courseId -> enrollment for quick lookup
     const enrollmentMap = useMemo(() => {
-        const map = new Map<string, LearnerEnrollment>();
-        enrollments?.forEach(e => map.set(e.courseId, e));
+        const map = new Map<string, any>();
+        enrollments?.forEach(e => map.set(e.programId, e));
         return map;
     }, [enrollments]);
 
@@ -44,7 +45,7 @@ export default function LearnerElearningPage() {
     const enrolledCourses = useMemo(() => {
         if (!allCourses || !enrollments) return [];
         return allCourses
-            .filter(course => enrollmentMap.has(course.id) && course.isSelfPaced)
+            .filter(course => enrollmentMap.has(course.id))
             .map(course => ({
                 course,
                 enrollment: enrollmentMap.get(course.id)!
@@ -52,8 +53,8 @@ export default function LearnerElearningPage() {
     }, [allCourses, enrollments, enrollmentMap]);
 
     // Separate enrolled by status for counters
-    const activeCourses = enrolledCourses.filter(item => item.enrollment.status === 'Active');
-    const completedCourses = enrolledCourses.filter(item => item.enrollment.status === 'Completed');
+    const activeCourses = enrolledCourses.filter(item => item.enrollment.status === 'active');
+    const completedCourses = enrolledCourses.filter(item => item.enrollment.status === 'completed');
 
     if (coursesLoading || enrollmentsLoading) {
         return (
@@ -110,14 +111,11 @@ export default function LearnerElearningPage() {
                                 {enrolledCourses.length > 0 ? (
                                     enrolledCourses.map(({ course, enrollment }) => {
                                         // Determine status and progress
-                                        const status = enrollment.status;
-                                        const progress = enrollment.overallProgress || 0;
-                                        let statusColor = 'bg-gray-100 text-gray-600 border-gray-200';
+                                        const status = enrollment.status || 'active';
+                                        const progress = enrollment.progressPct || 0;
+                                        let statusColor = 'bg-green-100 text-green-700 border-green-200';
 
-                                        if (status === 'Active') statusColor = 'bg-green-100 text-green-700 border-green-200';
-                                        else if (status === 'Completed') statusColor = 'bg-blue-100 text-blue-700 border-blue-200';
-                                        else if (status === 'Dropped') statusColor = 'bg-red-100 text-red-700 border-red-200';
-                                        else if (status === 'Suspended') statusColor = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                        if (status === 'completed') statusColor = 'bg-blue-100 text-blue-700 border-blue-200';
 
                                         return (
                                             <TableRow key={course.id} className="hover:bg-primary/5 transition-colors group border-primary/10">
@@ -127,7 +125,7 @@ export default function LearnerElearningPage() {
                                                             <Laptop className="h-5 w-5" />
                                                         </div>
                                                         <div>
-                                                            <p className="font-bold text-primary leading-tight">{course.title}</p>
+                                                            <p className="font-bold text-primary leading-tight">{course.title || course.programName}</p>
                                                             <p className="text-[10px] text-primary/40 uppercase font-black mt-1">
                                                                 Self-Paced
                                                             </p>
@@ -135,10 +133,10 @@ export default function LearnerElearningPage() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="px-6 py-4">
-                                                    <p className="text-sm font-medium text-primary/80">{course.programTitle || course.programId}</p>
+                                                    <p className="text-sm font-medium text-primary/80">E-Learning</p>
                                                 </TableCell>
                                                 <TableCell className="px-6 py-4 text-center">
-                                                    <span className="text-sm font-bold text-primary/80">{course.unitIds?.length || 0}</span>
+                                                    <span className="text-sm font-bold text-primary/80">{course.elearningModules?.length || 0}</span>
                                                 </TableCell>
                                                 <TableCell className="px-6 py-4 text-center">
                                                     <Badge variant="outline" className={cn(
@@ -161,15 +159,15 @@ export default function LearnerElearningPage() {
                                                     <Button
                                                         asChild
                                                         size="sm"
-                                                        variant={status === 'Completed' ? "outline" : "default"}
+                                                        variant={status === 'completed' ? "outline" : "default"}
                                                         className={cn(
                                                             "h-8 rounded-tl-md rounded-br-md rounded-tr-none rounded-bl-none transition-all shadow-none",
-                                                            status === 'Active' ? "bg-accent hover:bg-accent/90 text-white" : "",
-                                                            status === 'Completed' && "border-primary/20 hover:bg-primary/5"
+                                                            status !== 'completed' ? "bg-accent hover:bg-accent/90 text-white" : "",
+                                                            status === 'completed' && "border-primary/20 hover:bg-primary/5"
                                                         )}
                                                     >
-                                                        <Link href={`/dashboard/curriculum/${course.id}?enrollment=${enrollment.id}`}>
-                                                            {status === 'Completed' ? (
+                                                        <Link href={`/e-learning/${course.slug}/learn`}>
+                                                            {status === 'completed' ? (
                                                                 <>
                                                                     <CheckCircle className="h-3.5 w-3.5 mr-2" />
                                                                     Review
