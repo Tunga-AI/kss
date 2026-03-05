@@ -11,6 +11,7 @@ import { Loader2, AlertCircle, CheckCircle2, Send, Building2, User, Mail, Phone,
 import { useFirestore } from '@/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { allocateLeadToSalesStaff } from '@/lib/sales';
 
 const tierOptions = ['Startup (Up to 5 users)', 'SME (Up to 20 users)', 'Corporate (21+ users)', 'Not sure yet'];
 
@@ -41,6 +42,7 @@ export function B2bLeadForm() {
         setError(null);
 
         try {
+            const assignedStaffId = await allocateLeadToSalesStaff(firestore);
             await addDoc(collection(firestore, 'sales'), {
                 name: formData.name,
                 email: formData.email,
@@ -50,6 +52,7 @@ export function B2bLeadForm() {
                 numLearners: formData.numLearners ? parseInt(formData.numLearners, 10) : null,
                 status: 'Prospect',
                 createdAt: serverTimestamp(),
+                assignedTo: assignedStaffId || null,
                 details: {
                     companyName: formData.companyName,
                     interestedTier: formData.interestedTier,

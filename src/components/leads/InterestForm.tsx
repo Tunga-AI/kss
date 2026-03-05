@@ -17,6 +17,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { allocateLeadToSalesStaff } from '@/lib/sales';
 
 interface InterestFormProps {
     programTitle: string;
@@ -41,11 +42,13 @@ export function InterestForm({ programTitle, trigger }: InterestFormProps) {
 
         setLoading(true);
         try {
+            const assignedStaffId = await allocateLeadToSalesStaff(firestore);
             await addDoc(collection(firestore, 'leads'), {
                 ...formData,
                 program: programTitle,
                 status: 'New',
-                createdAt: serverTimestamp()
+                createdAt: serverTimestamp(),
+                assignedTo: assignedStaffId || null
             });
 
             // Send confirmation email to the lead

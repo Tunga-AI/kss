@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User as AuthUser } from 'firebase/auth';
-import { collection, query, where, getDocs, limit, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useUsersFirestore } from '@/firebase';
 import type { User as FirestoreUser } from '@/lib/user-types';
 
@@ -22,35 +22,63 @@ export function useUser() {
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      setError(null); // Reset error on auth change
+      setError(null);
+
       if (authUser) {
-        // User is signed in, now fetch the firestore profile from usersFirestore.
+        // Fetch Firestore profile from 'kenyasales' database
         const usersRef = collection(usersFirestore, 'users');
         const q = query(usersRef, where('email', '==', authUser.email), limit(1));
-
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
+          // ── Happy path: profile found ──────────────────────────────
           const userDoc = querySnapshot.docs[0];
           const firestoreUser = { id: userDoc.id, ...userDoc.data() } as FirestoreUser;
           setUser({ ...authUser, ...firestoreUser });
-          // Record last login timestamp
-          updateDoc(doc(usersFirestore, 'users', userDoc.id), { lastLogin: serverTimestamp() }).catch(() => {});
+          // Record last login (fire-and-forget)
+          updateDoc(doc(usersFirestore, 'users', userDoc.id), { lastLogin: serverTimestamp() }).catch(() => { });
         } else {
-          // Auth user exists but no firestore profile.
-          // Treat as not fully logged in for this app's purpose.
-          console.error(`User ${authUser.email} authenticated but no Firestore profile found in 'kenyasales' database.`);
-          setError('User account not found in system.');
+          // ── Self-heal: Auth user exists but Firestore doc is missing ─
+          // This happens when a user is created in Firebase Auth Console
+          // but the Firestore write didn't complete (race condition, network
+          // error, or manual console creation).
+          console.warn(`[useUser] ${authUser.email} has no Firestore profile — attempting self-heal.`);
+          try {
+            const healId = `U${Date.now()}`;
+            await setDoc(doc(usersFirestore, 'users', healId), {
+              name: authUser.displayName || authUser.email?.split('@')[0] || 'User',
+              email: authUser.email,
+              role: 'Learner',      // Conservative default — Admin can update in portal
+              status: 'Active',
+              createdAt: serverTimestamp(),
+              _autoHealed: true,   // Flag for admins to notice and update role/details
+            });
+            // Re-fetch so we have the full doc
+            const healedSnap = await getDocs(
+              query(collection(usersFirestore, 'users'), where('email', '==', authUser.email), limit(1))
+            );
+            if (!healedSnap.empty) {
+              const healedDoc = healedSnap.docs[0];
+              const healedUser = { id: healedDoc.id, ...healedDoc.data() } as FirestoreUser;
+              setUser({ ...authUser, ...healedUser });
+              setLoading(false);
+              return;
+            }
+          } catch (healErr) {
+            console.error('[useUser] Self-heal failed:', healErr);
+          }
+          // If self-heal also failed, block access
+          setError('User account not found in system. Please contact support.');
           setUser(null);
         }
       } else {
-        // User is signed out.
+        // Signed out
         setUser(null);
       }
+
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, [auth, usersFirestore]);
 

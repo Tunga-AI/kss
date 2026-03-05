@@ -14,10 +14,11 @@ import Image from "next/image";
 
 /* ── Nav structure ── */
 const navItems = [
-  { href: "/about", label: "About" },
-  { href: "/framework", label: "Framework" },
-  { href: "/programs", label: "Programs" },
-  { href: "/for-business", label: "Business" },
+  { href: "/about", label: "About Us" },
+  { href: "/framework", label: "Our Framework" },
+  { href: "/courses", label: "For Professionals" },
+  { href: "/for-business", label: "For Business" },
+  { href: "/e-learning", label: "Digital Campus" },
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
 ];

@@ -79,6 +79,7 @@ function PaymentCallbackContent() {
             // Create user document in Firestore for new learners
             // This ensures they appear in the users collection, not just Firebase Auth
             // Skip for B2B accounts, they are created during the setup_b2b flow
+            let currentUserId = metadata.userId;
             if (!metadata.tier) {
               try {
                 console.log('👤 Creating user document for:', transactionData.learnerEmail);
@@ -96,6 +97,7 @@ function PaymentCallbackContent() {
                 const userResult = await userCreateResponse.json();
 
                 if (userResult.success) {
+                  currentUserId = userResult.data.userId;
                   console.log('✅ User document created:', userResult.data.userId);
                 } else {
                   console.error('❌ Failed to create user document:', userResult.message);
@@ -103,6 +105,27 @@ function PaymentCallbackContent() {
               } catch (userError) {
                 console.error('Error creating user document:', userError);
                 // Don't fail the whole process if user creation fails
+              }
+            }
+
+            // Record Elearning Enrollment if applicable
+            if (metadata.isElearning && currentUserId && metadata.programId) {
+              try {
+                const { setDoc, doc, serverTimestamp } = await import('firebase/firestore');
+                const enrollRef = doc(firestore, 'elearningEnrollments', `${currentUserId}_${metadata.programId}`);
+                await setDoc(enrollRef, {
+                  userId: currentUserId,
+                  email: metadata.learnerEmail,
+                  programId: metadata.programId,
+                  programSlug: metadata.programSlug,
+                  programName: metadata.program,
+                  paystackReference: payment.reference,
+                  enrolledAt: serverTimestamp(),
+                  status: 'active',
+                }, { merge: true });
+                console.log('✅ E-learning enrollment recorded for user:', currentUserId);
+              } catch (enrollErr) {
+                console.error('Error recording e-learning enrollment:', enrollErr);
               }
             }
 

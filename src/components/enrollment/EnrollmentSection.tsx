@@ -106,6 +106,7 @@ export function EnrollmentSection({ program, selectedCohortId, intakes = [], onC
     // Let's us `program.programType === 'Core'`.
 
     const isCoreCourse = program.programType === 'Core' || program.programName?.toLowerCase().includes('level'); // Heuristic fallback
+    const isElearning = program.programType === 'E-Learning';
 
     const programPrice = useMemo(() => parsePrice(program.price), [program.price]);
 
@@ -180,10 +181,12 @@ export function EnrollmentSection({ program, selectedCohortId, intakes = [], onC
                         programId: program.id,
                         cohortId: selectedCohortId || undefined,
                         userId: loggedInUser?.id || null,
+                        isElearning: isElearning,
+                        programSlug: program.slug,
                         // Redirect logic
                         redirectUrl: loggedInUser
-                            ? (isCoreCourse ? '/l' : '/l/courses/' + program.slug)
-                            : `/login?flow=setup_account&email=${formData.email}&name=${formData.name}&phone=${formData.phone}&programId=${program.id}&programTitle=${encodeURIComponent(program.programName)}`
+                            ? (isElearning ? `/e-learning/${program.slug}/learn` : (isCoreCourse ? '/l' : '/l/courses/' + program.slug))
+                            : `/login?flow=setup_account&email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.name)}&phone=${encodeURIComponent(formData.phone)}&programId=${program.id}&programTitle=${encodeURIComponent(program.programName)}${isElearning ? `&isElearning=true&redirect=${encodeURIComponent(`/e-learning/${program.slug}/learn`)}` : ''}`
                     }
                 }),
             });

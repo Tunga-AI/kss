@@ -358,7 +358,7 @@ export default function CustomersPage() {
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest">Lead Profile</TableHead>
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Program</TableHead>
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Program Type</TableHead>
-                  <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Enrollment</TableHead>
+                  <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Sales Staff</TableHead>
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Recorded Date</TableHead>
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-center">Status</TableHead>
                   <TableHead className="px-6 py-4 font-bold text-primary text-[10px] uppercase tracking-widest text-right">Actions</TableHead>
@@ -391,7 +391,7 @@ export default function CustomersPage() {
                       <span className="text-xs font-bold text-primary">{lead.programType || '-'}</span>
                     </TableCell>
                     <TableCell className="px-6 py-4 text-center">
-                      <span className="text-xs font-medium text-primary/70">{lead.enrollmentType || '-'}</span>
+                      <span className="text-xs font-medium text-primary/70">{lead.assignedTo ? (staffMap[lead.assignedTo] || 'Unknown Staff') : 'Unassigned'}</span>
                     </TableCell>
                     <TableCell className="px-6 py-4 text-center">
                       <div className="flex flex-col items-center">

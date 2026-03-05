@@ -15,6 +15,7 @@ function CreateProgram() {
     if (type === 'elearning') programType = 'E-Learning';
     if (type === 'event') programType = 'Event';
     if (type === 'shortcourse') programType = 'Short';
+    if (type === 'corporate') programType = 'Corporate';
 
     if (programType) {
         const emptyProgram: Partial<Program> = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     LiveKitRoom,
@@ -13,29 +13,29 @@ import { useFirestore, useUser, useAuth, useCollection, useDoc } from '@/firebas
 import { doc, addDoc, collection, updateDoc, serverTimestamp, getDocs, query, documentId, where, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import {
-    ArrowLeft, Video, Maximize2, Minimize2, PanelRightClose, PanelRightOpen,
-    LayoutList, Mic, MicOff, VideoOff, Hand, PhoneOff, MessageSquare, Users, FileText,
-    BarChart3, PlayCircle, ImageIcon, Music, BookOpen
+    ArrowLeft, Video, VideoOff, Mic, MicOff, PhoneOff,
+    MessageSquare, FileText, Users, BarChart3, Download,
+    Send, ImageIcon, Music, BookOpen, LayoutList, Radio
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import type { LearningCourse, LearningModule } from '@/lib/learning-types';
 import type { ContentItem } from '@/lib/content-library-types';
 import type { User as Learner } from '@/lib/user-types';
 import type { FeedbackCycle } from '@/lib/feedback-types';
-
-import { ChatPanel } from './chat-panel';
-import { ParticipantsList } from './participants-list';
-import { DocumentPanel } from './document-panel';
+import type { ChatMessage } from '@/lib/classroom-types';
 
 interface ImmersiveLiveClassProps {
     courseId: string;
     moduleId: string;
     backUrl: string;
 }
+
+type RightTab = 'chat' | 'materials' | 'participants';
 
 export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiveClassProps) {
     const router = useRouter();
@@ -45,15 +45,16 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
 
     const [token, setToken] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [contentTab, setContentTab] = useState<'materials' | 'chat' | 'participants' | 'documents' | 'quiz' | 'feedback'>('materials');
+    const [rightTab, setRightTab] = useState<RightTab>('chat');
+    const [sidebarOpen, setSidebarOpen] = useState(false); // hide module sidebar by default
 
     const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
-    const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
     const [contentItems, setContentItems] = useState<Record<string, ContentItem>>({});
-
-    const [raisedHands, setRaisedHands] = useState<{ id: string; name: string; timestamp: number }[]>([]);
     const [joinedAt] = useState(new Date());
+
+    const [chatInput, setChatInput] = useState('');
+    const [isSending, setIsSending] = useState(false);
+    const chatScrollRef = useRef<HTMLDivElement>(null);
 
     // Fetch course
     const courseDoc = useMemo(() => firestore ? doc(firestore, 'learningCourses', courseId) : null, [firestore, courseId]);
@@ -63,35 +64,47 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
     const modulesQuery = useMemo(() => firestore ? query(collection(firestore, 'learningUnits'), where('courseId', '==', courseId)) : null, [firestore, courseId]);
     const { data: modules, loading: modulesLoading } = useCollection<LearningModule>(modulesQuery as any);
 
-    // Fetch allocated learners? (for attendance register)
+    // Fetch learners (for participants)
     const learnersQuery = useMemo(() => firestore && course?.cohortId ? query(collection(firestore, 'users'), where('cohortId', '==', course.cohortId)) : null, [firestore, course]);
     const { data: allocatedLearners } = useCollection<Learner>(learnersQuery as any);
 
-    // Ensure selectedModule starts as the given moduleId
+    // Chat messages
+    const chatQuery = useMemo(() => {
+        if (!firestore || !selectedModule) return null;
+        return query(collection(firestore, 'chatMessages'), where('sessionId', '==', selectedModule.id), orderBy('timestamp', 'asc'));
+    }, [firestore, selectedModule]);
+    const { data: messages } = useCollection<ChatMessage>(chatQuery as any);
+
+    // Session participants (live)
+    const participantsQuery = useMemo(() => {
+        if (!firestore || !selectedModule) return null;
+        return query(collection(firestore, 'sessionParticipants'), where('sessionId', '==', selectedModule.id), where('isOnline', '==', true));
+    }, [firestore, selectedModule]);
+    const { data: liveParticipants } = useCollection<any>(participantsQuery as any);
+
+    // Set selected module
     useEffect(() => {
         if (modules && modules.length > 0 && !selectedModule) {
             const mod = modules.find(m => m.id === moduleId);
-            if (mod) setSelectedModule(mod);
-            else setSelectedModule(modules[0]);
+            setSelectedModule(mod || modules[0]);
         }
     }, [modules, moduleId, selectedModule]);
 
-    // Fetch content items map
+    // Fetch content items
     useEffect(() => {
         const fetchContent = async () => {
             if (!firestore || !modules || modules.length === 0) return;
-            const allContentIds = modules.flatMap(m => m.contentIds || []);
-            if (allContentIds.length === 0) return;
-
-            const uniqueIds = Array.from(new Set(allContentIds));
-            const itemsMap: Record<string, ContentItem> = {};
-            for (let i = 0; i < uniqueIds.length; i += 10) {
-                const chunk = uniqueIds.slice(i, i + 10);
+            const allIds = modules.flatMap(m => m.contentIds || []);
+            if (!allIds.length) return;
+            const unique = Array.from(new Set(allIds));
+            const map: Record<string, ContentItem> = {};
+            for (let i = 0; i < unique.length; i += 10) {
+                const chunk = unique.slice(i, i + 10);
                 const q = query(collection(firestore, 'contentLibrary'), where(documentId(), 'in', chunk));
                 const snap = await getDocs(q);
-                snap.forEach(doc => { itemsMap[doc.id] = { id: doc.id, ...doc.data() } as ContentItem; });
+                snap.forEach(d => { map[d.id] = { id: d.id, ...d.data() } as ContentItem; });
             }
-            setContentItems(itemsMap);
+            setContentItems(map);
         };
         fetchContent();
     }, [firestore, modules]);
@@ -102,9 +115,8 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
             if (!user || !auth?.currentUser || !selectedModule) return;
             if (selectedModule.deliveryType === 'Physical' || selectedModule.deliveryType === 'Self-paced') {
                 setIsLoading(false);
-                return; // LiveKit not needed
+                return;
             }
-
             try {
                 const idToken = await auth.currentUser.getIdToken();
                 const response = await fetch('/api/livekit/token', {
@@ -113,14 +125,10 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
                     body: JSON.stringify({
                         roomName: `course-${courseId}-module-${selectedModule.id}`,
                         participantName: user.displayName || user.email || 'Anonymous',
-                        metadata: {
-                            role: 'instructor', // assuming admin acts as instructor here
-                            sessionId: selectedModule.id,
-                        },
+                        metadata: { role: 'instructor', sessionId: selectedModule.id },
                         token: idToken,
                     }),
                 });
-
                 const data = await response.json();
                 if (data.token) setToken(data.token);
                 else throw new Error(data.error || 'Failed to get token');
@@ -131,10 +139,7 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
                 setIsLoading(false);
             }
         };
-
-        if (selectedModule) {
-            getToken();
-        }
+        if (selectedModule) getToken();
     }, [user, auth, selectedModule, courseId]);
 
     // Track attendance
@@ -142,10 +147,9 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
         if (!firestore || !user || !selectedModule) return;
         const participantRef = collection(firestore, 'sessionParticipants');
         let participantDocId: string;
-
         const recordJoin = async () => {
             const docRef = await addDoc(participantRef, {
-                sessionId: selectedModule.id, // using moduleId as sessionId
+                sessionId: selectedModule.id,
                 userId: user.uid,
                 userName: user.displayName || user.email,
                 userEmail: user.email,
@@ -156,7 +160,6 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
             participantDocId = docRef.id;
         };
         recordJoin();
-
         return () => {
             if (participantDocId && firestore) {
                 const docRef = doc(firestore, 'sessionParticipants', participantDocId);
@@ -166,12 +169,42 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
         };
     }, [firestore, user, selectedModule, joinedAt]);
 
+    // Auto-scroll chat
+    useEffect(() => {
+        if (chatScrollRef.current) {
+            chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!chatInput.trim() || !firestore || !user || isSending || !selectedModule) return;
+        setIsSending(true);
+        try {
+            await addDoc(collection(firestore, 'chatMessages'), {
+                sessionId: selectedModule.id,
+                userId: user.uid,
+                userName: user.displayName || user.email || 'Instructor',
+                message: chatInput.trim(),
+                timestamp: serverTimestamp(),
+                type: 'text',
+            });
+            setChatInput('');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSending(false);
+        }
+    };
 
     const handleDisconnect = () => router.push(backUrl);
 
+    const isLive = selectedModule?.deliveryType === 'Virtual' || selectedModule?.deliveryType === 'Hybrid';
+    const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || '';
+
     if (courseLoading || modulesLoading || isLoading) {
         return (
-            <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gray-50/50">
+            <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
                 <p className="text-primary/60 font-semibold">Connecting to class...</p>
             </div>
@@ -179,91 +212,99 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
     }
     if (!course || !selectedModule) return null;
 
-    const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || '';
+    const contentList = selectedModule.contentIds?.map(cid => contentItems[cid]).filter(Boolean) || [];
+
+    const VideoPlaceholder = () => (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800">
+            <div className="bg-white/10 rounded-full p-6 mb-4 border border-white/10">
+                <Radio className="h-10 w-10 text-white/50" />
+            </div>
+            <p className="text-white/70 font-bold text-base">Live Stream</p>
+            <p className="text-white/40 text-sm mt-1">Session is active · Join to participate</p>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen w-full bg-gray-50/50 font-body flex flex-col">
-            {/* Top Navigation Bar - Light Theme */}
-            <div className="h-16 bg-white border-b border-primary/10 px-6 flex items-center justify-between shadow-sm shrink-0 sticky top-0 z-30">
-                <div className="flex items-center gap-4 text-primary">
-                    <Button variant="ghost" size="icon" className="hover:bg-primary/5 rounded-full" onClick={handleDisconnect}>
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <div className="h-6 w-px bg-primary/10 mx-1"></div>
-                    <div>
-                        <h1 className="font-bold text-lg leading-tight line-clamp-1">{course.title}</h1>
-                        <p className="text-xs text-primary/60 font-medium line-clamp-1 flex gap-2 items-center">
-                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" /> Live Session</span>
-                            <span>•</span>
-                            <span>{selectedModule.title || 'Untitled Module'}</span>
-                        </p>
+        <div className="h-screen w-full flex flex-col bg-slate-50 font-body overflow-hidden">
+            {/* Top Header Banner - teal/dark */}
+            <div className="bg-[#2d5c6e] text-white px-6 py-4 shrink-0">
+                <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                        <button onClick={handleDisconnect} className="text-white/60 hover:text-white mt-1 transition-colors">
+                            <ArrowLeft className="h-5 w-5" />
+                        </button>
+                        <div>
+                            <h1 className="font-bold text-xl leading-tight">{course.title}</h1>
+                            <p className="text-white/60 text-sm mt-0.5">{course.description || 'Join the interactive live session.'}</p>
+                        </div>
                     </div>
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="bg-white/10 hover:bg-white/20 text-white rounded-lg p-2.5 border border-white/10 transition-colors"
+                    >
+                        <LayoutList className="h-4 w-4" />
+                    </button>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/5 transition-colors text-xs font-bold shadow-none" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                        <LayoutList className="h-4 w-4 mr-2" />
-                        {sidebarOpen ? 'Hide Curriculum' : 'Show Curriculum'}
-                    </Button>
+
+                {/* Currently Active Module Card */}
+                <div className="mt-4 bg-white/10 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
+                    <div>
+                        <p className="font-bold text-base">{selectedModule.title}</p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                            <span className="text-xs text-white/60 flex items-center gap-1">
+                                <Users className="h-3 w-3" />{liveParticipants?.length || 0} participants
+                            </span>
+                        </div>
+                    </div>
+                    {isLive && (
+                        <div className="flex flex-col items-end gap-1.5">
+                            <Badge className="bg-transparent border-green-400 text-green-400 text-[11px] font-black uppercase tracking-widest px-2 py-0.5 flex items-center gap-1.5">
+                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />LIVE
+                            </Badge>
+                            <p className="text-white/50 text-[11px]">{liveParticipants?.length || 0}/35 participants</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <div className="flex flex-1 w-full mx-auto overflow-hidden">
-                {/* Sidebar Curriculum (Left) - Scrollable list */}
-                <div className={cn("w-80 bg-white border-r border-primary/10 flex flex-col shrink-0 lg:static fixed z-20 h-[calc(100vh-64px)] overflow-hidden transition-all duration-300", sidebarOpen ? "translate-x-0 ml-0 border-r" : "-translate-x-full lg:-ml-80 lg:translate-x-0 hidden lg:flex")}>
-                    <div className="p-5 border-b border-primary/10 flex flex-col gap-2 shrink-0 bg-gray-50/50">
-                        <h2 className="font-bold text-base text-primary">Course Content</h2>
-                        <div className="flex gap-2 text-xs text-primary/60 font-medium">
-                            <Badge className="bg-primary/5 text-primary border-none text-[10px] uppercase font-bold tracking-widest">{modules?.length || 0} Modules</Badge>
+            {/* Main Content Area */}
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+                {/* Module Sidebar (hidden by default, shown on toggle) */}
+                {sidebarOpen && (
+                    <div className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden">
+                        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 shrink-0">
+                            <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">Course Modules</h3>
                         </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto space-y-1 p-3 pb-20">
-                        {modules?.sort((a, b) => a.orderIndex - b.orderIndex).map((mod, index) => (
-                            <div key={mod.id} className="rounded-xl overflow-hidden flex flex-col mb-2">
-                                <button
-                                    className={cn("w-full text-left p-4 hover:bg-primary/5 transition-colors flex items-start gap-4 rounded-xl", selectedModule?.id === mod.id ? "bg-primary text-white" : "text-primary")}
-                                    onClick={() => setSelectedModule(mod)}
-                                >
-                                    <div className={cn("font-bold text-sm h-7 w-7 rounded flex items-center justify-center shrink-0 mt-0.5", selectedModule?.id === mod.id ? "bg-white/20 text-white" : "bg-primary/10 text-primary")}>
-                                        {index + 1}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold line-clamp-2 leading-snug">{mod.title}</p>
-                                        <p className={cn("text-[10px] uppercase tracking-widest font-black mt-1.5 flex gap-2 items-center", selectedModule?.id === mod.id ? "text-white/70" : "text-primary/40")}>
-                                            <span>{mod.deliveryType}</span>
-                                            <span>•</span>
-                                            <span>{mod.contentIds?.length || 0} Items</span>
-                                        </p>
-                                    </div>
-                                </button>
-                                {selectedModule?.id === mod.id && mod.contentIds && mod.contentIds.length > 0 && (
-                                    <div className="flex flex-col py-2 px-2 ml-4 border-l-2 border-primary/10 my-2 space-y-1">
-                                        {mod.contentIds.map(contentId => {
-                                            const content = contentItems[contentId];
-                                            if (!content) return null;
-                                            const isSelected = selectedContent?.id === content.id;
-                                            return (
-                                                <button key={content.id} onClick={() => { setSelectedContent(content); setContentTab('materials'); }} className={cn("w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-primary/5 rounded-lg transition-colors group", isSelected ? "bg-accent/10" : "")}>
-                                                    <div className={cn("mt-0.5 shrink-0", isSelected ? "text-accent" : "text-primary/40 group-hover:text-primary")}>
-                                                        {content.type === 'video' ? <Video className="h-4 w-4" /> : content.type === 'image' ? <ImageIcon className="h-4 w-4" /> : content.type === 'audio' ? <Music className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                                                    </div>
-                                                    <div className="flex-1 overflow-hidden">
-                                                        <p className={cn("text-sm font-medium line-clamp-2 leading-tight", isSelected ? "text-accent font-bold" : "text-primary/70 group-hover:text-primary")}>{content.title}</p>
-                                                        <span className="text-[9px] uppercase font-bold tracking-widest text-primary/40 mt-1 block">{content.type}</span>
-                                                    </div>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                )}
+                        <ScrollArea className="flex-1">
+                            <div className="p-2 space-y-1">
+                                {modules?.sort((a, b) => a.orderIndex - b.orderIndex).map((mod, idx) => (
+                                    <button
+                                        key={mod.id}
+                                        onClick={() => setSelectedModule(mod)}
+                                        className={cn(
+                                            "w-full text-left px-3 py-2.5 rounded-lg flex items-start gap-2.5 hover:bg-slate-50 transition-colors",
+                                            selectedModule?.id === mod.id && "bg-primary/5 border border-primary/10"
+                                        )}
+                                    >
+                                        <span className={cn("h-5 w-5 rounded text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5", selectedModule?.id === mod.id ? "bg-primary text-white" : "bg-slate-100 text-slate-500")}>{idx + 1}</span>
+                                        <div>
+                                            <p className={cn("text-xs font-bold line-clamp-2 leading-snug", selectedModule?.id === mod.id ? "text-primary" : "text-slate-700")}>{mod.title}</p>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">{mod.contentIds?.length || 0} items</p>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
-                        ))}
+                        </ScrollArea>
                     </div>
-                </div>
+                )}
 
-                {/* Main Content Area - Scrollable */}
-                <div className="flex-1 flex flex-col min-h-0 bg-gray-50/50 overflow-y-auto w-full relative">
-                    {token && (selectedModule.deliveryType === 'Virtual' || selectedModule.deliveryType === 'Hybrid') ? (
+                {/* Video / Live Stream */}
+                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                    <div className="px-5 py-3 bg-white border-b border-slate-200 shrink-0">
+                        <p className="font-bold text-sm text-slate-800">Live Session</p>
+                    </div>
+
+                    {token && isLive ? (
                         <LiveKitRoom
                             video={false}
                             audio={false}
@@ -271,129 +312,191 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
                             serverUrl={wsUrl}
                             data-lk-theme="default"
                             onDisconnected={handleDisconnect}
-                            className="flex-1 flex flex-col max-w-[1200px] mx-auto w-full p-6 lg:p-10 gap-8 min-h-min"
+                            className="flex-1 relative overflow-hidden"
                         >
-                            {/* Live Video / Stream Viewer */}
-                            <div className="w-full bg-black rounded-3xl overflow-hidden shadow-xl relative aspect-video xl:aspect-[21/9] flex-shrink-0">
-                                <div className="absolute inset-0">
-                                    <VideoConference />
-                                    <RoomAudioRenderer />
-                                </div>
-                                {/* Video Controls Overlays */}
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-black/60 backdrop-blur-xl rounded-2xl px-6 py-3 border border-white/10 shadow-2xl z-50">
+                            <VideoConference />
+                            <RoomAudioRenderer />
+                            {/* Controls overlay */}
+                            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
+                                <div className="flex items-center gap-2 bg-black/60 backdrop-blur-xl rounded-2xl px-5 py-2.5 border border-white/10 shadow-2xl">
                                     <MicrophoneToggle />
                                     <CameraToggle />
-                                    <div className="h-8 w-px bg-white/20 mx-2"></div>
-                                    <Button variant="destructive" className="h-12 px-6 rounded-xl font-bold font-body" onClick={handleDisconnect}>
-                                        <PhoneOff className="h-5 w-5 mr-2" />
-                                        End Class
+                                    <div className="h-7 w-px bg-white/20 mx-1" />
+                                    <Button variant="destructive" className="h-10 px-5 rounded-xl font-bold text-sm" onClick={handleDisconnect}>
+                                        <PhoneOff className="h-4 w-4 mr-2" />End
                                     </Button>
                                 </div>
                             </div>
-
-                            {/* Below Video Content Tabs */}
-                            <div className="w-full bg-white border border-primary/10 rounded-3xl shadow-sm flex flex-col overflow-hidden min-h-[600px] flex-shrink-0 mb-20">
-                                <Tabs value={contentTab} onValueChange={(val) => setContentTab(val as any)} className="w-full flex-1 flex flex-col">
-                                    <div className="px-6 border-b border-primary/10 bg-gray-50/50 flex shrink-0 w-full overflow-x-auto no-scrollbar">
-                                        <TabsList className="bg-transparent h-16 w-full justify-start gap-4 md:gap-8">
-                                            <TabsTrigger value="materials" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-accent data-[state=active]:border-b-2 border-accent rounded-none h-full px-0 font-bold text-primary/60 tracking-tight"><FileText className="h-4 w-4 mr-2" /> Class Material</TabsTrigger>
-                                            <TabsTrigger value="chat" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-accent data-[state=active]:border-b-2 border-accent rounded-none h-full px-0 font-bold text-primary/60 tracking-tight"><MessageSquare className="h-4 w-4 mr-2" /> Discussion</TabsTrigger>
-                                            <TabsTrigger value="participants" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-accent data-[state=active]:border-b-2 border-accent rounded-none h-full px-0 font-bold text-primary/60 tracking-tight"><Users className="h-4 w-4 mr-2" /> Members ({allocatedLearners?.length || 0})</TabsTrigger>
-                                            <TabsTrigger value="documents" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-accent data-[state=active]:border-b-2 border-accent rounded-none h-full px-0 font-bold text-primary/60 tracking-tight"><FileText className="h-4 w-4 mr-2" /> Resources</TabsTrigger>
-                                            <TabsTrigger value="feedback" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-accent data-[state=active]:border-b-2 border-accent rounded-none h-full px-0 font-bold text-primary/60 tracking-tight"><BarChart3 className="h-4 w-4 mr-2" /> Feedback</TabsTrigger>
-                                        </TabsList>
-                                    </div>
-
-                                    <div className="flex-1 bg-white p-6 relative">
-                                        <TabsContent value="materials" className="h-full m-0 min-h-[500px]">
-                                            {selectedContent ? (
-                                                <div className="w-full max-w-4xl mx-auto flex flex-col bg-white border border-primary/10 rounded-2xl overflow-hidden shadow-sm h-[600px]">
-                                                    <div className="px-6 py-4 border-b border-primary/10 flex justify-between items-center bg-gray-50/50 shrink-0">
-                                                        <h2 className="font-bold text-lg text-primary">{selectedContent.title}</h2>
-                                                        <Button size="sm" asChild variant="outline" className="h-8 shadow-none font-bold text-xs bg-white">
-                                                            <a href={selectedContent.fileUrl} target="_blank" rel="noopener noreferrer">View Full Screen</a>
-                                                        </Button>
-                                                    </div>
-                                                    <div className="bg-gray-100 flex-1 flex items-center justify-center p-4 min-h-0">
-                                                        {selectedContent.type === 'video' ? <video src={selectedContent.fileUrl} controls className="w-full max-h-full rounded-xl shadow-lg border border-black/10 bg-black outline-none" /> :
-                                                            selectedContent.type === 'image' ? <img src={selectedContent.fileUrl} alt={selectedContent.title} className="max-w-full max-h-full rounded-xl shadow-lg object-contain" /> :
-                                                                selectedContent.type === 'audio' ? <audio src={selectedContent.fileUrl} controls className="w-full max-w-md outline-none" /> :
-                                                                    (selectedContent.mimeType === 'application/pdf' || selectedContent.fileName?.endsWith('.pdf')) ? <iframe src={`${selectedContent.fileUrl}#toolbar=0`} className="w-full h-full rounded-xl border border-primary/10 shadow-sm bg-white" /> :
-                                                                        <div className="text-center p-12 bg-white rounded-2xl shadow-sm border border-primary/10 max-w-sm"><FileText className="h-16 w-16 text-primary/20 mx-auto mb-4" /><p className="text-sm font-medium text-primary/60 mb-4">No preview available.</p><a href={selectedContent.fileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-sm font-bold block">Download File</a></div>}
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-                                                    <div className="bg-primary/5 p-6 rounded-full mb-6 relative">
-                                                        <BookOpen className="h-12 w-12 text-primary/20" />
-                                                        <div className="absolute top-0 right-0 h-4 w-4 bg-accent rounded-full animate-ping"></div>
-                                                    </div>
-                                                    <h3 className="text-xl font-bold text-primary mb-2">Select a content item</h3>
-                                                    <p className="text-primary/60 max-w-md mx-auto">Click on any material in the course content outline on the left to view it here alongside the live class.</p>
-                                                </div>
-                                            )}
-                                        </TabsContent>
-                                        <TabsContent value="chat" className="h-full m-0 min-h-[500px]">
-                                            <div className="border border-primary/10 rounded-2xl overflow-hidden h-[600px] max-w-3xl mx-auto bg-white shadow-sm">
-                                                <ChatPanel sessionId={selectedModule.id} />
-                                            </div>
-                                        </TabsContent>
-                                        <TabsContent value="participants" className="h-full m-0 min-h-[500px]">
-                                            <div className="border border-primary/10 rounded-2xl overflow-hidden h-[600px] max-w-3xl mx-auto bg-white shadow-sm">
-                                                <ParticipantsList sessionId={selectedModule.id} raisedHands={raisedHands.map((h: any) => h.id)} />
-                                            </div>
-                                        </TabsContent>
-                                        <TabsContent value="documents" className="h-full m-0 min-h-[500px]">
-                                            <div className="max-w-4xl mx-auto border border-primary/10 rounded-2xl overflow-hidden bg-white shadow-sm h-[600px]">
-                                                <DocumentPanel sessionId={selectedModule.id} isInstructor={true} />
-                                            </div>
-                                        </TabsContent>
-                                        <TabsContent value="feedback" className="h-full m-0 min-h-[500px]">
-                                            <div className="max-w-2xl mx-auto py-10">
-                                                <div className="text-center mb-8">
-                                                    <div className="bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                        <BarChart3 className="h-8 w-8 text-accent" />
-                                                    </div>
-                                                    <h2 className="text-2xl font-bold text-primary">Class Feedback & Surveys</h2>
-                                                    <p className="text-primary/60 mt-2">Take a moment to provide feedback on this session.</p>
-                                                </div>
-                                                <FeedbackList />
-                                            </div>
-                                        </TabsContent>
-                                    </div>
-                                </Tabs>
-                            </div>
                         </LiveKitRoom>
                     ) : (
-                        <div className="flex-1 flex flex-col p-8 lg:p-12 items-center text-center max-w-[1200px] mx-auto w-full min-h-[800px] mb-20">
-                            <div className="bg-primary/5 p-6 rounded-full mb-6">
-                                <BookOpen className="h-12 w-12 text-primary/20" />
-                            </div>
-                            <h2 className="text-3xl font-bold text-primary mb-4">Self-Paced Material</h2>
-                            <p className="text-primary/60 mb-12 max-w-xl text-lg">This module does not have a virtual live room assigned. You can review the course materials below at your own pace.</p>
-
-                            {selectedContent ? (
-                                <div className="w-full max-w-4xl flex flex-col bg-white border border-primary/10 rounded-3xl overflow-hidden shadow-lg text-left h-[700px]">
-                                    <div className="px-8 py-5 border-b border-primary/10 flex justify-between items-center bg-gray-50 flex-shrink-0">
-                                        <h2 className="font-bold text-lg text-primary">{selectedContent.title}</h2>
-                                        <Button asChild size="sm" className="h-9 px-4 font-bold bg-accent hover:bg-accent/90 shadow-sm text-white rounded-lg">
-                                            <a href={selectedContent.fileUrl} target="_blank" rel="noopener noreferrer">View Full Screen</a>
-                                        </Button>
-                                    </div>
-                                    <div className="bg-white p-6 relative flex-1 flex items-center justify-center overflow-hidden min-h-0">
-                                        {selectedContent.type === 'video' ? <video src={selectedContent.fileUrl} controls className="w-full max-h-full rounded-2xl shadow-md border border-primary/10 bg-black outline-none" /> :
-                                            selectedContent.type === 'image' ? <img src={selectedContent.fileUrl} alt={selectedContent.title} className="max-w-full max-h-full object-contain rounded-2xl shadow-md" /> :
-                                                selectedContent.type === 'audio' ? <audio src={selectedContent.fileUrl} controls className="w-full max-w-md outline-none" /> :
-                                                    (selectedContent.mimeType === 'application/pdf' || selectedContent.fileName?.endsWith('.pdf')) ? <iframe src={`${selectedContent.fileUrl}#toolbar=0`} className="w-full h-full rounded-2xl border border-primary/10 shadow-sm" /> :
-                                                        <div className="text-center p-12 bg-gray-50 rounded-2xl shadow-sm border border-primary/10 max-w-sm mx-auto"><FileText className="h-16 w-16 text-primary/20 mx-auto mb-4" /><p className="text-base font-medium text-primary/60 mb-6">Preview unavailable.</p><Button asChild className="bg-accent rounded-lg" size="lg"><a href={selectedContent.fileUrl} target="_blank" rel="noopener noreferrer">Download Material</a></Button></div>}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="p-12 border-2 border-dashed border-primary/20 rounded-3xl w-full max-w-3xl flex-shrink-0">
-                                    <p className="text-primary/40 font-bold uppercase tracking-widest text-sm">Select material from the content outline to view.</p>
+                        <div className="flex-1 relative bg-slate-800 overflow-hidden">
+                            <VideoPlaceholder />
+                            {/* End class button for non-live */}
+                            {!isLive && (
+                                <div className="absolute bottom-5 left-1/2 -translate-x-1/2">
+                                    <Button variant="destructive" className="h-10 px-6 rounded-xl font-bold" onClick={handleDisconnect}>
+                                        <ArrowLeft className="h-4 w-4 mr-2" />Leave Session
+                                    </Button>
                                 </div>
                             )}
                         </div>
+                    )}
+                </div>
+
+                {/* Right Panel */}
+                <div className="w-80 bg-white border-l border-slate-200 flex flex-col shrink-0 overflow-hidden">
+                    {/* Tabs */}
+                    <div className="flex border-b border-slate-200 shrink-0 bg-white">
+                        {(['chat', 'materials', 'participants'] as RightTab[]).map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setRightTab(tab)}
+                                className={cn(
+                                    "flex-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-colors",
+                                    rightTab === tab
+                                        ? "text-primary border-b-2 border-primary"
+                                        : "text-slate-400 hover:text-slate-600"
+                                )}
+                            >
+                                {tab === 'chat' ? 'Live Chat' : tab === 'materials' ? 'Materials' : 'Members'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Chat Tab */}
+                    {rightTab === 'chat' && (
+                        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatScrollRef}>
+                                {!messages || messages.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <MessageSquare className="h-8 w-8 mx-auto text-slate-200 mb-2" />
+                                        <p className="text-xs text-slate-400">No messages yet</p>
+                                        <p className="text-[10px] text-slate-300 mt-0.5">Be the first to say something!</p>
+                                    </div>
+                                ) : (
+                                    messages.map((msg) => (
+                                        <div key={msg.id} className="space-y-1">
+                                            <div className="flex items-baseline gap-2">
+                                                <span className={cn("text-xs font-bold", msg.userId === user?.uid ? "text-[#2d5c6e]" : "text-primary")}>
+                                                    {msg.userId === user?.uid ? 'You' : msg.userName}
+                                                </span>
+                                                {msg.timestamp && (
+                                                    <span className="text-[10px] text-slate-400">
+                                                        {new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed">{msg.message}</p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-100 shrink-0">
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={chatInput}
+                                        onChange={e => setChatInput(e.target.value)}
+                                        placeholder="Type a message..."
+                                        className="flex-1 h-9 text-xs rounded-lg border-slate-200"
+                                        disabled={isSending}
+                                    />
+                                    <Button type="submit" size="icon" className="h-9 w-9 bg-[#2d5c6e] hover:bg-[#1d4a5c] rounded-lg shrink-0" disabled={!chatInput.trim() || isSending}>
+                                        <Send className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* Materials Tab */}
+                    {rightTab === 'materials' && (
+                        <ScrollArea className="flex-1">
+                            <div className="p-4 space-y-2">
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-3">Class Materials</p>
+                                {contentList.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <FileText className="h-8 w-8 mx-auto text-slate-200 mb-2" />
+                                        <p className="text-xs text-slate-400">No materials shared yet</p>
+                                    </div>
+                                ) : (
+                                    contentList.map((content) => content && (
+                                        <div key={content.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50 transition-all group">
+                                            <div className="bg-slate-100 p-1.5 rounded-md text-slate-500 shrink-0">
+                                                {content.type === 'video' ? <Video className="h-3.5 w-3.5" /> :
+                                                    content.type === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> :
+                                                        content.type === 'audio' ? <Music className="h-3.5 w-3.5" /> :
+                                                            <FileText className="h-3.5 w-3.5" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-slate-700 line-clamp-1">{content.title}</p>
+                                                <p className="text-[10px] text-slate-400 uppercase">{content.type}</p>
+                                            </div>
+                                            <a href={content.fileUrl} target="_blank" rel="noopener noreferrer"
+                                                className="text-slate-300 hover:text-slate-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Download className="h-3.5 w-3.5" />
+                                            </a>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </ScrollArea>
+                    )}
+
+                    {/* Participants Tab */}
+                    {rightTab === 'participants' && (
+                        <ScrollArea className="flex-1">
+                            <div className="p-4 space-y-3">
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-3">
+                                    Online Now · {liveParticipants?.length || 0}
+                                </p>
+                                {liveParticipants && liveParticipants.length > 0 ? (
+                                    liveParticipants.map((p: any) => (
+                                        <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                            <Avatar className="h-8 w-8 shrink-0">
+                                                <AvatarFallback className="bg-[#2d5c6e]/10 text-[#2d5c6e] text-xs font-bold">
+                                                    {(p.userName || 'U').charAt(0).toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-700">{p.userName}</p>
+                                                <p className="text-[10px] text-slate-400">{p.role || 'Learner'}</p>
+                                            </div>
+                                            <span className="ml-auto h-2 w-2 rounded-full bg-green-400 shrink-0" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <Users className="h-8 w-8 mx-auto text-slate-200 mb-2" />
+                                        <p className="text-xs text-slate-400">No one else is online</p>
+                                    </div>
+                                )}
+
+                                {allocatedLearners && allocatedLearners.length > 0 && (
+                                    <>
+                                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-4 pt-4 border-t border-slate-100">
+                                            All Enrolled · {allocatedLearners.length}
+                                        </p>
+                                        {allocatedLearners.map(l => {
+                                            const isOnline = liveParticipants?.some((p: any) => p.userId === l.id);
+                                            return (
+                                                <div key={l.id} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                                                    <Avatar className="h-8 w-8 shrink-0">
+                                                        <AvatarFallback className="bg-slate-100 text-slate-500 text-xs font-bold">
+                                                            {(l.name || 'L').charAt(0).toUpperCase()}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-slate-700">{l.name}</p>
+                                                        <p className="text-[10px] text-slate-400">{l.email}</p>
+                                                    </div>
+                                                    <span className={cn("ml-auto h-2 w-2 rounded-full shrink-0", isOnline ? "bg-green-400" : "bg-slate-200")} />
+                                                </div>
+                                            );
+                                        })}
+                                    </>
+                                )}
+                            </div>
+                        </ScrollArea>
                     )}
                 </div>
             </div>
@@ -404,52 +507,19 @@ export function ImmersiveLiveClass({ courseId, moduleId, backUrl }: ImmersiveLiv
 function MicrophoneToggle() {
     const { localParticipant } = useLocalParticipant();
     return (
-        <Button variant="ghost" size="icon" onClick={() => localParticipant?.setMicrophoneEnabled(!localParticipant?.isMicrophoneEnabled)} className={cn("h-12 w-12 rounded-xl transition-all", localParticipant?.isMicrophoneEnabled ? "bg-white/20 hover:bg-white/30 text-white" : "bg-red-500 hover:bg-red-600 text-white shadow-lg")}>
-            {localParticipant?.isMicrophoneEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+        <Button variant="ghost" size="icon" onClick={() => localParticipant?.setMicrophoneEnabled(!localParticipant?.isMicrophoneEnabled)}
+            className={cn("h-10 w-10 rounded-xl transition-all", localParticipant?.isMicrophoneEnabled ? "bg-white/20 hover:bg-white/30 text-white" : "bg-red-500 hover:bg-red-600 text-white")}>
+            {localParticipant?.isMicrophoneEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
         </Button>
-    )
+    );
 }
 
 function CameraToggle() {
     const { localParticipant } = useLocalParticipant();
     return (
-        <Button variant="ghost" size="icon" onClick={() => localParticipant?.setCameraEnabled(!localParticipant?.isCameraEnabled)} className={cn("h-12 w-12 rounded-xl transition-all", localParticipant?.isCameraEnabled ? "bg-white/20 hover:bg-white/30 text-white" : "bg-red-500 hover:bg-red-600 text-white shadow-lg")}>
-            {localParticipant?.isCameraEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+        <Button variant="ghost" size="icon" onClick={() => localParticipant?.setCameraEnabled(!localParticipant?.isCameraEnabled)}
+            className={cn("h-10 w-10 rounded-xl transition-all", localParticipant?.isCameraEnabled ? "bg-white/20 hover:bg-white/30 text-white" : "bg-red-500 hover:bg-red-600 text-white")}>
+            {localParticipant?.isCameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
         </Button>
-    )
-}
-
-function FeedbackList() {
-    const firestore = useFirestore();
-    const queryCycles = useMemo(() => firestore ? query(collection(firestore, 'feedbackCycles'), where('status', '==', 'active')) : null, [firestore]);
-    const { data: cycles, loading } = useCollection<FeedbackCycle>(queryCycles as any);
-
-    if (loading) return <div className="text-primary/50 text-center text-sm p-8">Loading feedback forms...</div>;
-
-    if (!cycles || cycles.length === 0) {
-        return (
-            <div className="bg-gray-50 border border-primary/10 rounded-2xl p-10 text-center">
-                <p className="text-primary/40 text-sm font-medium">No active feedback surveys available for this session.</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="w-full space-y-4 text-left">
-            {cycles.map(c => (
-                <div key={c.id} className="bg-white border border-primary/10 shadow-sm p-6 rounded-2xl flex md:flex-row flex-col gap-4 items-start md:items-center justify-between hover:border-accent/40 transition-colors">
-                    <div className="flex-1">
-                        <p className="font-bold text-primary text-lg">{c.title}</p>
-                        <p className="text-primary/60 text-sm mt-1">{c.description}</p>
-                    </div>
-                    <Button
-                        className="bg-accent hover:bg-accent/90 text-white font-bold shrink-0 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none h-10 px-6 shadow-md"
-                        onClick={() => window.open(`/dashboard/feedback/${c.id}`, '_blank')}
-                    >
-                        Take Survey
-                    </Button>
-                </div>
-            ))}
-        </div>
     );
 }

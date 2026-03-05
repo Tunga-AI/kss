@@ -31,7 +31,6 @@ export default function AdminProgramsPage() {
     const filteredPrograms = useMemo(() => {
         if (!allPrograms) return [];
         return allPrograms.filter(p => {
-            if (p.programType === 'Corporate') return false; // Filter out Corporate
             const title = p.programName || p.title || '';
             const desc = p.shortDescription || p.description || '';
             const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,28 +63,39 @@ export default function AdminProgramsPage() {
 
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div>
-                            <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Programs Management</h1>
-                            <p className="text-white/80 text-lg font-medium">Manage all courses and events across the platform</p>
+                            <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Programs & Event Management</h1>
+                            <p className="text-white/80 text-lg font-medium">Manage all programs, e-learning, corporate engagements and events</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button className="bg-secondary hover:bg-secondary/90 text-white border-none h-12 px-6 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none font-bold shadow-lg transition-all">
                                         <Plus className="h-4 w-4 mr-2" />
-                                        Create Program
+                                        Create New
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none border-primary/10">
-                                    <DropdownMenuLabel className="font-bold text-primary text-[10px] uppercase tracking-widest">Select Program Type</DropdownMenuLabel>
+                                <DropdownMenuContent align="end" className="rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none border-primary/10 w-52">
+                                    <DropdownMenuLabel className="font-bold text-primary text-[10px] uppercase tracking-widest">Programs</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/a/programs/new?type=core" className="font-bold">Core Program</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/a/programs/new?type=shortcourse" className="font-bold">Short Course</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/a/programs/new?type=elearning" className="font-bold">E-Learning</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/a/programs/new?type=corporate" className="font-bold">Corporate Program</Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel className="font-bold text-primary text-[10px] uppercase tracking-widest">Events</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href="/a/programs/new?type=core" className="font-bold">Core Program</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/a/programs/new?type=elearning" className="font-bold">E-Learning</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/a/programs/new?type=shortcourse" className="font-bold">Short Course</Link>
+                                        <Link href="/a/events/new" className="font-bold">Create Event</Link>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -116,9 +126,10 @@ export default function AdminProgramsPage() {
                             options={[
                                 { value: 'all', label: 'All Types' },
                                 { value: 'Core', label: 'Core Programs' },
-                                { value: 'E-Learning', label: 'E-Learning' },
                                 { value: 'Short', label: 'Short Courses' },
-                                { value: 'Event', label: 'Events' }
+                                { value: 'E-Learning', label: 'E-Learning' },
+                                { value: 'Event', label: 'Events' },
+                                { value: 'Corporate', label: 'Corporate' },
                             ]}
                             className="w-full sm:w-64"
                         />

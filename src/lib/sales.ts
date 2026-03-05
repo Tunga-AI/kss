@@ -8,10 +8,25 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import type { SaleLead } from './sales-types';
 import { generateId } from './id-generator';
 
+export async function allocateLeadToSalesStaff(db: Firestore): Promise<string | null> {
+  const staffRef = collection(db, 'staff');
+  const q = query(staffRef, where('role', '==', 'Sales'), where('status', '==', 'Active'), limit(10));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  const docs = snapshot.docs;
+  return docs[Math.floor(Math.random() * docs.length)].id;
+}
+
 export async function addSaleLead(db: Firestore, lead: Omit<SaleLead, 'id' | 'createdAt' | 'status'>) {
   try {
+    const assignedStaffId = await allocateLeadToSalesStaff(db);
     const id = await generateId(db, 'sales', 'LD');
-    const leadWithTimestamp = { ...lead, status: 'Lead', createdAt: serverTimestamp() };
+    const leadWithTimestamp = {
+      ...lead,
+      status: 'Lead',
+      createdAt: serverTimestamp(),
+      assignedTo: assignedStaffId || null
+    };
 
     await setDoc(doc(db, 'sales', id), leadWithTimestamp);
     return id;

@@ -13,7 +13,7 @@ import { useCollection } from "@/firebase/firestore/use-collection";
 import {
   ArrowRight, Check, Handshake, TrendingUp,
   Lightbulb, Users, Globe, ShieldCheck, GraduationCap,
-  Target, Quote
+  Target, Quote, Brain, BookOpen, Award, Star
 } from "lucide-react";
 
 /* ── Static Data ── */
@@ -21,6 +21,8 @@ const team = [
   { name: "Kelvin Kuria", role: "Co-Founder & CEO", bio: "Kelvin has spent over a decade building sales teams across East Africa. He co-founded KSS to create the continent's first structured pathway for sales professionals.", imageId: "kelvin-kuria" },
   { name: "Olive Kamande", role: "Co-Founder & COO", bio: "Olive leads operations and curriculum design. Her passion is making world-class sales education accessible to every African professional, regardless of background.", imageId: "olive-kamande" },
   { name: "Alex Mahugu", role: "General Manager", bio: "Alex bridges the gap between corporates and KSS. He manages partnerships, enterprise training programmes, and ensures every client gets measurable results.", imageId: "alex-mahugu" },
+  { name: "Terence Odhiambo", role: "Commercial Lead", bio: "Terence drives KSS's commercial partnerships and business development agenda, connecting organisations across East Africa with the right capability solutions.", imageId: "terence-odhiambo" },
+  { name: "Stephen Gathiru", role: "Programme Director", bio: "Stephen oversees the design and delivery of KSS programmes, ensuring every learning experience meets the highest standards of practical relevance and professional rigour.", imageId: "stephen-gathiru" },
 ];
 
 const partners = [
@@ -131,7 +133,140 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── STORY SECTION (image + copy) ── */}
+        {/* ── WHY KSS ── */}
+        <section className="py-24 bg-white">
+          <div className="container mx-auto px-6">
+
+            {/* Opening Statement */}
+            <div className="max-w-3xl mx-auto text-center mb-20">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="h-px w-8 bg-accent" />
+                <span className="text-accent text-sm font-bold uppercase tracking-widest">Why the Kenya School of Sales</span>
+                <div className="h-px w-8 bg-accent" />
+              </div>
+              <h2 className="font-headline text-4xl sm:text-5xl font-extrabold text-primary leading-tight mb-6">
+                Built to Close the Capability Gap
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed mb-5">
+                Sales capability development has traditionally focused on short training programs that improve knowledge but rarely change commercial outcomes.
+              </p>
+              <p className="text-gray-600 text-lg leading-relaxed mb-5">
+                The Kenya School of Sales was established to address this gap by building a structured, diagnostic-led approach to commercial capability development across Africa.
+              </p>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Our model integrates diagnostics, playbooks, capability development and measurable performance outcomes to help organizations and professionals build sustainable sales excellence.
+              </p>
+            </div>
+
+            {/* What Makes KSS Different */}
+            <div className="mb-20">
+              <div className="text-center mb-12">
+                <h3 className="font-headline text-3xl sm:text-4xl font-extrabold text-primary">What Makes KSS Different</h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-8">
+
+                {/* Diagnostic-Led */}
+                <div className="bg-gray-50 rounded-tl-3xl rounded-br-3xl p-10">
+                  <div className="w-14 h-14 bg-accent/10 text-accent rounded-tl-xl rounded-br-xl flex items-center justify-center mb-6">
+                    <Target className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-headline font-bold text-xl text-primary mb-3">Diagnostic-Led Engagement</h4>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Most training providers begin with workshops. We begin with understanding how an organization sells.
+                  </p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Our diagnostics examine pipeline discipline, sales processes, leadership capability and field execution habits to identify the structural drivers of performance.
+                  </p>
+                </div>
+
+                {/* Practitioners as Trainers */}
+                <div className="bg-gray-50 rounded-tl-3xl rounded-br-3xl p-10">
+                  <div className="w-14 h-14 bg-accent/10 text-accent rounded-tl-xl rounded-br-xl flex items-center justify-center mb-6">
+                    <Users className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-headline font-bold text-xl text-primary mb-3">Practitioners as Trainers</h4>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    All KSS programs are facilitated by experienced commercial leaders who have built teams, managed territories and closed complex deals.
+                  </p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Participants benefit from practical insights grounded in real business environments rather than purely academic instruction.
+                  </p>
+                </div>
+
+                {/* Global Standards */}
+                <div className="bg-gray-50 rounded-tl-3xl rounded-br-3xl p-10">
+                  <div className="w-14 h-14 bg-accent/10 text-accent rounded-tl-xl rounded-br-xl flex items-center justify-center mb-6">
+                    <Globe className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-headline font-bold text-xl text-primary mb-3">Global Standards with Local Relevance</h4>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Programs are aligned to the Institute of Sales Professionals (ISP), UK Sales Capability Framework, ensuring participants develop globally recognized competencies.
+                  </p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Applied within African commercial realities so that global benchmarks translate into local impact.
+                  </p>
+                </div>
+
+                {/* Real Impact */}
+                <div className="bg-gray-50 rounded-tl-3xl rounded-br-3xl p-10">
+                  <div className="w-14 h-14 bg-accent/10 text-accent rounded-tl-xl rounded-br-xl flex items-center justify-center mb-6">
+                    <TrendingUp className="h-7 w-7" />
+                  </div>
+                  <h4 className="font-headline font-bold text-xl text-primary mb-3">Learning That Drives Real Impact</h4>
+                  <p className="text-gray-600 leading-relaxed mb-3">
+                    Every program includes applied assignments and capstone projects that require participants to apply learning within real sales contexts.
+                  </p>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    This ensures learning translates into practical execution rather than theoretical knowledge.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ── FOUR QUADRANTS ── */}
+        <section className="py-24 bg-primary">
+          <div className="container mx-auto px-6">
+            <div className="text-center text-white mb-16">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="h-px w-8 bg-accent" />
+                <span className="text-accent text-sm font-bold uppercase tracking-widest">Our Capability Framework</span>
+                <div className="h-px w-8 bg-accent" />
+              </div>
+              <h2 className="font-headline text-4xl sm:text-5xl font-extrabold leading-tight mb-4">The Four Quadrants of Sales Capability</h2>
+              <p className="text-white/60 text-lg max-w-2xl mx-auto">
+                Our programs develop sales professionals across four core capability areas, building well-rounded commercial leaders — not just better salespeople.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: Target, quadrant: "01", title: "Core Skills", items: ["Prospecting", "Questioning", "Objection handling", "Closing", "Pipeline management"] },
+                { icon: Brain, quadrant: "02", title: "Business Skills", items: ["Understanding markets", "Customer knowledge", "Commercial models", "Value positioning"] },
+                { icon: Award, quadrant: "03", title: "Leadership Skills", items: ["Leading oneself", "Leading others", "Collaboration", "Performance management"] },
+                { icon: Star, quadrant: "04", title: "Self-Mastery", items: ["Professional mindset", "Resilience", "Ethics", "Continuous development"] },
+              ].map((q, i) => (
+                <div key={i} className="bg-white/5 border border-white/10 rounded-tl-3xl rounded-br-3xl p-8 hover:bg-white/10 transition-colors group">
+                  <div className="text-accent text-xs font-black uppercase tracking-widest mb-4">{q.quadrant}</div>
+                  <div className="w-12 h-12 bg-accent/20 text-accent rounded-tl-xl rounded-br-xl flex items-center justify-center mb-5 group-hover:bg-accent group-hover:text-white transition-colors">
+                    <q.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-headline font-bold text-white text-xl mb-4">{q.title}</h3>
+                  <ul className="space-y-2">
+                    {q.items.map((item, j) => (
+                      <li key={j} className="flex items-center gap-2 text-white/70 text-sm">
+                        <div className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
         <section className="py-24 bg-gray-50">
           <div className="container mx-auto px-6">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -324,7 +459,7 @@ export default function AboutPage() {
               <h2 className="font-headline text-4xl sm:text-5xl font-extrabold text-primary mb-4">Meet Our Team</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">Experienced leaders driving the transformation of sales education across Africa.</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {team.map((member) => {
                 const image = PlaceHolderImages.find(p => p.id === member.imageId);
                 return (
@@ -344,6 +479,22 @@ export default function AboutPage() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CLOSING STATEMENT ── */}
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-6">
+            <div className="max-w-4xl mx-auto bg-primary rounded-tl-3xl rounded-br-3xl p-12 text-center shadow-2xl">
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="h-px w-8 bg-accent" />
+                <span className="text-accent text-sm font-bold uppercase tracking-widest">Our Purpose</span>
+                <div className="h-px w-8 bg-accent" />
+              </div>
+              <p className="font-headline text-2xl sm:text-3xl font-extrabold text-white leading-relaxed">
+                "The Kenya School of Sales exists to elevate sales as a respected profession and to help organizations build disciplined, high-performing commercial teams."
+              </p>
             </div>
           </div>
         </section>

@@ -47,6 +47,7 @@ export function LoginForm() {
   const programTitle = searchParams.get('programTitle');
   const programId = searchParams.get('programId');
   const txId = searchParams.get('txId');
+  const redirectParam = searchParams.get('redirect');
 
   const isSetupFlow = flow === 'setup_account';
   const isB2bSetupFlow = flow === 'setup_b2b';
@@ -210,12 +211,24 @@ export function LoginForm() {
           firestoreId = querySnapshot.docs[0].id;
           console.log('✅ Existing user signed in:', firestoreId);
         } catch (signInError: any) {
-          if (signInError.code === 'auth/wrong-password') {
-            setError("An account with this email already exists. Please use the correct password or reset it.");
-            setLoading(false);
-            return;
+          if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential' || signInError.code === 'auth/user-not-found') {
+            try {
+              // The Firebase Auth record might not exist yet (e.g., if created via webhook in Firestore only)
+              userCredential = await createUserWithEmailAndPassword(auth, email, password);
+              await updateProfile(userCredential.user, { displayName: name });
+              firestoreId = querySnapshot.docs[0].id;
+              console.log('✅ Created Firebase Auth record for existing Firestore user:', firestoreId);
+            } catch (createError: any) {
+              if (createError.code === 'auth/email-already-in-use') {
+                setError("An account with this email already exists. Please use the correct password or reset it.");
+                setLoading(false);
+                return;
+              }
+              throw createError;
+            }
+          } else {
+            throw signInError;
           }
-          throw signInError;
         }
       } else {
         // User doesn't exist in Firestore - check if they exist in Firebase Auth
@@ -271,8 +284,12 @@ export function LoginForm() {
         });
       }
 
-      // Redirect to dashboard after account setup
-      router.push('/l');
+      // Redirect to dashboard or designated redirectUrl after account setup
+      if (redirectParam) {
+        router.push(redirectParam);
+      } else {
+        router.push('/l');
+      }
 
     } catch (error: any) {
       console.error("Account creation error:", error);
@@ -385,6 +402,10 @@ export function LoginForm() {
           return;
         }
         redirectPath = '/b';
+      }
+
+      if (redirectParam && role === 'Learner') {
+        redirectPath = redirectParam;
       }
 
       router.push(redirectPath);
