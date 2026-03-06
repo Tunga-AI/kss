@@ -222,7 +222,7 @@ function IntakePayButton({ program, cohort, onClose }: { program: Program; cohor
             initPaystack({
                 onSuccess: async (response: any) => {
                     setIsSubmitting(false);
-                    toast({ title: 'Payment Successful', description: 'Your application has been submitted!' });
+                    toast({ title: 'Application Submitted!', description: 'Welcome aboard! Your dashboard is ready.' });
                     try {
                         await fetch('/api/paystack/verify', {
                             method: 'POST',
@@ -233,13 +233,13 @@ function IntakePayButton({ program, cohort, onClose }: { program: Program; cohor
                                     learnerName: user.name, learnerEmail: user.email,
                                     learnerPhone: formattedPhone, programId: program.id,
                                     cohortId: cohort.id, isCoreCourse: true,
-                                    redirectUrl: '/l/admissions', userId: user.id,
+                                    redirectUrl: '/l', userId: user.id,
                                 },
                             }),
                         });
                     } catch (e) { console.error('Verify error:', e); }
                     onClose();
-                    router.push('/l/admissions');
+                    router.push('/l');   // → dashboard shows welcome + your new program
                 },
                 onClose: () => {
                     setIsSubmitting(false);

@@ -171,31 +171,41 @@ export default function ElearningLearnPage() {
     return (
         <div className="flex flex-col h-screen bg-white overflow-hidden font-body text-gray-800">
             {/* ─── TOP HEADER ─────────────────────────────────────────────── */}
-            <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-40 shadow-sm relative w-full">
-                <div className="flex items-center gap-4 flex-1">
-                    <Button variant="ghost" size="icon" asChild className="text-gray-500 hover:text-primary hover:bg-gray-100">
-                        <Link href={`/dashboard/e-learning`}><ArrowLeft className="h-5 w-5" /></Link>
-                    </Button>
-                    <div className="hidden sm:block border-l border-gray-200 h-8 mx-2" />
-                    <div>
-                        <p className="text-xs font-black text-primary/40 uppercase tracking-widest leading-none mb-1">E-Learning</p>
-                        <h1 className="text-gray-900 font-bold text-sm sm:text-base truncate max-w-[200px] sm:max-w-md md:max-w-xl">{course.title || course.programName}</h1>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-6">
-                    {/* Progress Desktop */}
-                    <div className="hidden md:flex flex-col items-end gap-1.5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-primary font-bold text-xs">{progressPct}% Complete</span>
-                            <span className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">{completedCount}/{modules.length} Modules</span>
+            <header className="bg-primary text-white p-6 border-b border-primary/10 shadow-2xl relative overflow-hidden shrink-0 z-40">
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-accent/20 rounded-full blur-3xl opacity-20 pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="flex items-center gap-4 flex-1 w-full relative">
+                        <Button variant="ghost" size="icon" asChild className="text-white/60 hover:text-white hover:bg-white/10 flex shrink-0">
+                            <Link href={`/dashboard/e-learning`}><ArrowLeft className="h-5 w-5" /></Link>
+                        </Button>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-3 mb-1">
+                                <BookOpen className="h-8 w-8 bg-accent/20 p-1.5 rounded-lg text-accent hidden sm:block shrink-0" />
+                                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+                                    {course.title || course.programName}
+                                </h1>
+                            </div>
+                            <p className="text-white/60 text-[10px] sm:text-xs font-black uppercase tracking-widest flex flex-wrap gap-2 items-center">
+                                E-Learning
+                                {course.level && <><span className="w-1 h-1 bg-white/30 rounded-full" /> Level {course.level}</>}
+                            </p>
                         </div>
-                        <Progress value={progressPct} className="h-2 w-48" />
                     </div>
 
-                    <Button variant="outline" size="icon" className="md:hidden" onClick={() => setSidebarOpen(o => !o)}>
-                        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                    </Button>
+                    <div className="flex items-center gap-6 md:w-auto mt-2 md:mt-0 justify-end flex-shrink-0">
+                        {/* Progress Desktop */}
+                        <div className="hidden md:flex flex-col items-end gap-1.5 min-w-[150px]">
+                            <div className="flex items-center gap-2">
+                                <span className="text-accent font-bold text-sm">{progressPct}% Complete</span>
+                                <span className="text-white/50 text-[10px] uppercase font-bold tracking-widest">{completedCount}/{modules.length} Modules</span>
+                            </div>
+                            <Progress value={progressPct} className="h-2 w-48 bg-white/10 [&>div]:bg-accent" />
+                        </div>
+
+                        <Button variant="outline" size="icon" className="md:hidden bg-white/10 border-white/20 text-white hover:bg-white/20" onClick={() => setSidebarOpen(o => !o)}>
+                            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        </Button>
+                    </div>
                 </div>
             </header>
 
@@ -214,10 +224,10 @@ export default function ElearningLearnPage() {
                     )}
 
                     {activeModule ? (
-                        <div className="max-w-6xl mx-auto pb-24">
+                        <div className="w-full pb-24">
                             {/* Video Hero Section */}
                             <div className={cn(
-                                "w-full bg-black relative shadow-sm transition-all duration-300 md:rounded-b-2xl overflow-hidden shrink-0",
+                                "w-full bg-black relative shadow-sm transition-all duration-300 md:rounded-b-none overflow-hidden shrink-0",
                                 isPip
                                     ? "fixed bottom-6 right-6 w-[320px] md:w-[400px] rounded-xl z-[100] shadow-2xl ring-4 ring-white/10"
                                     : "aspect-video md:aspect-[21/9] lg:aspect-[16/9]"
@@ -261,7 +271,7 @@ export default function ElearningLearnPage() {
                             </div>
 
                             {/* If PIP, keep a placeholder so layout doesn't jump drastically */}
-                            {isPip && <div className="aspect-video md:aspect-[21/9] lg:aspect-[16/9] w-full bg-gray-100/50 flex flex-col items-center justify-center border border-dashed border-gray-300 md:rounded-b-2xl mb-8 group cursor-pointer" onClick={() => document.getElementById('main-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' })}>
+                            {isPip && <div className="aspect-video md:aspect-[21/9] lg:aspect-[16/9] w-full bg-gray-100/50 flex flex-col items-center justify-center border border-dashed border-gray-300 md:rounded-none mb-8 group cursor-pointer" onClick={() => document.getElementById('main-scroll-area')?.scrollTo({ top: 0, behavior: 'smooth' })}>
                                 <div className="bg-white p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform">
                                     <Layout className="h-6 w-6 text-primary" />
                                 </div>
@@ -270,7 +280,7 @@ export default function ElearningLearnPage() {
                             </div>}
 
                             {/* Content Below Video */}
-                            <div className="p-6 md:px-8 md:py-10">
+                            <div className="p-6 md:px-12 md:py-10 max-w-[1600px] mx-auto">
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
                                     <div className="flex-1">
                                         <p className="text-xs font-black text-primary/40 uppercase tracking-widest mb-2 flex items-center gap-2">

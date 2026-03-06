@@ -6,6 +6,7 @@ import { Header } from "@/components/shared/header";
 import { Footer } from "@/components/shared/footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   CheckCircle, Clock, BookOpen, Star, UserCheck, Monitor, Lock, Play,
   ChevronDown, ChevronUp, FileDown, Award, Globe, BarChart, ArrowRight, Check
@@ -23,6 +24,7 @@ export default function ElearningCourseDetailPage() {
   const slug = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useUsersFirestore();
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [showEnroll, setShowEnroll] = useState(false);
   const { user } = useUser();
 
   const programQuery = useMemo(() => {
@@ -68,176 +70,218 @@ export default function ElearningCourseDetailPage() {
       <Header />
       <main className="flex-grow">
 
-        {/* ═══ HERO (dark) ═══════════════════════════════════════════ */}
-        <section className="bg-[#1C1D1F] text-white pt-24 pb-12 lg:pt-28 lg:pb-16">
-          <div className="container mx-auto px-4 md:px-8 max-w-4xl text-center">
-            {/* Badges */}
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
-              <Badge className="bg-accent text-white font-black uppercase tracking-widest text-xs rounded-sm px-3">E-Learning</Badge>
-              {course.level && (
-                <Badge variant="outline" className="border-white/30 text-white/80 font-bold uppercase tracking-widest rounded-full text-xs">{String(course.level)}</Badge>
-              )}
-              <Badge variant="outline" className="border-white/30 text-white/80 font-bold uppercase tracking-widest rounded-full text-xs flex items-center gap-1">
-                <Monitor className="h-3 w-3" /> Self-Paced
-              </Badge>
+        {/* ═══ HERO ═══════════════════════════════════════════ */}
+        <section className="relative min-h-[70vh] w-full flex items-end bg-primary overflow-hidden">
+          {/* Background Image */}
+          {(course.imageUrl || (course as any).image) && (
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={(course.imageUrl || (course as any).image) as string}
+                alt={title}
+                fill
+                className="object-cover opacity-60"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/50 to-transparent" />
             </div>
+          )}
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-5">{title}</h1>
-            <p className="text-lg text-white/70 mx-auto max-w-2xl">{description}</p>
+          <div className="relative z-10 w-full pb-16 pt-36">
+            <div className="container mx-auto px-4 lg:px-6 max-w-7xl">
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="max-w-2xl">
+                  <Card className="bg-white border-0 shadow-2xl rounded-tl-3xl rounded-br-3xl rounded-tr-none rounded-bl-none overflow-hidden">
+                    <div className="bg-accent p-6 sm:p-8">
+                      <div className="flex flex-wrap justify-start gap-3 mb-4">
+                        <Badge className="bg-white text-accent font-black uppercase tracking-widest text-xs rounded-sm px-3 border-0">E-Learning</Badge>
+                        {course.level && (
+                          <Badge variant="outline" className="border-white/50 text-white font-bold uppercase tracking-widest rounded-full text-xs">{String(course.level)}</Badge>
+                        )}
+                        <Badge variant="outline" className="border-white/50 text-white font-bold uppercase tracking-widest rounded-full text-xs flex items-center gap-1 border">
+                          <Monitor className="h-3 w-3" /> Self-Paced
+                        </Badge>
+                      </div>
+                      <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                        {title}
+                      </h1>
+                    </div>
+                    <div className="p-6 sm:p-8 flex flex-col gap-6">
+                      <p className="text-base sm:text-lg text-primary/80 leading-relaxed font-medium">
+                        {description}
+                      </p>
 
-            {/* Quick stats row */}
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60 mt-8">
-              {modules.length > 0 && <span className="flex items-center gap-1.5"><BookOpen className="h-4 w-4 text-accent" />{modules.length} modules</span>}
-              {duration && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-accent" />{duration}</span>}
-              <span className="flex items-center gap-1.5"><Globe className="h-4 w-4 text-accent" />English</span>
-              <span className="flex items-center gap-1.5"><Award className="h-4 w-4 text-accent" />Certificate included</span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-primary/80 mb-2 font-semibold">
+                        {modules.length > 0 && <span className="flex items-center gap-1.5"><BookOpen className="h-4 w-4 text-accent" />{modules.length} modules</span>}
+                        {duration && <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-accent" />{duration}</span>}
+                        <span className="flex items-center gap-1.5"><Globe className="h-4 w-4 text-accent" />English</span>
+                        <span className="flex items-center gap-1.5"><Award className="h-4 w-4 text-accent" />Certificate</span>
+                      </div>
+
+                      {/* Actions & Price */}
+                      {!isEnrolled ? (
+                        <div className="flex flex-col sm:flex-row gap-4 mt-2 items-center">
+                          <div className="w-full sm:w-auto text-2xl sm:text-3xl font-black text-primary px-6 py-3 bg-gray-50 rounded-tl-xl rounded-br-xl text-center border shadow-sm shrink-0">
+                            {price}
+                          </div>
+                          <Button
+                            className="w-full sm:w-auto rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none bg-primary hover:bg-primary/90 text-white h-[60px] px-8 font-bold shadow-lg text-lg flex-1"
+                            onClick={() => {
+                              setShowEnroll(true);
+                              setTimeout(() => document.getElementById('enroll-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                            }}
+                          >
+                            Enroll Now <ArrowRight className="h-5 w-5 ml-2" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-center sm:text-left">
+                          <Button className="w-full sm:w-auto h-[60px] bg-green-600 hover:bg-green-700 text-white font-bold rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none shadow-lg shadow-green-600/20 px-8 text-lg" asChild>
+                            <Link href={`/e-learning/${slug}/learn`}>
+                              Go to Course <ArrowRight className="h-5 w-5 ml-2" />
+                            </Link>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ═══ BODY ═══════════════════════════════════════════════════ */}
-        <div className="container mx-auto px-4 md:px-8 max-w-7xl">
-          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 py-10 lg:py-14">
+        <div className="container mx-auto px-6 lg:px-8 max-w-7xl">
+          <div className="py-16 space-y-16">
 
-            {/* ── MOBILE ENROLLMENT FORM (shows at top on mobile) ── */}
-            {!isEnrolled && (
-              <div className="block lg:hidden w-full mb-4" id="enroll-form-mobile">
-                <CourseEnrollCard course={course} price={price} slug={slug as string} />
-              </div>
+            {/* Overview Video */}
+            {course.overviewVideoUrl && (
+              <section className="w-full space-y-4">
+                <SectionTitle>Course Overview</SectionTitle>
+                <div className="rounded-tl-[3rem] rounded-br-[3rem] overflow-hidden bg-black aspect-video w-full shadow-2xl relative group min-w-0">
+                  <video
+                    src={course.overviewVideoUrl}
+                    controls
+                    preload="auto"
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-contain"
+                  />
+                </div>
+              </section>
             )}
-            {isEnrolled && (
-              <div className="block lg:hidden w-full mb-4" id="access-form-mobile">
-                <CourseAccessCard slug={slug as string} />
-              </div>
+
+            {/* What you'll learn */}
+            {(course.objectives || []).length > 0 && (
+              <section className="w-full">
+                <SectionTitle>What you'll learn</SectionTitle>
+                <div className="border border-gray-100 bg-gray-50/50 rounded-tl-[2rem] rounded-br-[2rem] p-8 mt-6 shadow-sm">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {(course.objectives || []).map((item, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-700 leading-snug">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
             )}
 
-            {/* ── MAIN CONTENT (left 2/3) ── */}
-            <div className="lg:col-span-2 space-y-10 lg:space-y-16 min-w-0">
+            {/* Course curriculum */}
+            {modules.length > 0 && (
+              <section className="w-full">
+                <SectionTitle>Course Preview & Curriculum</SectionTitle>
+                <p className="text-gray-500 text-sm mt-3 mb-6 font-medium">
+                  {modules.length} modules · {previewCount} previews available
+                </p>
+                <div className="border border-gray-100 rounded-tl-[2rem] rounded-br-[2rem] overflow-hidden divide-y divide-gray-100 shadow-sm">
+                  {modules.map((mod, idx) => {
+                    const isOpen = expandedModule === mod.id;
+                    return (
+                      <div key={mod.id}>
+                        {/* Module header */}
+                        <button
+                          type="button"
+                          onClick={() => setExpandedModule(isOpen ? null : mod.id)}
+                          className="w-full flex items-center gap-4 px-5 py-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                        >
+                          <span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-black shrink-0">{idx + 1}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-gray-900 text-sm truncate">{mod.title || `Module ${idx + 1}`}</p>
+                            {mod.duration && <p className="text-xs text-gray-400 mt-0.5">{mod.duration}</p>}
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            {isEnrolled ? (
+                              <span className="text-[10px] font-black uppercase tracking-widest text-green-600 border border-green-600/40 bg-green-50 rounded-full px-2 py-0.5">Unlocked</span>
+                            ) : mod.isPreview ? (
+                              <span className="text-[10px] font-black uppercase tracking-widest text-accent border border-accent/40 rounded-full px-2 py-0.5">Preview</span>
+                            ) : (
+                              <Lock className="h-4 w-4 text-gray-300" />
+                            )}
+                            {isOpen ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                          </div>
+                        </button>
 
-              {/* Overview Video */}
-              {course.overviewVideoUrl && (
-                <section className="w-full max-w-full">
-                  <div className="rounded-xl lg:rounded-2xl overflow-hidden bg-black aspect-video w-full shadow-lg lg:shadow-2xl relative group min-w-0">
-                    <video
-                      src={course.overviewVideoUrl}
-                      controls
-                      className="absolute inset-0 w-full h-full object-contain"
-                      poster={course.imageUrl || course.image}
-                    />
-                  </div>
-                </section>
-              )}
+                        {/* Expanded content */}
+                        {isOpen && (
+                          <div className="px-5 py-4 bg-white space-y-3">
+                            {mod.description && <p className="text-sm text-gray-600 leading-relaxed">{mod.description}</p>}
 
-              {/* What you'll learn */}
-              {(course.objectives || []).length > 0 && (
-                <section>
-                  <SectionTitle>What you'll learn</SectionTitle>
-                  <div className="border border-gray-200 rounded-xl p-6 mt-4">
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {(course.objectives || []).map((item, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700 leading-snug">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Course curriculum */}
-              {modules.length > 0 && (
-                <section>
-                  <SectionTitle>Course curriculum</SectionTitle>
-                  <p className="text-gray-500 text-sm mt-2 mb-4">
-                    {modules.length} modules · {previewCount} previews available
-                  </p>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-200">
-                    {modules.map((mod, idx) => {
-                      const isOpen = expandedModule === mod.id;
-                      return (
-                        <div key={mod.id}>
-                          {/* Module header */}
-                          <button
-                            type="button"
-                            onClick={() => setExpandedModule(isOpen ? null : mod.id)}
-                            className="w-full flex items-center gap-4 px-5 py-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
-                          >
-                            <span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs font-black shrink-0">{idx + 1}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-bold text-gray-900 text-sm truncate">{mod.title || `Module ${idx + 1}`}</p>
-                              {mod.duration && <p className="text-xs text-gray-400 mt-0.5">{mod.duration}</p>}
-                            </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                              {isEnrolled ? (
-                                <span className="text-[10px] font-black uppercase tracking-widest text-green-600 border border-green-600/40 bg-green-50 rounded-full px-2 py-0.5">Unlocked</span>
-                              ) : mod.isPreview ? (
-                                <span className="text-[10px] font-black uppercase tracking-widest text-accent border border-accent/40 rounded-full px-2 py-0.5">Preview</span>
+                            {mod.videoUrl ? (
+                              isEnrolled || mod.isPreview ? (
+                                <div className="rounded-xl overflow-hidden bg-black aspect-video w-full relative group">
+                                  <video
+                                    src={mod.videoUrl}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    poster={mod.thumbnailUrl}
+                                  />
+                                </div>
                               ) : (
-                                <Lock className="h-4 w-4 text-gray-300" />
-                              )}
-                              {isOpen ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
-                            </div>
-                          </button>
-
-                          {/* Expanded content */}
-                          {isOpen && (
-                            <div className="px-5 py-4 bg-white space-y-3">
-                              {mod.description && <p className="text-sm text-gray-600 leading-relaxed">{mod.description}</p>}
-
-                              {mod.videoUrl ? (
-                                isEnrolled || mod.isPreview ? (
-                                  <div className="rounded-xl overflow-hidden bg-black aspect-video w-full relative group">
-                                    <video
-                                      src={mod.videoUrl}
-                                      controls
-                                      className="w-full h-full object-cover"
-                                      poster={mod.thumbnailUrl}
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                                    <div className="flex flex-col items-center gap-2 text-gray-400">
-                                      <Lock className="h-8 w-8" />
-                                      <p className="text-sm font-medium">Enroll to unlock this lesson</p>
-                                    </div>
-                                  </div>
-                                )
-                              ) : null}
-
-                              {mod.materials.length > 0 && (
-                                <div>
-                                  <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Supporting Materials</p>
-                                  <div className="space-y-1">
-                                    {mod.materials.map((mat, mIdx) => (
-                                      isEnrolled || mod.isPreview ? (
-                                        <a key={mIdx} href={mat.fileUrl} target="_blank" rel="noreferrer"
-                                          className="flex items-center gap-2 text-sm text-primary hover:underline">
-                                          <FileDown className="h-4 w-4 text-accent" /> {mat.name}
-                                        </a>
-                                      ) : (
-                                        <div key={mIdx} className="flex items-center gap-2 text-sm text-gray-400">
-                                          <Lock className="h-3.5 w-3.5" /> {mat.name}
-                                        </div>
-                                      )
-                                    ))}
+                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                                  <div className="flex flex-col items-center gap-2 text-gray-400">
+                                    <Lock className="h-8 w-8" />
+                                    <p className="text-sm font-medium">Enroll to unlock this lesson</p>
                                   </div>
                                 </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
+                              )
+                            ) : null}
 
-              {/* Requirements / Certificate */}
-              {(course.completionRequirements || []).length > 0 && (
-                <section>
-                  <SectionTitle>Certificate Requirements</SectionTitle>
-                  <ul className="mt-4 space-y-3">
+                            {mod.materials.length > 0 && (
+                              <div>
+                                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Supporting Materials</p>
+                                <div className="space-y-1">
+                                  {mod.materials.map((mat, mIdx) => (
+                                    isEnrolled || mod.isPreview ? (
+                                      <a key={mIdx} href={mat.fileUrl} target="_blank" rel="noreferrer"
+                                        className="flex items-center gap-2 text-sm text-primary hover:underline">
+                                        <FileDown className="h-4 w-4 text-accent" /> {mat.name}
+                                      </a>
+                                    ) : (
+                                      <div key={mIdx} className="flex items-center gap-2 text-sm text-gray-400">
+                                        <Lock className="h-3.5 w-3.5" /> {mat.name}
+                                      </div>
+                                    )
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Requirements / Certificate */}
+            {(course.completionRequirements || []).length > 0 && (
+              <section className="w-full">
+                <SectionTitle>Certificate Requirements</SectionTitle>
+                <div className="bg-primary/5 rounded-tl-[2rem] rounded-br-[2rem] p-8 mt-6">
+                  <ul className="space-y-4">
                     {(course.completionRequirements || []).map((req, i) => (
                       <li key={i} className="flex items-start gap-3 text-gray-700 text-sm">
                         <Award className="h-5 w-5 text-accent shrink-0 mt-0.5" />
@@ -245,14 +289,16 @@ export default function ElearningCourseDetailPage() {
                       </li>
                     ))}
                   </ul>
-                </section>
-              )}
+                </div>
+              </section>
+            )}
 
-              {/* Who is it for */}
-              {(course.whoIsItFor || []).length > 0 && (
-                <section>
-                  <SectionTitle>Who this course is for</SectionTitle>
-                  <ul className="mt-4 space-y-3">
+            {/* Who is it for */}
+            {(course.whoIsItFor || []).length > 0 && (
+              <section className="w-full">
+                <SectionTitle>Who this course is for</SectionTitle>
+                <div className="bg-gray-50 border border-gray-100 rounded-tl-[2rem] rounded-br-[2rem] p-8 mt-6">
+                  <ul className="space-y-4">
                     {(course.whoIsItFor || []).map((persona, i) => (
                       <li key={i} className="flex items-center gap-3 text-gray-700 text-sm">
                         <UserCheck className="h-5 w-5 text-primary/40 shrink-0" />
@@ -260,44 +306,66 @@ export default function ElearningCourseDetailPage() {
                       </li>
                     ))}
                   </ul>
-                </section>
-              )}
+                </div>
+              </section>
+            )}
 
-              {/* Instructors */}
-              {instructors.length > 0 && (
-                <section>
-                  <SectionTitle>Instructors</SectionTitle>
-                  <div className="mt-6 space-y-8">
-                    {instructors.map((inst, i) => (
-                      <div key={i} className="flex gap-5">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 overflow-hidden shrink-0">
-                          {inst.imageUrl
-                            ? <img src={inst.imageUrl} alt={inst.name} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center text-primary/30 text-2xl font-black">{inst.name.charAt(0)}</div>
-                          }
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900 text-lg">{inst.name}</p>
-                          {inst.title && <p className="text-accent text-sm font-medium mb-2">{inst.title}</p>}
-                          {inst.bio && <p className="text-gray-600 text-sm leading-relaxed">{inst.bio}</p>}
-                        </div>
+            {/* Instructors */}
+            {instructors.length > 0 && (
+              <section className="w-full">
+                <SectionTitle>Instructors</SectionTitle>
+                <div className="mt-8 grid md:grid-cols-2 gap-8">
+                  {instructors.map((inst, i) => (
+                    <div key={i} className="flex flex-col sm:flex-row gap-5 bg-gray-50 border border-gray-100 rounded-tl-[2rem] rounded-br-[2rem] p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="w-24 h-24 rounded-full bg-primary/10 overflow-hidden shrink-0 mx-auto sm:mx-0 border text-center sm:text-left">
+                        {inst.imageUrl
+                          ? <img src={inst.imageUrl} alt={inst.name} className="w-full h-full object-cover" />
+                          : <div className="w-full h-full flex items-center justify-center text-primary/30 text-2xl font-black">{inst.name.charAt(0)}</div>
+                        }
                       </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
+                      <div className="text-center sm:text-left">
+                        <p className="font-headline font-bold text-primary text-xl mb-1">{inst.name}</p>
+                        {inst.title && <p className="text-accent text-sm font-bold mb-3 uppercase tracking-wider">{inst.title}</p>}
+                        {inst.bio && <p className="text-gray-600 text-sm leading-relaxed">{inst.bio}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
-            {/* ── SIDEBAR (sticky, right 1/3, desktop only) ── */}
-            <div className="hidden lg:block lg:col-span-1 min-w-0">
-              <div className="sticky top-8" id="enroll-form-desktop">
-                {isEnrolled ? (
-                  <CourseAccessCard slug={slug as string} />
+            {/* ── FINAL CTA / ENROLLMENT ── */}
+            {!isEnrolled && (
+              <section className="w-full pt-16 border-t border-gray-200 mt-16 pb-12">
+                <div className="text-center max-w-3xl mx-auto mb-10">
+                  <h2 className="font-headline text-3xl sm:text-4xl font-extrabold text-primary leading-tight mb-4">
+                    Ready to Start Learning?
+                  </h2>
+                  <p className="text-gray-500 text-lg">
+                    Join this program and access all materials, assessments, and certifications at your own pace.
+                  </p>
+                </div>
+
+                {!showEnroll ? (
+                  <div className="flex justify-center flex-col sm:flex-row gap-4 items-center">
+                    <Button
+                      size="lg"
+                      onClick={() => {
+                        setShowEnroll(true);
+                        setTimeout(() => document.getElementById('enroll-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                      }}
+                      className="rounded-tl-xl rounded-br-xl bg-primary hover:bg-primary/90 text-white h-[60px] px-10 font-bold shadow-lg text-lg w-full sm:w-auto"
+                    >
+                      Enroll Now - {price} <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
                 ) : (
-                  <CourseEnrollCard course={course} price={price} slug={slug as string} />
+                  <div id="enroll-section" className="max-w-xl mx-auto scroll-mt-24 transition-opacity duration-500 opacity-100">
+                    <CourseEnrollCard course={course} price={price} slug={slug as string} />
+                  </div>
                 )}
-              </div>
-            </div>
+              </section>
+            )}
           </div>
         </div>
 
@@ -308,10 +376,13 @@ export default function ElearningCourseDetailPage() {
               <p className="text-xl sm:text-2xl font-black text-primary leading-none">{price}</p>
               <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Lifetime access</p>
             </div>
-            <Button className="h-12 px-6 sm:px-8 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl flex-1 shadow-lg shadow-accent/20" asChild>
-              <a href="#enroll-form-mobile">
+            <Button className="h-12 px-6 sm:px-8 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl flex-1 shadow-lg shadow-accent/20 border-0" asChild>
+              <button onClick={() => {
+                setShowEnroll(true);
+                setTimeout(() => document.getElementById('enroll-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
+              }}>
                 Enroll Now <ArrowRight className="h-4 w-4 ml-1.5" />
-              </a>
+              </button>
             </Button>
           </div>
         ) : (
@@ -332,7 +403,12 @@ export default function ElearningCourseDetailPage() {
 
 // ─── Shared utilities ─────────────────────────────────────────────────────────
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-2xl font-bold text-gray-900 border-b border-gray-200 pb-3">{children}</h2>;
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="h-px w-8 bg-accent" />
+      <h2 className="font-headline text-3xl font-extrabold text-primary">{children}</h2>
+    </div>
+  );
 }
 
 function CourseEnrollCard({ course, price, slug }: { course: Program; price: string; slug: string }) {

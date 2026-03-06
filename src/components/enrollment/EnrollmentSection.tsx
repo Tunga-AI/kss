@@ -183,10 +183,15 @@ export function EnrollmentSection({ program, selectedCohortId, intakes = [], onC
                         userId: loggedInUser?.id || null,
                         isElearning: isElearning,
                         programSlug: program.slug,
-                        // Redirect logic
+                        // Redirect logic after payment:
+                        // - E-Learning → straight to learn page
+                        // - Core/Short → dashboard (shows welcome + registered program card)
+                        // - Logged out → create account flow first
                         redirectUrl: loggedInUser
-                            ? (isElearning ? `/e-learning/${program.slug}/learn` : (isCoreCourse ? '/l' : '/l/courses/' + program.slug))
-                            : `/login?flow=setup_account&email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.name)}&phone=${encodeURIComponent(formData.phone)}&programId=${program.id}&programTitle=${encodeURIComponent(program.programName)}${isElearning ? `&isElearning=true&redirect=${encodeURIComponent(`/e-learning/${program.slug}/learn`)}` : ''}`
+                            ? (isElearning
+                                ? `/l/e-learning/${program.slug}/learn`
+                                : '/l')     // dashboard — hero shows date/time + new program card
+                            : `/login?flow=setup_account&email=${encodeURIComponent(formData.email)}&name=${encodeURIComponent(formData.name)}&phone=${encodeURIComponent(formData.phone)}&programId=${program.id}&programTitle=${encodeURIComponent(program.programName)}${isElearning ? `&isElearning=true&redirect=${encodeURIComponent(`/l/e-learning/${program.slug}/learn`)}` : '&redirect=/l'}`
                     }
                 }),
             });
